@@ -1346,6 +1346,15 @@ func (m *mockCreateTxOps) InsertInputs(ctx context.Context,
 	return args.Error(0)
 }
 
+// ValidateInputs forwards input validation to arranged mock expectations.
+func (m *mockCreateTxOps) ValidateInputs(ctx context.Context,
+	req CreateTxRequest) error {
+
+	args := m.Called(ctx, req)
+
+	return args.Error(0)
+}
+
 // InsertCredits implements CreateTxOps.
 func (m *mockCreateTxOps) InsertCredits(ctx context.Context,
 	req CreateTxRequest, txID int64) error {

@@ -294,6 +294,36 @@ func (o *createTxOps) InsertInputs(ctx context.Context,
 	return nil
 }
 
+// ValidateInputs rejects invalid known parents for unconfirmed transactions
+// and a competing confirmed spender for every transaction. A confirming block
+// can restore retained history before its parent has been re-observed.
+// Recorded inputs identify competitors even before parent credit discovery.
+func (o *createTxOps) ValidateInputs(ctx context.Context,
+	req db.CreateTxRequest) error {
+
+	inp, err := o.qtx.GetTxInputValidity(
+		ctx, sqlc.GetTxInputValidityParams{
+			WalletID: int64(req.Params.WalletID),
+			TxHash:   req.TxHash[:],
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("check transaction input claims: %w", err)
+	}
+
+	// A real confirming block is authoritative for the target even if a
+	// previously invalid parent has not yet been observed in its new chain.
+	if req.Params.Block == nil && inp.HasInvalidParent {
+		return db.ErrTxInputInvalidParent
+	}
+
+	if inp.HasConfirmedConflict {
+		return db.ErrTxInputConflict
+	}
+
+	return nil
+}
+
 // InsertCredits stores any wallet-owned outputs created by the transaction.
 func (o *createTxOps) InsertCredits(ctx context.Context,
 	req db.CreateTxRequest, txID int64) error {
