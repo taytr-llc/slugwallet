@@ -1386,10 +1386,18 @@ func ApplyBatchTxWithOps(ctx context.Context, req CreateTxRequest,
 	return createTxWithExisting(ctx, req, existing, ops)
 }
 
-// validateUpdateTxParams checks that UpdateTx received at least one mutable
-// field and that any requested state transition satisfies the transaction table
-// invariants.
-func validateUpdateTxParams(params UpdateTxParams, isCoinbase bool) error {
+// validateUpdateTxParams loads the transaction before validating the label,
+// status and block, so coinbase checks use its stored metadata.
+func validateUpdateTxParams(ctx context.Context, params UpdateTxParams,
+	ops UpdateTxOps) error {
+
+	// Check the stored transaction and requested fields before preparing
+	// or writing either its status/block association or its label.
+	isCoinbase, err := ops.LoadIsCoinbase(ctx, params.WalletID, params.Txid)
+	if err != nil {
+		return fmt.Errorf("load update tx target: %w", err)
+	}
+
 	if params.Label == nil && params.State == nil {
 		return fmt.Errorf("%w: UpdateTx requires at least one field",
 			ErrInvalidParam)
@@ -1468,6 +1476,11 @@ type UpdateTxOps interface {
 	// params needed for the later row update.
 	PrepareState(ctx context.Context, state UpdateTxState) error
 
+	// CheckGraphState rejects terminal recovery or confirmation changes
+	// involving competing transactions; CreateTx and rollback own those flows.
+	CheckGraphState(ctx context.Context, walletID uint32,
+		txHash chainhash.Hash) error
+
 	// UpdateLabel applies one user-visible label patch.
 	UpdateLabel(ctx context.Context, walletID uint32, txHash chainhash.Hash,
 		label string) error
@@ -1487,12 +1500,7 @@ type UpdateTxOps interface {
 func UpdateTxWithOps(ctx context.Context, params UpdateTxParams,
 	ops UpdateTxOps) error {
 
-	isCoinbase, err := ops.LoadIsCoinbase(ctx, params.WalletID, params.Txid)
-	if err != nil {
-		return fmt.Errorf("load update tx target: %w", err)
-	}
-
-	err = validateUpdateTxParams(params, isCoinbase)
+	err := validateUpdateTxParams(ctx, params, ops)
 	if err != nil {
 		return err
 	}
@@ -1501,6 +1509,13 @@ func UpdateTxWithOps(ctx context.Context, params UpdateTxParams,
 		err = ops.PrepareState(ctx, *params.State)
 		if err != nil {
 			return fmt.Errorf("prepare tx state update: %w", err)
+		}
+
+		// Reject changes involving competing transactions before changing the
+		// label; the backend transaction keeps the check and writes atomic.
+		err = ops.CheckGraphState(ctx, params.WalletID, params.Txid)
+		if err != nil {
+			return fmt.Errorf("check tx graph state: %w", err)
 		}
 	}
 

@@ -473,10 +473,13 @@ type TxStore interface {
 	// immutable transaction facts such as the serialized transaction bytes,
 	// created credits, or spent-input edges.
 	//
-	// UpdateTx is row-local only. It may attach, replace, or clear confirming
-	// block metadata for one tx, but it must not perform branch invalidation.
-	// Callers must use CreateTx, InvalidateUnminedTx, or RollbackToBlock for
-	// graph-affecting lifecycle changes.
+	// UpdateTx changes only the requested transaction's metadata. Use
+	// CreateTx, InvalidateUnminedTx or RollbackToBlock when competing or
+	// dependent transactions also need their states changed.
+	// SQL stores return ErrInvalidParam before changing state or label if a
+	// status/block update targets a Replaced, Failed or Orphaned row, or
+	// changes confirmation for a transaction sharing an input with another
+	// recorded transaction.
 	UpdateTx(ctx context.Context, params UpdateTxParams) error
 
 	// ApplyTxBatch atomically records a batch of transaction records and an
