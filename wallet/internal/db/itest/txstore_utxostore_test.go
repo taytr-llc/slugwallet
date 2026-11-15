@@ -5027,6 +5027,65 @@ func TestApplyTxBatchExcludesNoChainSync(t *testing.T) {
 	require.Zero(t, detail.OwnedOutputs[0].Index)
 }
 
+// TestUpdateTxRejectsCompetingConfirmation checks that UpdateTx refuses to
+// confirm a transaction with a competing input claimant and preserves its
+// original label and state when the request is refused.
+func TestUpdateTxRejectsCompetingConfirmation(t *testing.T) {
+	t.Parallel()
+
+	// Arrange: Two pending transactions share an external input. Their facts
+	// precede credit discovery, so input facts identify the conflict.
+	store := NewTestStore(t)
+	walletID := newWallet(t, store, "state-claim-guard")
+	input := randomOutPoint()
+	a := newRegularTx(
+		[]wire.OutPoint{input}, []*wire.TxOut{
+			{Value: 6000, PkScript: []byte{0x51}},
+		},
+	)
+	b := a.Copy()
+	b.TxOut[0].Value = 5000
+
+	for _, tx := range []*wire.MsgTx{a, b} {
+		require.NoError(
+			t, store.CreateTx(
+				t.Context(), db.CreateTxParams{
+					WalletID: walletID, Tx: tx, Received: time.Unix(1, 0),
+					Status: db.TxStatusPending, Label: "original",
+				},
+			),
+		)
+	}
+
+	block := CreateBlockFixture(t, store.Queries(), 220)
+	label := "changed"
+
+	// Act: Try to confirm B and change its label through UpdateTx rather
+	// than CreateTx, which also updates competing transactions.
+	err := store.UpdateTx(
+		t.Context(), db.UpdateTxParams{
+			WalletID: walletID, Txid: b.TxHash(), Label: &label,
+			State: &db.UpdateTxState{
+				Block:  &block,
+				Status: db.TxStatusPublished,
+			},
+		},
+	)
+
+	// Assert: Refusing this confirmation preserves the stored label and state;
+	// CreateTx must handle confirmation together with competing transactions.
+	require.ErrorIs(t, err, db.ErrInvalidParam)
+	info, err := store.GetTx(
+		t.Context(), db.GetTxQuery{
+			WalletID: walletID, Txid: b.TxHash(),
+		},
+	)
+	require.NoError(t, err)
+	require.Equal(t, "original", info.Label)
+	require.Equal(t, db.TxStatusPending, info.Status)
+	require.Nil(t, info.Block)
+}
+
 // TestUtxosExposeContingentChange verifies alternative change and descendants
 // remain discoverable with derived conflict metadata on point and list reads.
 func TestUtxosExposeContingentChange(t *testing.T) {
