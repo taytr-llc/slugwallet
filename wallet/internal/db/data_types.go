@@ -1478,6 +1478,17 @@ type UtxoInfo struct {
 	// pre-computed flag lets the wallet skip a per-row lease lookup.
 	IsLocked bool
 
+	// HasConflictingTx reports that this output's creator or an unconfirmed
+	// ancestor shares an input with another eligible unconfirmed transaction
+	// known to the wallet. The output itself can still be unspent.
+	// SQL computes this from retained inputs and current transaction state;
+	// it is not a mempool check and does not include the competing txid.
+	// Safe totals and automatic selection exclude it; explicit selection can
+	// use one compatible branch. Confirmation or removal can clear the flag.
+	// Totals omit all known competing branches and can understate funds;
+	// owning the alternatives does not guarantee that either will confirm.
+	HasConflictingTx bool
+
 	// KeyScope is the BIP-43 key scope (purpose + coin type) of the
 	// account that owns this UTXO, sourced from key_scopes. Callers use it
 	// instead of deriving a scope from AddrType, which is lossy (a P2WPKH

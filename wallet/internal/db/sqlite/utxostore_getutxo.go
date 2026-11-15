@@ -102,6 +102,8 @@ func utxoInfoFromGetRow(row sqlc.GetUtxoByOutpointRow) (*db.UtxoInfo,
 	utxo.AddrType = addrType
 	utxo.HasScript = row.HasScript
 	utxo.IsLocked = row.IsLocked != 0
+	// Conflict metadata describes branch compatibility, not custody or leasing.
+	utxo.HasConflictingTx = row.HasConflictingTx
 
 	utxo.Spendable = shape.SpendabilityOverride()
 

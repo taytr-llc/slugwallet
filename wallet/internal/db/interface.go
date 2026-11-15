@@ -572,7 +572,9 @@ type TxStore interface {
 type UTXOStore interface {
 	// GetUtxo retrieves a single unspent transaction output (UTXO) by its
 	// outpoint. It returns a UtxoInfo struct containing the UTXO's details
-	// or an error if the UTXO is not found or has been spent.
+	// or an error if the UTXO is not found or has an eligible spending claim.
+	// Outputs on competing branches remain available with HasConflictingTx
+	// metadata, so explicit selection can choose one compatible branch.
 	//
 	// GetUtxo treats outputs created by unmined `pending` and `published`
 	// transactions as present in the wallet's UTXO set.
@@ -582,11 +584,9 @@ type UTXOStore interface {
 	// that match the provided query parameters. This can be used to list
 	// all UTXOs or filter them by account or confirmation status.
 	//
-	// ListUTXOs includes outputs from unmined `pending` and `published`
-	// parent transactions.
-	// Spendability policy such as coinbase maturity, lease state, or whether
-	// a caller wants to exclude TxStatusPending parents belongs in higher-level
-	// selection logic.
+	// SQL backends list only published creators; GetUtxo and CreateTx retain
+	// pending credits for explicit chaining. Native KVDB follows its own
+	// visibility policy. Coinbase maturity and leases remain selection policy.
 	ListUTXOs(ctx context.Context, query ListUtxosQuery) ([]UtxoInfo, error)
 
 	// LeaseOutput locks a specific UTXO for a given duration, preventing
