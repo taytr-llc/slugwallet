@@ -148,10 +148,26 @@ confirmed conflict or explicit deletion. General GC is deferred.
 
 *Additional invariant: Coinbase transactions cannot exist in the mempool. A coinbase transaction is either confirmed (`BlockHeight IS NOT NULL` and `Status = 1`, `published`) or orphaned (`Status = 4`, `orphaned`, and `BlockHeight IS NULL`).*
 
-Factual-balance note: the SQL Store layer treats both `pending` and
-`published` parent transactions as part of the current live UTXO set. More
-conservative spendability policy (for example, excluding `pending` parents) is
-applied by higher-level callers on top of that factual base.
+SQL discovery lists credits created by `published` transactions. Local
+`pending` credits remain stored and accessible through point lookup and
+explicit transaction creation, while their inputs continue reserving funding.
+Account/default automatic selection uses the published listing; explicit
+outpoint selection can use pending credits for advanced chaining.
+
+Factual account and `Balance` reads retain eligible pending credits. SQL
+`ListAddresses` balances instead aggregate listed, non-contingent credits, so
+the two projections can differ before publication. Native KVDB keeps its own
+listing policy. `published` remains tracking state, not mempool acceptance.
+
+SQL `HasConflictingTx` means the credit's creator or an unconfirmed ancestor
+shares an input with another eligible unconfirmed transaction known to the
+wallet. It is computed from retained facts and current state, not stored or
+checked against a mempool. Listed outputs can carry it, but safe totals and
+automatic selection exclude them; explicit inputs can choose one compatible
+branch. Confirmation or removal can clear it, while reorgs or new competing
+observations can restore it. It provides no competing transaction ID. Safe totals
+omit all known competing branches and can understate funds. Owning competing
+alternatives does not guarantee that either one will confirm.
 
 *Note: There is no "Abandoned" state. A broadcast transaction cannot be safely abandoned; it can only be invalidated by double-spending its inputs.*
 
