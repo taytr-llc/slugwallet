@@ -16,15 +16,13 @@ import (
 	"github.com/btcsuite/btcwallet/wallet/internal/sql/sqlite/sqlc"
 )
 
-// CreateTx atomically records a wallet-scoped transaction row, its wallet-owned
-// credits, immutable input facts, and any current spend edges.
+// CreateTx records a wallet transaction, its owned credits and input facts.
+// Confirming it also marks unconfirmed competing transactions Replaced and
+// their dependent transactions Failed, in the same database write.
 //
-// The full write runs inside the shared write helper so the transaction row,
-// created UTXOs, spent-parent markers, and any required invalidation are
-// either committed together or not at all. Received timestamps are normalized
-// to UTC before Insert. When the wallet already stores the same unmined
-// transaction hash, CreateTx may promote that existing row to confirmed state
-// instead of inserting a duplicate.
+// The shared write commits all changes or none. Received times are normalized
+// to UTC. A current block can confirm retained Replaced/Failed history using
+// its existing row and credits; an unconfirmed observation cannot revive it.
 func (s *Store) CreateTx(ctx context.Context,
 	params db.CreateTxParams) error {
 
@@ -163,26 +161,34 @@ func (o *createTxOps) PrepareBlock(ctx context.Context,
 	return nil
 }
 
-// ListConflictTxns returns the direct conflict root IDs plus the matching tx
-// hashes used for descendant discovery.
+// ListConflictTxns returns unconfirmed transactions sharing inputs with req.
+// Parent credits need not be known; the hashes allow descendants to be found.
 func (o *createTxOps) ListConflictTxns(ctx context.Context,
 	req db.CreateTxRequest) ([]int64, []chainhash.Hash, error) {
 
-	rootIDs, err := collectConflictRootIDs(ctx, o.qtx, req)
+	rows, err := o.qtx.ListConflictingTransactions(
+		ctx, sqlc.ListConflictingTransactionsParams{
+			WalletID: int64(req.Params.WalletID), TxHash: req.TxHash[:],
+		},
+	)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("list input conflicts: %w", err)
 	}
 
-	if len(rootIDs) == 0 {
-		return nil, nil, nil
+	ids := make([]int64, 0, len(rows))
+	hashes := make([]chainhash.Hash, 0, len(rows))
+
+	for _, row := range rows {
+		hash, err := chainhash.NewHash(row.TxHash)
+		if err != nil {
+			return nil, nil, fmt.Errorf("tx hash: %w", err)
+		}
+
+		ids = append(ids, row.ID)
+		hashes = append(hashes, *hash)
 	}
 
-	rows, err := o.qtx.ListUnminedTransactions(ctx, int64(req.Params.WalletID))
-	if err != nil {
-		return nil, nil, fmt.Errorf("list unmined txns: %w", err)
-	}
-
-	return buildConflictRoots(rows, rootIDs)
+	return ids, hashes, nil
 }
 
 // collectConflictRootIDs returns the active unmined spender row
@@ -457,11 +463,6 @@ func insertCredits(ctx context.Context, ops *createTxOps,
 		if err != nil {
 			return err
 		}
-	}
-
-	err := markExistingChildSpends(ctx, ops, params, txID)
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -891,8 +892,8 @@ func creditExists(ctx context.Context, qtx *sqlc.Queries,
 	walletID uint32, txHash chainhash.Hash, outputIndex uint32) (bool, []byte,
 	error) {
 
-	row, err := qtx.GetUtxoSpendByOutpoint(
-		ctx, sqlc.GetUtxoSpendByOutpointParams{
+	row, err := qtx.GetWalletCreditByOutpoint(
+		ctx, sqlc.GetWalletCreditByOutpointParams{
 			WalletID:    int64(walletID),
 			TxHash:      txHash[:],
 			OutputIndex: int64(outputIndex),
@@ -907,7 +908,7 @@ func creditExists(ctx context.Context, qtx *sqlc.Queries,
 			outputIndex, err)
 	}
 
-	return true, row.ScriptPubKey, nil
+	return true, row, nil
 }
 
 // markInputsSpent attaches wallet-owned outpoints spent by the stored

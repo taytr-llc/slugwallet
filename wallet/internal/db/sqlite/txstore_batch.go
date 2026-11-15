@@ -40,11 +40,8 @@ func (s *Store) ApplyTxBatch(ctx context.Context,
 			return err
 		}
 
-		// Record any in-batch parent before its children. Each tx claims
-		// its spent parent inputs by updating the parent credit's UTXO row,
-		// so a child applied before its in-batch parent would update no row
-		// and silently drop the spend edge. Sorting parents first makes the
-		// batch order-independent; an already parents-first or
+		// Make in-batch parents available to each child's input validation,
+		// regardless of caller order. An already parents-first or
 		// dependency-free batch is returned unchanged.
 		txs := db.SortTxBatchParentsFirst(params.Transactions)
 
@@ -247,17 +244,11 @@ func promoteBatchDuplicate(ctx context.Context, qtx *sqlc.Queries,
 			db.ErrTxNotFound)
 	}
 
-	err = ops.InsertCredits(ctx, req, txID)
-	if err != nil {
-		return fmt.Errorf("record promoted duplicate tx credits: %w", err)
-	}
+	// An empty incoming label keeps the stored label during shared replay;
+	// promotion must not erase it even when the echo supplies another label.
+	req.Params.Label = ""
 
-	err = ops.MarkInputsSpent(ctx, req, txID)
-	if err != nil {
-		return fmt.Errorf("record promoted duplicate tx spends: %w", err)
-	}
-
-	return nil
+	return db.ApplyBatchTxWithOps(ctx, req, ops)
 }
 
 // promotableBatchDuplicate returns the existing tx id when createErr is a
