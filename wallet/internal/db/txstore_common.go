@@ -981,14 +981,6 @@ func validateCreateTxCreditRequests(req CreateTxRequest) error {
 	return nil
 }
 
-// canIgnoreUnminedConfirmedDuplicate reports whether an unmined observation may
-// be ignored because the same transaction is already recorded as confirmed.
-func canIgnoreUnminedConfirmedDuplicate(req CreateTxRequest,
-	existing CreateTxExistingTarget) bool {
-
-	return req.Params.Block == nil && existing.HasBlock
-}
-
 // CanPromoteUnminedCreateTxDuplicate reports whether an unmined duplicate
 // observation may promote an existing pending row to published. The caller must
 // preserve the existing row label while applying this transition.
@@ -1117,48 +1109,6 @@ func handleTxConflicts(ctx context.Context, req CreateTxRequest,
 	}
 
 	return handleTxDescendants(ctx, walletID, descendantIDs, ops)
-}
-
-// ReplaceUnminedTxConflicts rewrites direct unmined conflict roots displaced by
-// the provided replacement transaction.
-//
-// Callers use this when the direct conflict roots were discovered outside the
-// normal spend-edge lookup path, such as when a parent credit is learned after
-// its children have already been stored as external-input spends. The function
-// preserves the standard replacement ordering: discover descendants from a
-// stable graph snapshot, mark direct roots replaced, then mark dependent
-// descendants failed.
-func ReplaceUnminedTxConflicts(ctx context.Context, walletID int64,
-	rootIDs []int64, rootHashes []chainhash.Hash, replacementTxID int64,
-	ops CreateTxOps) error {
-
-	if len(rootIDs) == 0 {
-		return nil
-	}
-
-	if len(rootIDs) != len(rootHashes) {
-		return fmt.Errorf("%w: conflict roots and hashes differ",
-			ErrInvalidParam)
-	}
-
-	descendantIDs, err := collectConflictDescendants(
-		ctx, walletID, rootHashes, rootIDs, ops,
-	)
-	if err != nil {
-		return err
-	}
-
-	err = handleRootTxns(ctx, walletID, rootIDs, replacementTxID, ops)
-	if err != nil {
-		return err
-	}
-
-	err = handleTxDescendants(ctx, walletID, descendantIDs, ops)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // insertCreateTx inserts the transaction before recording its inputs and
