@@ -501,6 +501,12 @@ func (m *Manager) mainLoop() {
 		case req := <-m.requestChan:
 			chainErr = m.handleCreateWalletReq(req)
 
+		case event := <-m.recoveryRequests:
+			// Settle retained fork evidence on the same owner as native input.
+			chainErr = m.handleRollbackEvent(
+				m.lifetimeCtx, chain.BlockDisconnected(event), queuedRecovery,
+			)
+
 		case event, ok := <-m.chainEvents:
 			if !ok {
 				chainErr = errors.New(
@@ -539,7 +545,7 @@ func (m *Manager) dispatchChainEvent(ctx context.Context, n any) error {
 	// Settle their earlier writes and rewind Store once before the next
 	// source event; independent Wallet delivery cannot order that rewind.
 	if disconnect, ok := n.(chain.BlockDisconnected); ok {
-		return m.handleRollbackEvent(ctx, disconnect)
+		return m.handleRollbackEvent(ctx, disconnect, nativeDisconnect)
 	}
 
 	wallets := m.chainRecipients()
@@ -579,11 +585,22 @@ func (m *Manager) prepareWalletsForRollback(ctx context.Context,
 	return nil
 }
 
+// rollbackOrigin distinguishes authoritative native input from queued evidence
+// that may have become obsolete while another recovery replaced shared history.
+type rollbackOrigin uint8
+
+const (
+	// nativeDisconnect carries the source's ordered rollback decision.
+	nativeDisconnect rollbackOrigin = iota
+	// queuedRecovery checks stored evidence after writers pause.
+	queuedRecovery
+)
+
 // handleRollbackEvent settles published writers around one backend rollback.
 // Success releases workers and lets the source reader dispatch its next event.
 // A rollback error stops every Wallet before any worker can write again.
 func (m *Manager) handleRollbackEvent(ctx context.Context,
-	event chain.BlockDisconnected) error {
+	event chain.BlockDisconnected, origin rollbackOrigin) error {
 
 	// Preserve hash and time as well as height for storage that needs to
 	// distinguish a stale disconnect from a replacement at the same height.
@@ -604,6 +621,27 @@ func (m *Manager) handleRollbackEvent(ctx context.Context,
 		return fmt.Errorf("wait for rollback writers: %w", err)
 	}
 
+	// Native disconnects are authoritative. Queued evidence must still
+	// identify committed history after all earlier writers have paused.
+	if origin == queuedRecovery {
+		needed, err := m.recoveryStillNeeded(ctx, *block)
+		if err != nil {
+			// A failed read cannot authorize rewind. Resume writers so the
+			// detecting worker can reread history on its existing retry.
+			log.Warnf("Unable to check recovery hint: %v", err)
+			close(rollbackDone)
+
+			return nil
+		}
+
+		if !needed {
+			// Replacement history makes the hint obsolete, not the workers.
+			close(rollbackDone)
+
+			return nil
+		}
+	}
+
 	// Accepted persistence settles even if its caller or Stop cancels.
 	// The owner keeps Store open until this one rollback completes.
 	err = m.backend.rollbackToBlock(context.WithoutCancel(ctx), *block)
@@ -620,6 +658,23 @@ func (m *Manager) handleRollbackEvent(ctx context.Context,
 	close(rollbackDone)
 
 	return nil
+}
+
+// recoveryStillNeeded checks queued evidence against the shared stored branch.
+// The backend reads its own Store after all published writers have paused.
+func (m *Manager) recoveryStillNeeded(ctx context.Context,
+	block db.Block) (bool, error) {
+
+	stored, err := m.backend.syncedBlock(ctx, block.Height)
+	if errors.Is(err, db.ErrBlockNotFound) {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, fmt.Errorf("read recovery history: %w", err)
+	}
+
+	return stored.Hash == block.Hash, nil
 }
 
 // validateManagedWalletName rejects an absent durable identity before cache,

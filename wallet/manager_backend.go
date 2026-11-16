@@ -27,6 +27,10 @@ type managerBackend interface {
 	create(ctx context.Context, params CreateWalletParams,
 		rootKey *hdkeychain.ExtendedKey) (*walletData, error)
 
+	// syncedBlock reads shared history at one height after writers pause.
+	// Missing history returns db.ErrBlockNotFound; other read errors propagate.
+	syncedBlock(ctx context.Context, height uint32) (db.Block, error)
+
 	// rollbackToBlock removes history starting at the disconnected block.
 	// Manager owns the operation and keeps Wallet workers ready for rollback.
 	// Retain the block identity so storage can distinguish same-height forks.

@@ -1299,6 +1299,17 @@ type managerBackendMock struct {
 // managerBackendMock implements managerBackend.
 var _ managerBackend = (*managerBackendMock)(nil)
 
+// syncedBlock delegates to the arranged backend lookup so recovery policy
+// tests exercise its owned Store instead of hiding the query in a stub.
+func (b *managerBackendMock) syncedBlock(ctx context.Context,
+	height uint32) (db.Block, error) {
+
+	args := b.Called(ctx, height)
+	read, _ := args.Get(0).(func(context.Context, uint32) (db.Block, error))
+
+	return read(ctx, height)
+}
+
 // listWallets returns the durable data configured by the current test.
 func (b *managerBackendMock) listWallets(
 	ctx context.Context) ([]*walletData, error) {
