@@ -66,8 +66,9 @@ type Server struct {
 	authsha   [sha256.Size]byte
 	upgrader  websocket.Upgrader
 
-	maxPostClients      int64 // Max concurrent HTTP POST clients.
-	maxWebsocketClients int64 // Max concurrent websocket clients.
+	maxPostClients      int64               // Max concurrent HTTP POST clients.
+	maxWebsocketClients int64               // Max concurrent websocket clients.
+	allowedMethods      map[string]struct{} // Nil means legacy unrestricted mode.
 
 	wg      sync.WaitGroup
 	quit    chan struct{}
@@ -110,9 +111,25 @@ func NewServer(opts *Options, walletLoader *wallet.Loader, listeners []net.Liste
 		quit:                make(chan struct{}),
 		requestShutdownChan: make(chan struct{}, 1),
 	}
+	if opts.AllowedMethods != nil {
+		server.allowedMethods = make(map[string]struct{}, len(opts.AllowedMethods))
+		for _, method := range opts.AllowedMethods {
+			server.allowedMethods[method] = struct{}{}
+		}
+	}
 
 	serveMux.Handle("/", throttledFn(opts.MaxPOSTClients,
 		func(w http.ResponseWriter, r *http.Request) {
+			if !server.beginRequest() {
+				http.Error(w, "RPC server stopped", http.StatusServiceUnavailable)
+				return
+			}
+			defer server.wg.Done()
+			if server.allowedMethods != nil && (r.Method != http.MethodPost ||
+				r.URL.Path != "/" || r.URL.RawQuery != "" || r.Header.Get("Origin") != "") {
+				http.Error(w, "Invalid RPC transport request", http.StatusBadRequest)
+				return
+			}
 			w.Header().Set("Connection", "close")
 			w.Header().Set("Content-Type", "application/json")
 			r.Close = true
@@ -122,13 +139,16 @@ func NewServer(opts *Options, walletLoader *wallet.Loader, listeners []net.Liste
 				jsonAuthFail(w)
 				return
 			}
-			server.wg.Add(1)
 			server.postClientRPC(w, r)
-			server.wg.Done()
 		}))
 
 	serveMux.Handle("/ws", throttledFn(opts.MaxWebsocketClients,
 		func(w http.ResponseWriter, r *http.Request) {
+			if !server.beginRequest() {
+				http.Error(w, "RPC server stopped", http.StatusServiceUnavailable)
+				return
+			}
+			defer server.wg.Done()
 			authenticated := false
 			switch server.checkAuthHeader(r) {
 			case nil:
@@ -212,6 +232,10 @@ func (s *Server) Stop() {
 		return
 	default:
 	}
+	// Closing listeners alone leaves already accepted HTTP connections alive.
+	// Close those connections before draining wallet operations and unloading
+	// their database. beginRequest serializes admission with this shutdown.
+	_ = s.httpServer.Close()
 
 	// Stop the connected wallet and chain server, if any.
 	s.handlerMu.Lock()
@@ -228,7 +252,7 @@ func (s *Server) Stop() {
 	// Stop all the listeners.
 	for _, listener := range s.listeners {
 		err := listener.Close()
-		if err != nil {
+		if err != nil && !errors.Is(err, net.ErrClosed) {
 			log.Errorf("Cannot close listener `%s`: %v",
 				listener.Addr(), err)
 		}
@@ -251,6 +275,21 @@ func (s *Server) Stop() {
 	s.wg.Wait()
 }
 
+// beginRequest prevents a late HTTP request or WebSocket upgrade from adding
+// work after Stop has drained the server. The serving goroutine holds an
+// existing wait-group reference during normal operation.
+func (s *Server) beginRequest() bool {
+	s.quitMtx.Lock()
+	defer s.quitMtx.Unlock()
+	select {
+	case <-s.quit:
+		return false
+	default:
+		s.wg.Add(1)
+		return true
+	}
+}
+
 // SetChainServer sets the chain server client component needed to run a fully
 // functional bitcoin wallet RPC server.  This can be called to enable RPC
 // passthrough even before a loaded wallet is set, but the wallet's RPC client
@@ -269,6 +308,11 @@ func (s *Server) SetChainServer(chainClient chain.Interface) {
 // method.  Each of these must be checked beforehand (the method is already
 // known) and handled accordingly.
 func (s *Server) handlerClosure(request *btcjson.Request) lazyHandler {
+	if !s.methodAllowed(request.Method) {
+		return func() (interface{}, *btcjson.RPCError) {
+			return nil, btcjson.ErrRPCMethodNotFound
+		}
+	}
 	s.handlerMu.Lock()
 	// With the lock held, make copies of these pointers for the closure.
 	wallet := s.wallet
@@ -280,6 +324,14 @@ func (s *Server) handlerClosure(request *btcjson.Request) lazyHandler {
 	s.handlerMu.Unlock()
 
 	return lazyApplyHandler(request, wallet, chainClient)
+}
+
+func (s *Server) methodAllowed(method string) bool {
+	if s.allowedMethods == nil {
+		return true
+	}
+	_, ok := s.allowedMethods[method]
+	return ok
 }
 
 // ErrNoAuth represents an error where authentication could not succeed
@@ -409,6 +461,18 @@ out:
 				}
 				err = wsc.send(mresp)
 				if err != nil {
+					break out
+				}
+				continue
+			}
+
+			if !s.methodAllowed(req.Method) {
+				if !wsc.authenticated {
+					break out
+				}
+				response, err := btcjson.MarshalResponse(btcjson.RpcVersion1,
+					req.ID, nil, btcjson.ErrRPCMethodNotFound)
+				if err != nil || wsc.send(response) != nil {
 					break out
 				}
 				continue
@@ -586,11 +650,13 @@ func (s *Server) postClientRPC(w http.ResponseWriter, r *http.Request) {
 	var res interface{}
 	var jsonErr *btcjson.RPCError
 	var stop bool
-	switch req.Method {
-	case "authenticate":
+	switch {
+	case !s.methodAllowed(req.Method):
+		jsonErr = btcjson.ErrRPCMethodNotFound
+	case req.Method == "authenticate":
 		// Drop it.
 		return
-	case "stop":
+	case req.Method == "stop":
 		stop = true
 		res = "btcwallet stopping"
 	default:

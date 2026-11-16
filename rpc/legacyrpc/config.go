@@ -11,4 +11,11 @@ type Options struct {
 
 	MaxPOSTClients      int64
 	MaxWebsocketClients int64
+
+	// AllowedMethods is an opt-in, exact, case-sensitive method allowlist.
+	// Nil preserves the legacy server behavior; a non-nil empty slice denies
+	// every method. NewServer takes an immutable copy. Restricted HTTP requests
+	// must be POSTs to / without a query or Origin header. WebSocket users must
+	// also allow authenticate if they do not authenticate at the HTTP upgrade.
+	AllowedMethods []string
 }

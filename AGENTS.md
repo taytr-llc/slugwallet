@@ -61,3 +61,17 @@ remain separate decisions.
 - Keep wallet RPC private. Do not expose credentials through the gym webview,
   deploy a wallet service to Railway, connect fixtures to the seed or transfer
   real funds as part of this foundation.
+
+## Desktop wallet pilot (set 26)
+
+- The Go desktop shell owns a private loopback wallet RPC listener. Ordinary
+  addresses, balances and history use that RPC; retained recovery and narrowly
+  scoped gym signing remain in-process. Never add secret RPC methods to its
+  explicit allowlist or expose a generic RPC console through the webview.
+- `AllowedMethods` is immutable after server creation; nil means legacy default
+  and an explicitly empty list denies every method. Enforcement must precede
+  special shutdown and chain passthrough on every transport. Shutdown drains
+  admitted requests before the owner unloads wallet storage.
+- The desktop uses only the independently published zero256 fixture, with a
+  separate LocalWalletPilot data directory. No real entropy, normal-login
+  provider, real custody or public wallet service is authorized by this slice.

@@ -2,7 +2,7 @@
 
 SLUG wallet foundation, forked from btcsuite/btcwallet **v0.18.1** at
 `43f2950d2a065a7b3d4a4a1cf17ed1e84af6bcb4`. The implementation lives on
-`slug-phase-a-activation` for set 25 (recovery: `slug-wallet-recovery`); the
+`slug-desktop-wallet` for set 26 (activation: `slug-phase-a-activation`); the
 fork's upstream-tracking `master` is not this release. Upstream source and license history are preserved.
 
 This fork provides a full-node wallet backend and an explicitly public-fixture
@@ -18,7 +18,7 @@ Use Go 1.27.4 and sibling checkouts:
 ```text
 slug/
   slug/        # reviewed paired chain revision, including ConnectContext
-  slugwallet/  # slug-phase-a-activation
+  slugwallet/  # slug-desktop-wallet
 ```
 
 The wallet's `go.work` covers its six runtime modules and the ten SLUG modules.
@@ -192,3 +192,17 @@ No production custody, arbitrary-wallet recovery or fighter transfer is claimed.
 The [set 23 notes](CHANGESET_23_NOTES.md) preserve the foundation's historical
 scope and verification evidence.
 SLUG wallet retains the ISC license in [LICENSE](LICENSE).
+
+## Restricted embedded RPC for the desktop pilot
+
+Embedders may set `legacyrpc.Options.AllowedMethods` to an explicit method list.
+The server copies the list; nil preserves legacy behavior and a non-nil empty
+list denies every method. Enforcement covers HTTP and WebSocket dispatch,
+including `stop` and node passthrough. Restricted HTTP requires POST `/` without
+query strings or an Origin header. Set `MaxWebsocketClients` to zero to disable
+WebSockets. Authentication and the existing request/concurrency limits still
+apply; an allowlist is not a substitute for a private listener.
+
+The local desktop fixture uses only public address/balance/history methods over
+its owned loopback listener. Private recovery and gym signing stay in-process.
+See [set 26 notes](CHANGESET_26_NOTES.md); this does not enable real custody.
