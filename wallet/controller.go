@@ -266,6 +266,12 @@ func (w *Wallet) runSyncLoop() {
 			w.lifetimeCtx, startTime, backoff, time.After,
 		)
 		if err != nil {
+			// The wait reports unsafe observations before their effects can
+			// be discarded by another attempt; cancellation just ends work.
+			if errors.Is(err, db.ErrIndeterminateCommit) {
+				w.reportFailure(err)
+			}
+
 			return
 		}
 	}
@@ -304,8 +310,16 @@ func (w *Wallet) waitForBackoff(ctx context.Context, startTime time.Time,
 		select {
 		case event := <-w.chainEventChan:
 			err := w.sync.processChainEventBeforeSync(ctx, event)
+			// Stop may interrupt a mailbox operation; release the blocking
+			// wait instead of continuing with a canceled service lifetime.
 			if ctx.Err() != nil {
 				return 0, ctx.Err()
+			}
+
+			// Propagate unknown effects immediately; logging and continuing
+			// here would lose the error before run can stop the owner.
+			if errors.Is(err, db.ErrIndeterminateCommit) {
+				return 0, err
 			}
 
 			if err != nil {
