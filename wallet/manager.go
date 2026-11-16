@@ -164,15 +164,16 @@ type Manager struct {
 	config ManagerConfig
 
 	// chainSyncer owns live routing for every Wallet served by this Manager.
-	chainSyncer chainRouter
+	chainSyncer *chainSyncer
 
 	// lifetimeCtx outlives construction and startup requests. Wallets keep
 	// their own lifetimes; canceling this one releases shared event delivery.
 	//nolint:containedctx // Manager owns and joins the shared reader lifetime.
 	lifetimeCtx context.Context
 
-	// cancel signals terminal reader shutdown before draining Wallet work.
-	cancel context.CancelFunc
+	// cancel wakes delivery and retains the first shutdown/failure cause.
+	// Wallet reporters signal it directly; the owner still performs disposal.
+	cancel context.CancelCauseFunc
 
 	// chainEvents borrows the already-started source's one native stream.
 	chainEvents <-chan any
@@ -247,7 +248,9 @@ func NewManager(ctx context.Context, cfg ManagerConfig) (*Manager, error) {
 	cfg.KVDBPubPassphrase = nil
 
 	// Runtime ownership is independent of the request that opened storage.
-	lifetimeCtx, cancel := context.WithCancel(context.Background())
+	// Retain unsafe writes as causes; ordinary Stop uses its domain error so
+	// a commit error wrapping context cancellation still triggers disposal.
+	lifetimeCtx, cancel := context.WithCancelCause(context.Background())
 
 	m := &Manager{
 		wallets:     make(map[string]*Wallet),
@@ -259,7 +262,9 @@ func NewManager(ctx context.Context, cfg ManagerConfig) (*Manager, error) {
 		cancel:      cancel,
 	}
 
-	m.chainSyncer = newChainSyncer(m.config.ChainSource, &m.config.ChainParams)
+	m.chainSyncer = newChainSyncer(
+		m.config.ChainSource, &m.config.ChainParams,
+	)
 
 	return m, nil
 }
@@ -279,7 +284,7 @@ func (m *Manager) startWallets(ctx context.Context) ([]*Wallet, error) {
 			return wallets, err
 		}
 
-		wallet := newManagedWallet(cfg, walletData, m.chainSyncer)
+		wallet := newManagedWallet(cfg, walletData, m.chainSyncer, m.cancel)
 		wallets = append(wallets, wallet)
 
 		err = wallet.start(ctx)
@@ -299,7 +304,7 @@ func (m *Manager) startWallets(ctx context.Context) ([]*Wallet, error) {
 // from failed Start/Create calls that are not in m.wallets.
 // The caller holds the lifecycle lock or has joined the loop; backend is open.
 func (m *Manager) stopWallets(wallets []*Wallet) error {
-	m.cancel()
+	m.cancel(ErrManagerStopped)
 
 	for _, wallet := range m.wallets {
 		wallets = append(wallets, wallet)
@@ -417,7 +422,7 @@ func (m *Manager) Stop() error {
 	// Cancel delivery before waiting for a running Start to register its
 	// goroutine or finish failed-start cleanup. The lock orders that work
 	// before the join and storage disposal below.
-	m.cancel()
+	m.cancel(ErrManagerStopped)
 	m.Lock()
 
 	if !m.started.CompareAndSwap(true, false) {
@@ -457,17 +462,15 @@ func (m *Manager) mainLoop() {
 
 	// Fatal exits need private cleanup: public Stop would self-join.
 	defer func() {
-		if chainErr == nil {
-			return
-		}
-
 		// Serialize Start's lifetime check and CAS with terminal cleanup.
 		m.Lock()
 		defer m.Unlock()
 
-		// Stop cancels before joining and owns disposal and its errors.
-		// Draining here would consume the errors its caller must receive.
-		if m.lifetimeCtx.Err() != nil {
+		// Failed Create already joins and clears storage. Otherwise Stop's
+		// first cancellation retains disposal and its close errors.
+		if m.backend == nil ||
+			errors.Is(context.Cause(m.lifetimeCtx), ErrManagerStopped) {
+
 			return
 		}
 
@@ -478,13 +481,12 @@ func (m *Manager) mainLoop() {
 	for {
 		select {
 		case <-m.lifetimeCtx.Done():
+			chainErr = context.Cause(m.lifetimeCtx)
+
 			return
 
 		case req := <-m.requestChan:
-			err := m.handleCreateWalletReq(req)
-			if err != nil {
-				return
-			}
+			chainErr = m.handleCreateWalletReq(req)
 
 		case event, ok := <-m.chainEvents:
 			if !ok {
@@ -495,11 +497,12 @@ func (m *Manager) mainLoop() {
 				return
 			}
 
+			// A failed rewind leaves writers paused until deferred cleanup.
 			chainErr = m.dispatchChainEvent(m.lifetimeCtx, event)
-			if chainErr != nil {
-				// Failed rewind can leave workers paused; exit to cleanup.
-				return
-			}
+		}
+
+		if chainErr != nil {
+			return
 		}
 	}
 }
@@ -582,9 +585,9 @@ func (m *Manager) handleRollbackEvent(ctx context.Context,
 
 	err = m.prepareWalletsForRollback(ctx, rollbackDone)
 	if err != nil {
-		// Only Stop's lifetime cancellation interrupts preparation. Leave
-		// completion held and cleanup to that waiting caller so it receives
-		// close errors; prepared workers exit through Wallet cancellation.
+		// Leave completion held; the first lifetime cause selects cleanup
+		// ownership. Public Stop retains its close errors, while an unsafe
+		// write is disposed by the loop before paused workers can resume.
 		return fmt.Errorf("wait for rollback writers: %w", err)
 	}
 
@@ -759,7 +762,7 @@ func (m *Manager) createWallet(ctx context.Context,
 		return nil, err
 	}
 
-	return newManagedWallet(walletCfg, data, m.chainSyncer), nil
+	return newManagedWallet(walletCfg, data, m.chainSyncer, m.cancel), nil
 }
 
 // validateInitialAccounts checks resolved scope and script ownership before

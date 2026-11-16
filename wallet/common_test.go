@@ -169,7 +169,7 @@ func testSQLManager(tb testing.TB, store *walletmock.Store) *Manager {
 	tb.Helper()
 
 	// Match the service lifetime; the existing Stop cleanup cancels and joins.
-	lifetimeCtx, cancel := context.WithCancel(context.Background())
+	lifetimeCtx, cancel := context.WithCancelCause(context.Background())
 	m := &Manager{
 		lifetimeCtx: lifetimeCtx,
 		cancel:      cancel,
@@ -187,7 +187,9 @@ func testSQLManager(tb testing.TB, store *walletmock.Store) *Manager {
 		},
 	}
 
-	m.chainSyncer = newChainSyncer(m.config.ChainSource, &m.config.ChainParams)
+	m.chainSyncer = newChainSyncer(
+		m.config.ChainSource, &m.config.ChainParams,
+	)
 	// This Store fixture has no native input; the owner serves Create.
 	m.started.Store(true)
 	m.wg.Go(m.mainLoop)
@@ -235,7 +237,7 @@ func stopManagerForTest(tb testing.TB, m *Manager) error {
 
 	// Joining canceled work gives this fixture exclusive resource ownership.
 	// A failed operation or explicit Stop may already have released storage.
-	m.cancel()
+	m.cancel(ErrManagerStopped)
 	m.wg.Wait()
 
 	if m.backend == nil {
@@ -332,7 +334,10 @@ func createTestWalletWithMocks(t *testing.T) (*Wallet, *mockWalletDeps) {
 		},
 	}
 	// Match managed assembly so every producer declares its routing interest.
-	w.chainSyncer = newChainSyncer(mockChain, &chainParams)
+	w.reportFailure = func(error) { cancel() }
+	w.chainSyncer = newChainSyncer(
+		mockChain, &chainParams,
+	)
 	w.chainEventChan = make(chan chainEvent, 1)
 	w.cache = newStoreRuntimeCache(mockStore)
 

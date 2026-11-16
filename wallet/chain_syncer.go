@@ -14,12 +14,9 @@ import (
 	"github.com/btcsuite/btcwallet/wtxmgr"
 )
 
-// chainRouter supplies live subscriptions and prepared events. Manager owns
-// native delivery and each Wallet owns transaction persistence.
+// chainRouter supplies Wallet watch registration. Manager uses the concrete
+// chainSyncer for matching and owns lifecycle and shared recovery separately.
 type chainRouter interface {
-	// routeChainEvent prepares matches for the current membership snapshot.
-	routeChainEvent(n any, wallets []*Wallet) map[uint32]chainEvent
-
 	// watchAddresses records recipients before native tip-based activation.
 	watchAddresses(ctx context.Context, id uint32,
 		addrs []address.Address) error
