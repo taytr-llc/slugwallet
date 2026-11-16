@@ -2856,117 +2856,86 @@ func TestControllerLock_StateError(t *testing.T) {
 	require.ErrorIs(t, err, ErrStateForbidden)
 }
 
-// TestWaitForBackoffStableRun verifies a stable sync run resets to the
-// Wallet-local retry policy instead of an independent controller constant.
-func TestWaitForBackoffStableRun(t *testing.T) {
+// TestSyncBackoffPolicy preserves the configured reset, exponential growth
+// and ceiling while sharing one immediate timer for the existing cases.
+func TestSyncBackoffPolicy(t *testing.T) {
 	t.Parallel()
 
-	// Arrange: Give a Wallet a distinctive Manager-owned retry interval and a
-	// timer seam that records the reset value while firing immediately.
-	retryInterval := 3 * time.Second
-	w := &Wallet{
-		lifetimeCtx: context.Background(),
-		cfg: Config{
-			WalletSyncRetryInterval: retryInterval,
+	// Arrange: Retain the three existing policies as data, with a distinctive
+	// configured interval to expose an accidental reset after a short run.
+	const retryInterval = 3 * time.Second
+
+	tests := []struct {
+		name      string
+		runAge    time.Duration
+		backoff   time.Duration
+		wantDelay time.Duration
+		wantNext  time.Duration
+	}{
+		{
+			name:      "stable reset",
+			runAge:    stableRunTime + time.Minute,
+			backoff:   maxBackoff,
+			wantDelay: retryInterval,
+			wantNext:  retryInterval * 2,
+		},
+		{
+			name:      "unstable growth",
+			backoff:   time.Second,
+			wantDelay: time.Second,
+			wantNext:  2 * time.Second,
+		},
+		{
+			name:      "maximum cap",
+			backoff:   maxBackoff,
+			wantDelay: maxBackoff,
+			wantNext:  maxBackoff,
 		},
 	}
-	startTime := time.Now().Add(-stableRunTime - time.Minute)
-	currentBackoff := maxBackoff
-	timerFn := func(d time.Duration) <-chan time.Time {
-		require.Equal(t, retryInterval, d)
 
-		c := make(chan time.Time, 1)
-		c <- time.Now()
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 
-		return c
+			w := &Wallet{
+				cfg: Config{
+					WalletSyncRetryInterval: retryInterval,
+				},
+			}
+			timerFn := func(d time.Duration) <-chan time.Time {
+				require.Equal(t, tc.wantDelay, d)
+
+				c := make(chan time.Time, 1)
+				c <- time.Now()
+
+				return c
+			}
+
+			// Act: Complete the real retry wait immediately, using the same
+			// scheduled-delay observation for each original policy.
+			nextBackoff, err := w.waitForBackoff(
+				t.Context(), time.Now().Add(-tc.runAge), tc.backoff, timerFn,
+			)
+
+			// Assert: Each policy keeps its original delay and next interval;
+			// cancellation is covered separately with an inert timer.
+			require.NoError(t, err)
+			require.Equal(t, tc.wantNext, nextBackoff)
+		})
 	}
-
-	// Act: Apply retry backoff after a run long enough to be stable.
-	nextBackoff, ok := w.waitForBackoff(startTime, currentBackoff, timerFn)
-
-	// Assert: Verify the configured interval was used and exponential growth
-	// continues from that Manager-owned reset point.
-	require.True(t, ok)
-	require.Equal(t, retryInterval*2, nextBackoff)
 }
 
-// TestWaitForBackoff_UnstableRun verifies that the backoff duration doubles
-// when the syncer fails quickly (unstable run).
-func TestWaitForBackoff_UnstableRun(t *testing.T) {
-	t.Parallel()
-
-	// Arrange: Create a wallet.
-	w := &Wallet{
-		lifetimeCtx: context.Background(),
-	}
-
-	// Mock a start time that is recent (unstable).
-	startTime := time.Now()
-	currentBackoff := time.Second
-
-	// Mock the timer function.
-	timerFn := func(d time.Duration) <-chan time.Time {
-		// Verify that the backoff was NOT reset.
-		require.Equal(t, currentBackoff, d)
-
-		c := make(chan time.Time, 1)
-		c <- time.Now()
-
-		return c
-	}
-
-	// Act: Wait for backoff.
-	nextBackoff, ok := w.waitForBackoff(startTime, currentBackoff, timerFn)
-
-	// Assert: Verify that the operation continued and backoff doubled.
-	require.True(t, ok)
-	require.Equal(t, currentBackoff*2, nextBackoff)
-}
-
-// TestWaitForBackoff_MaxBackoffCap verifies that the backoff duration is
-// capped at maxBackoff.
-func TestWaitForBackoff_MaxBackoffCap(t *testing.T) {
-	t.Parallel()
-
-	// Arrange: Create a wallet.
-	w := &Wallet{
-		lifetimeCtx: context.Background(),
-	}
-
-	startTime := time.Now()
-	// Current backoff is already high enough that doubling it would exceed
-	// maxBackoff.
-	currentBackoff := maxBackoff
-
-	timerFn := func(d time.Duration) <-chan time.Time {
-		require.Equal(t, currentBackoff, d)
-
-		c := make(chan time.Time, 1)
-		c <- time.Now()
-
-		return c
-	}
-
-	// Act: Wait for backoff.
-	nextBackoff, ok := w.waitForBackoff(startTime, currentBackoff, timerFn)
-
-	// Assert: Verify that the backoff is capped.
-	require.True(t, ok)
-	require.Equal(t, maxBackoff, nextBackoff)
-}
-
-// TestWaitForBackoff_Shutdown verifies that waitForBackoff returns early if
+// TestSyncBackoffShutdown verifies that waitForBackoff returns early if
 // the wallet is shutting down.
-func TestWaitForBackoff_Shutdown(t *testing.T) {
+func TestSyncBackoffShutdown(t *testing.T) {
 	t.Parallel()
 
-	// Arrange: Create a wallet with a canceled context.
+	// Arrange: Cancel the supplied lifetime before waiting, and keep the
+	// timer inert so cancellation is the only possible completion.
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	w := &Wallet{
-		lifetimeCtx: ctx,
-	}
+	w := &Wallet{}
 
 	startTime := time.Now()
 	currentBackoff := time.Second
@@ -2976,11 +2945,15 @@ func TestWaitForBackoff_Shutdown(t *testing.T) {
 		return make(chan time.Time)
 	}
 
-	// Act: Wait for backoff.
-	nextBackoff, ok := w.waitForBackoff(startTime, currentBackoff, timerFn)
+	// Act: Wait using the canceled lifetime rather than an implicit Wallet
+	// context, as required by the blocking helper's contract.
+	nextBackoff, err := w.waitForBackoff(
+		ctx, startTime, currentBackoff, timerFn,
+	)
 
-	// Assert: Verify that the operation was aborted.
-	require.False(t, ok)
+	// Assert: Cancellation returns its identity and no next retry interval;
+	// the caller must leave the worker instead of restarting it.
+	require.ErrorIs(t, err, context.Canceled)
 	require.Equal(t, time.Duration(0), nextBackoff)
 }
 
