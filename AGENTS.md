@@ -94,3 +94,19 @@ remain separate decisions.
 - A backup copy does not revoke hosted recovery authority. Do not describe it
   as exclusive migration. Login verification and wallet encryption are distinct;
   private-password rotation is tested without changing the retained identity.
+
+## Fixture recovery vault (set 29)
+
+- Keep recovery and gym-signing envelopes separate and bind both to the exact
+  retained authority/account/provision/root/gym tuple. Held enrollment/mining
+  opens only the gym envelope and returns typed signatures, never private keys.
+- Full-material provisioning requires fresh current authentication and no hold,
+  including before first enrollment. Interrupted work resumes the same durable
+  reservation. Provider I/O runs outside account/vault leases; publication uses
+  the original token/generation and exact envelope revision.
+- Recovery export and wrapping-key changes enforce D72 capabilities. No default
+  KMS secret, production wrapper, arbitrary decrypt/sign API or live key issuance.
+- The default fixture manifest is an immutable snapshot. Do not claim it tracks
+  later addresses or is a complete current production-wallet backup. Keep the
+  two public fixture allowlists and existing desktop defaults until subsequent
+  work explicitly changes them. See `RECOVERY_VAULT.md`.
