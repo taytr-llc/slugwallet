@@ -298,6 +298,7 @@ func TestManagerChainRollbackStopsOnError(t *testing.T) {
 			processor := newSyncer(
 				w.cfg, w.addrStore, w.txStore, w, w.store, w.id,
 				m.chainSyncer, events,
+				m.recoveryRequests,
 			)
 
 			processed := make(chan error, 1)
@@ -403,7 +404,7 @@ func TestManagerChainRollbackDuringInitializationRetry(t *testing.T) {
 		m := newManagerLifecycleTest(t, backend, source, DBBackendKVDB)
 		processor := newSyncer(
 			w.cfg, w.addrStore, w.txStore, w, w.store, w.id, w.chainSyncer,
-			w.chainEventChan,
+			w.chainEventChan, m.recoveryRequests,
 		)
 		w.sync = processor
 		w.state = newWalletState(processor)
@@ -1086,11 +1087,12 @@ func TestCreateWalletParamsPolicy(t *testing.T) {
 			// without closing the strictly untouched backend.
 			lifetimeCtx, cancel := context.WithCancelCause(context.Background())
 			m := &Manager{
-				lifetimeCtx: lifetimeCtx,
-				cancel:      cancel,
-				wallets:     make(map[string]*Wallet),
-				requestChan: make(chan createWalletReq),
-				backend:     backend,
+				lifetimeCtx:      lifetimeCtx,
+				cancel:           cancel,
+				wallets:          make(map[string]*Wallet),
+				requestChan:      make(chan createWalletReq),
+				recoveryRequests: make(chan chainRecoveryRequest, 1),
+				backend:          backend,
 				config: ManagerConfig{
 					ChainSource: &bwmock.Chain{},
 					ChainParams: chainParams,
@@ -1350,12 +1352,13 @@ func newManagerLifecycleTest(t *testing.T,
 	// Manager owns the service lifetime; fixture Stop joins before assertions.
 	lifetimeCtx, cancel := context.WithCancelCause(context.Background())
 	manager := &Manager{
-		lifetimeCtx: lifetimeCtx,
-		cancel:      cancel,
-		wallets:     make(map[string]*Wallet),
-		requestChan: make(chan createWalletReq),
-		chainEvents: source.Notifications(),
-		backend:     backend,
+		lifetimeCtx:      lifetimeCtx,
+		cancel:           cancel,
+		wallets:          make(map[string]*Wallet),
+		requestChan:      make(chan createWalletReq),
+		recoveryRequests: make(chan chainRecoveryRequest, 1),
+		chainEvents:      source.Notifications(),
+		backend:          backend,
 		config: ManagerConfig{
 			Backend:     kind,
 			ChainSource: source,

@@ -308,10 +308,14 @@ type syncer struct {
 	// observations while Wallet retains subscriber state and lifecycle.
 	txManager txManager
 
-	// chainSyncer owns subscriptions and prepares live matches for this
-	// processor; every maintained Wallet receives its Manager's instance.
+	// chainSyncer registers this processor's native watch interests.
+	// Prepared matches arrive through the Wallet-owned event inbox.
 	chainSyncer    chainRouter
 	chainEventChan <-chan chainEvent
+
+	// recoveryRequests is a send-only view of Manager's coalesced inbox.
+	// Reporting must not wait on this worker's own rollback acknowledgment.
+	recoveryRequests chan<- chainRecoveryRequest
 }
 
 // A compile-time assertion to ensure that syncer implements chainProcessor.
@@ -353,23 +357,26 @@ func (s *syncer) refreshLiveWatches(ctx context.Context) error {
 // newSyncer creates a new syncer instance. The Store and its wallet ID are
 // mandatory: every migrated runtime path reads and writes through the Store,
 // so there is no nil-store fallback. The notifier observes successful commits
-// without owning persistence or scan lifecycle. The Manager's required routing
-// owner and inbox supply prepared live events to this existing worker.
+// without owning persistence or scan lifecycle. Manager's watch capability and
+// the Wallet inbox supply subscriptions and prepared events. The send-only
+// recovery channel reports forks without waiting on this worker.
 func newSyncer(cfg Config, addrStore waddrmgr.AddrStore,
 	txStore wtxmgr.TxStore, txManager txManager, store db.Store,
 	walletID uint32, chainSyncer chainRouter,
-	events <-chan chainEvent) *syncer {
+	events <-chan chainEvent,
+	recoveryRequests chan<- chainRecoveryRequest) *syncer {
 
 	return &syncer{
-		cfg:            cfg,
-		addrStore:      addrStore,
-		txStore:        txStore,
-		scanReqChan:    make(chan *scanReq, 1),
-		txManager:      txManager,
-		store:          store,
-		walletID:       walletID,
-		chainSyncer:    chainSyncer,
-		chainEventChan: events,
+		cfg:              cfg,
+		addrStore:        addrStore,
+		txStore:          txStore,
+		scanReqChan:      make(chan *scanReq, 1),
+		txManager:        txManager,
+		store:            store,
+		walletID:         walletID,
+		chainSyncer:      chainSyncer,
+		chainEventChan:   events,
+		recoveryRequests: recoveryRequests,
 	}
 }
 

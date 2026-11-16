@@ -2187,7 +2187,7 @@ func TestControllerInfoSyncWorkerBackoff(t *testing.T) {
 		w, deps := createTestWalletWithMocks(t)
 		w.sync = newSyncer(
 			w.cfg, w.addrStore, w.txStore, w, w.store, w.id, w.chainSyncer,
-			w.chainEventChan,
+			w.chainEventChan, make(chan chainRecoveryRequest, 1),
 		)
 		w.state = newWalletState(w.sync)
 
@@ -2278,7 +2278,7 @@ func TestControllerTargetedScanFailureKeepsWorker(t *testing.T) {
 		w, deps := createTestWalletWithMocks(t)
 		s := newSyncer(
 			w.cfg, w.addrStore, w.txStore, w, w.store, w.id, w.chainSyncer,
-			w.chainEventChan,
+			w.chainEventChan, make(chan chainRecoveryRequest, 1),
 		)
 		w.sync = s
 		w.state = newWalletState(s)

@@ -8,7 +8,8 @@ import (
 // newManagedWallet constructs a Wallet from backend-validated storage data.
 // The backend remains the owner of every resource referenced by data.
 func newManagedWallet(cfg Config, data *walletData,
-	router chainRouter, reportFailure context.CancelCauseFunc) *Wallet {
+	router chainRouter, reportFailure context.CancelCauseFunc,
+	recoveryRequests chan<- chainRecoveryRequest) *Wallet {
 
 	lockTimer := time.NewTimer(0)
 	if !lockTimer.Stop() {
@@ -41,7 +42,8 @@ func newManagedWallet(cfg Config, data *walletData,
 	w.chainEventChan = make(chan chainEvent, 1)
 
 	processor := newSyncer(
-		cfg, w.addrStore, w.txStore, w, w.store, w.id, router, w.chainEventChan,
+		cfg, w.addrStore, w.txStore, w, w.store, w.id,
+		router, w.chainEventChan, recoveryRequests,
 	)
 	w.sync = processor
 	w.state = newWalletState(w.sync)

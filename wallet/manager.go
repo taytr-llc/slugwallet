@@ -175,6 +175,10 @@ type Manager struct {
 	// Wallet reporters signal it directly; the owner still performs disposal.
 	cancel context.CancelCauseFunc
 
+	// recoveryRequests retains one fork while the owner is busy. Producers
+	// receive only a send-only view and never wait for their own pause.
+	recoveryRequests chan chainRecoveryRequest
+
 	// chainEvents borrows the already-started source's one native stream.
 	chainEvents <-chan any
 
@@ -253,13 +257,14 @@ func NewManager(ctx context.Context, cfg ManagerConfig) (*Manager, error) {
 	lifetimeCtx, cancel := context.WithCancelCause(context.Background())
 
 	m := &Manager{
-		wallets:     make(map[string]*Wallet),
-		requestChan: make(chan createWalletReq),
-		chainEvents: cfg.ChainSource.Notifications(),
-		backend:     backend,
-		config:      cfg,
-		lifetimeCtx: lifetimeCtx,
-		cancel:      cancel,
+		wallets:          make(map[string]*Wallet),
+		requestChan:      make(chan createWalletReq),
+		chainEvents:      cfg.ChainSource.Notifications(),
+		backend:          backend,
+		config:           cfg,
+		lifetimeCtx:      lifetimeCtx,
+		cancel:           cancel,
+		recoveryRequests: make(chan chainRecoveryRequest, 1),
 	}
 
 	m.chainSyncer = newChainSyncer(
@@ -285,7 +290,7 @@ func (m *Manager) startWallets(ctx context.Context) ([]*Wallet, error) {
 		}
 
 		wallet := newManagedWallet(
-			cfg, walletData, m.chainSyncer, m.cancel,
+			cfg, walletData, m.chainSyncer, m.cancel, m.recoveryRequests,
 		)
 		wallets = append(wallets, wallet)
 
@@ -459,6 +464,9 @@ type createWalletResp struct {
 	wallet *Wallet
 	err    error
 }
+
+// chainRecoveryRequest identifies the first abandoned block for shared rewind.
+type chainRecoveryRequest chain.BlockDisconnected
 
 // mainLoop serializes creation, source delivery and shared rollback until the
 // lifetime is canceled. Normal Stop joins the owner before disposing resources.
@@ -770,7 +778,9 @@ func (m *Manager) createWallet(ctx context.Context,
 		return nil, err
 	}
 
-	return newManagedWallet(walletCfg, data, m.chainSyncer, m.cancel), nil
+	return newManagedWallet(
+		walletCfg, data, m.chainSyncer, m.cancel, m.recoveryRequests,
+	), nil
 }
 
 // validateInitialAccounts checks resolved scope and script ownership before

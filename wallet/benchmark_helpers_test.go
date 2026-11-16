@@ -325,13 +325,15 @@ func setupBenchmarkWallet(tb testing.TB,
 	}
 
 	w.reportFailure = func(error) { w.cancel() }
-	w.chainSyncer = newChainSyncer(w.cfg.Chain, w.cfg.ChainParams)
+	w.chainSyncer = newChainSyncer(
+		w.cfg.Chain, w.cfg.ChainParams,
+	)
 	w.chainEventChan = make(chan chainEvent, 1)
 
 	if w.sync == nil {
 		w.sync = newSyncer(
-			w.cfg, w.addrStore, w.txStore, w, w.store, w.id,
-			w.chainSyncer, w.chainEventChan,
+			w.cfg, w.addrStore, w.txStore, w, w.store, w.id, w.chainSyncer,
+			w.chainEventChan, make(chan chainRecoveryRequest, 1),
 		)
 	}
 

@@ -65,6 +65,7 @@ func newTestSyncer(cfg Config, addrStore waddrmgr.AddrStore,
 	return newSyncer(
 		cfg, addrStore, txStore, manager, store, walletID,
 		newChainSyncer(cfg.Chain, params), make(chan chainEvent, 1),
+		make(chan chainRecoveryRequest, 1),
 	)
 }
 
@@ -8047,12 +8048,13 @@ func TestLiveWatchTargetedCommitUncertainty(t *testing.T) {
 	)
 	notifications := make(chan any, 1)
 	manager := &Manager{
-		wallets:     map[string]*Wallet{w.cfg.Name: w},
-		backend:     backend,
-		lifetimeCtx: lifetimeCtx,
-		cancel:      cancel,
-		requestChan: make(chan createWalletReq),
-		chainEvents: notifications,
+		wallets:          map[string]*Wallet{w.cfg.Name: w},
+		backend:          backend,
+		lifetimeCtx:      lifetimeCtx,
+		cancel:           cancel,
+		requestChan:      make(chan createWalletReq),
+		recoveryRequests: make(chan chainRecoveryRequest, 1),
+		chainEvents:      notifications,
 	}
 	routing := newChainSyncer(deps.chain, &chainParams)
 	manager.chainSyncer = routing
@@ -8061,8 +8063,8 @@ func TestLiveWatchTargetedCommitUncertainty(t *testing.T) {
 	w.chainSyncer = routing
 	w.reportFailure = manager.cancel
 	s := newSyncer(
-		w.cfg, w.addrStore, w.txStore, w, deps.store, w.id,
-		routing, w.chainEventChan,
+		w.cfg, w.addrStore, w.txStore, w, deps.store, w.id, routing,
+		w.chainEventChan, manager.recoveryRequests,
 	)
 	w.sync = s
 	w.state = newWalletState(s)
@@ -8625,8 +8627,9 @@ func TestTxSubscriptionPostCommitRead(t *testing.T) {
 			// in both rows; fixture cleanup verifies each expectation once.
 			w, deps := createStartedWalletWithMocks(t)
 			s := newSyncer(
-				w.cfg, w.addrStore, w.txStore, w,
-				deps.store, w.id, w.chainSyncer, w.chainEventChan,
+				w.cfg, w.addrStore, w.txStore, w, deps.store, w.id,
+				w.chainSyncer,
+				w.chainEventChan, make(chan chainRecoveryRequest, 1),
 			)
 			events, _, err := w.SubscribeTxns(t.Context())
 			require.NoError(t, err)
@@ -8691,11 +8694,12 @@ func TestTxSubscriptionCommitFailure(t *testing.T) {
 		context.WithoutCancel(t.Context()),
 	)
 	manager := &Manager{
-		wallets:     map[string]*Wallet{w.cfg.Name: w},
-		backend:     backend,
-		lifetimeCtx: lifetimeCtx,
-		cancel:      cancel,
-		requestChan: make(chan createWalletReq),
+		wallets:          map[string]*Wallet{w.cfg.Name: w},
+		backend:          backend,
+		lifetimeCtx:      lifetimeCtx,
+		cancel:           cancel,
+		requestChan:      make(chan createWalletReq),
+		recoveryRequests: make(chan chainRecoveryRequest, 1),
 	}
 	routing := newChainSyncer(
 		deps.chain, &chainParams,
@@ -8706,8 +8710,8 @@ func TestTxSubscriptionCommitFailure(t *testing.T) {
 	w.chainSyncer = routing
 	w.reportFailure = manager.cancel
 	s := newSyncer(
-		w.cfg, w.addrStore, w.txStore, w, deps.store, w.id,
-		routing, w.chainEventChan,
+		w.cfg, w.addrStore, w.txStore, w, deps.store, w.id, routing,
+		w.chainEventChan, manager.recoveryRequests,
 	)
 	w.sync = s
 	w.state = newWalletState(s)
