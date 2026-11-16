@@ -1,8 +1,8 @@
-name: SLUG wallet foundation
+name: SLUG wallet recovery
 
 on:
   push:
-    branches: [slug-wallet-foundation]
+    branches: [slug-wallet-foundation, slug-wallet-recovery]
   workflow_dispatch:
 
 permissions:
@@ -14,8 +14,8 @@ concurrency:
 
 env:
   GO_VERSION: '1.27.4'
-  # Reviewed paired set23 chain implementation; do not float this dependency.
-  SLUG_CHAIN_REF: 4dc49e103ce271981a20a08a115dbfacc6aa6891
+  # Reviewed paired set24 chain revision; do not float this dependency.
+  SLUG_CHAIN_REF: dec10e165ac1be541f935502c4e8da2bfaf6cc89
   GOFLAGS: ''
 
 defaults:
@@ -26,7 +26,7 @@ defaults:
 jobs:
   modules:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
         with:
@@ -51,6 +51,8 @@ jobs:
         run: |
           python3 waddrmgr/testdata/reencode_vectors.py --check
           python3 integration/testdata/reference_addresses.py --check
+          python3 recovery/testdata/reference_recovery.py --check
+          python3 integration/testdata/reference_recovery_highwater.py --check
       - name: Format and dependency identity
         run: |
           test -z "$(git ls-files '*.go' | xargs gofmt -l)"
@@ -66,12 +68,15 @@ jobs:
           done
       - name: Runtime race checks
         run: |
-          go test -race -parallel=2 -count=1 -timeout=20m . ./chain ./wallet ./waddrmgr
+          go test -race -parallel=2 -count=1 -timeout=30m . ./chain ./wallet ./waddrmgr
           for module in wallet/txauthor wallet/txrules wallet/txsizes walletdb wtxmgr; do
             (cd "$module" && go test -race -count=1 -timeout=3m ./...)
           done
       - name: Disabled cheap-profile daemon
-        run: go test -tags=slugtestpow -count=1 -timeout=30s . ./chain
+        run: |
+          go test -tags=slugtestpow -count=1 -timeout=30s . ./chain
+          go test -tags=slugtestpow -count=1 -timeout=1m ./recovery
+          go test -tags=slugtestpow -count=1 -timeout=1m ./wallet -run '^TestRecovery'
       - name: Namespace and sample configuration
         run: |
           mkdir -p "$RUNNER_TEMP/slugwallet-bin"
@@ -105,3 +110,7 @@ jobs:
         env:
           SLUG_WALLET_NODE: ${{ runner.temp }}/slugd
         run: ./integration/run-foundation.sh
+      - name: Retained phrase and gym restore under normal PoW
+        env:
+          SLUG_WALLET_NODE: ${{ runner.temp }}/slugd
+        run: ./integration/run-recovery.sh

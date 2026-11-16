@@ -1,0 +1,54 @@
+{
+  "fixture_only": true,
+  "entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+  "addresses": [
+    {
+      "path": "m/44'/0'/0'/0/25",
+      "public_key": "031004ab14cfb10d82d36b99d3c7974a48c4fa32ceafe69da694d1c9bba6c2ebbf",
+      "address": "aZ2pH4nDsuGiXH1xh13CnXXwyz7iJo3uYV",
+      "script_pub_key": "76a914627ca7f1cae622978f35d47a051bc063f46db6b988ac"
+    },
+    {
+      "path": "m/44'/0'/0'/1/26",
+      "public_key": "026c18bcfa3dac4f5a250bfe01b3db093cfa066fc03a3091097c068267561ad4fa",
+      "address": "abYLvsE9ZhJTzLPc8jBUoxah3JZqygGPWh",
+      "script_pub_key": "76a9147e028ea99480508dc0d3665eb50f4ab7a725603b88ac"
+    },
+    {
+      "path": "m/49'/0'/0'/0/25",
+      "public_key": "021f1e83484834e79d056b0222243d2bc840c6a42565e53c232742f8767d9ed6f7",
+      "address": "VdwsdCEG3DUNaWLUK9Qf24YoF4NoZwXJuG",
+      "script_pub_key": "a9142b518595d516970c5e251857a6a13dd6139ea9b987"
+    },
+    {
+      "path": "m/49'/0'/0'/1/26",
+      "public_key": "03335542fff71a45395b574d5a0d98c3be53e8b4aa7d49b85b350e21b6e313646b",
+      "address": "slug1qajdkvsmcqsrpf80ecve88gc6c9c6vtx52wcpf6",
+      "script_pub_key": "0014ec9b6643780406149df9c33273a31ac171a62cd4"
+    },
+    {
+      "path": "m/84'/0'/0'/0/25",
+      "public_key": "030bbdf664d7eef84f68bd546e53bc812402e627f9bff4ae4e04c84271639f19e6",
+      "address": "slug1qh0xcgq8v2ju0kufkvd35q5qgyfj048x79ynnvg",
+      "script_pub_key": "0014bbcd8400ec54b8fb713663634050082264fa9cde"
+    },
+    {
+      "path": "m/84'/0'/0'/1/26",
+      "public_key": "031083e23d0c76b5d361e059fb18e203ff1dad56610c8c71d36d26211823395768",
+      "address": "slug1qfnduvvvh3nkdveqertzucy46yspr2cgns7jcyn",
+      "script_pub_key": "00144cdbc631978cecd664191ac5cc12ba2402356113"
+    },
+    {
+      "path": "m/86'/0'/0'/0/25",
+      "public_key": "033a61eb12837d356341ad0a76732b9ac366db9c100fccc0d5375febe826ecd60e",
+      "address": "slug1p5x6lnx84tr3ykpv4rqha22gzhcjqas980jypscmu846su6qy3t5susuxuu",
+      "script_pub_key": "5120a1b5f998f558e24b0595182fd52902be240ec0a77c8818637c3d750e68048ae9"
+    },
+    {
+      "path": "m/86'/0'/0'/1/26",
+      "public_key": "036195797ee41c6926407dc27076ce430bac90e486246005287cc6057ff4895b51",
+      "address": "slug1ph2ec5uc5qt5cxp57uv0xzrwumr3uaqrh2qq2e7vez5xsjjuw0wlq2c84vq",
+      "script_pub_key": "5120bab38a731402e983069ee31e610ddcd8e3ce80775000acf999150d094b8e7bbe"
+    }
+  ]
+}

@@ -25,12 +25,17 @@ remain separate decisions.
   or private key. In particular, never access `~/slug-checkpoint.seed`.
 - Tests use explicitly published deterministic fixture seeds/keys on disposable
   loopback nodes. These are public fixtures, never real accounts or wallets.
-- D48 requires hosted normal login plus real full recovery export. Upstream
-  raw-seed-at-creation and database backups do not satisfy a later seed phrase
-  reveal. Do not claim custody, login, phrase export or fighter transfer exists
-  until implemented and independently verified.
-- Recovery/derivation decisions must be settled before real wallet issuance.
-  Preserve current coin-type behavior for this fixture-only foundation.
+- D48 requires hosted normal login plus full recovery export. Set24 implements
+  fixture-only retained 24-word English BIP39 export with no additional BIP39
+  passphrase plus SLUG metadata. This does not enable hosted custody, normal
+  login, real-wallet issuance, secure UI reveal or fighter transfer.
+- The approved fixture profile uses four account 0 scopes 44/49/84/86, coin type 0,
+  explicit mixed49 schema, at most 4096 next-index per branch, genesis scanning
+  and gym path m/1397511495'/1'/0'. New recovery wallets explicitly use standard
+  BIP32 and mandatory manager schema 9. Legacy APIs/mode/schema 8 stay unchanged.
+  Do not silently migrate existing wallets or change the fixture profile into
+  a production custody/derivation decision. Never omit unsupported imported
+  material or extra accounts from an export while claiming completeness.
 
 ## Chain and validation
 
@@ -51,8 +56,8 @@ remain separate decisions.
   must eventually include normal production PoW; cheap tagged fixtures alone
   cannot close that requirement.
 - Build/test every wallet module and record exact suites, timings and limits.
-  Run gofmt and diff checks. Write CHANGESET_23_NOTES.md with behavior, deliberate
-  exclusions, verification and remaining recovery/custody work.
+  Run gofmt and diff checks. Write the current CHANGESET_N_NOTES.md with behavior, deliberate exclusions,
+  verification and remaining custody work; do not rewrite historical evidence.
 - Keep wallet RPC private. Do not expose credentials through the gym webview,
   deploy a wallet service to Railway, connect fixtures to the seed or transfer
   real funds as part of this foundation.

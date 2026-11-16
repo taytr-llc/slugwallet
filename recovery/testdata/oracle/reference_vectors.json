@@ -1,0 +1,158 @@
+{
+  "notice": "Published public fixtures only. No production phrase, coin type, gym path or custody policy is chosen.",
+  "cases": [
+    {
+      "fixture_only": true,
+      "official_english_vector_index": 0,
+      "entropy": "00000000000000000000000000000000",
+      "mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+      "passphrase": "",
+      "bip32_seed_public_fixture_only": "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4",
+      "coin_type_fixture_only": 0,
+      "payment_keys": [
+        {
+          "path": "m/44'/0'/0'/0/0",
+          "public_key": "03aaeb52dd7494c361049de67cc680e83ebcbbbdbeb13637d92cd845f70308af5e",
+          "slug_xpub": "JgduaQt9EPzutTyh7Wdnra2LLHUgck8YWZuk5NF4kzAA7yesUWMczPWUd3fD7n9vAovTRiG15ZXvqF1GgDYN8FpsjvT6c7cycEaPv6DpBEVDiY5q",
+          "slug_xprv_public_fixture_only": "RWC8zhCJUcsXCayvLRQCqt3XuQcVNaq7rM4Y54YZV9cQUbdT2ABMU8QdcJHSEkXmf7tzo4GHDTcqXUoxjtFTUCdDjKMfauTb8DP22y9a2H1zCSGn",
+          "address": "ajtEzT4pT4SGMnMvzGjHX5Qn7PhqZLvnJu",
+          "script_pub_key": "76a914d986ed01b7a22225a70edbf2ba7cfb63a15cb3aa88ac"
+        },
+        {
+          "path": "m/44'/0'/0'/1/0",
+          "public_key": "03498b3ac8e882c5d693540c49adf22b7a1b99c1bb8047966739bfe8cdeb272e64",
+          "slug_xpub": "JgduaQtzHU7ZGzpArpkxTNkDs1Aj1Z9MjTs42kRBnBLfZkGdkvxQtdqKMmVZLnzft98Eb1nFgMmbJoznQCUThaC9yYcyzbpGJPeaWvA32mgAFnX7",
+          "slug_xprv_public_fixture_only": "RWC8zhD9XgzAb7pQ5jXNSgmRS8JXmPqw5F1r2SigWLnuvNFDJan9NNjUM27nTmNTjEC8VqSQok5rQkF9bR63UZKqBukkVYp1Yi2uu8xPSjQJ1Mit",
+          "address": "ah6MpFfJntbYy8mEX2NxjTfmtvBAx8X8ue",
+          "script_pub_key": "76a914bae93c8e7fb682422d24780b1a12a550eff428f288ac"
+        },
+        {
+          "path": "m/84'/0'/0'/0/0",
+          "public_key": "0330d54fd0dd420a6e5f8d3624f5f3482cae350f79d5f0753bf5beef9c2d91af3c",
+          "slug_xpub": "JgduaQtPZtHY54iMxKYpTqEDBXpQAxJ2HFpziNLy7MLBM51vsNhExNqNoSCGBTfHeHLhTHVQqjoFyvGHMZmctmqmy5evWCnsfydMmJ43pj9xhRjq",
+          "slug_xprv_public_fixture_only": "RWC8zhCYp7A9PBibBEKET9FQkexCvnzbd2yni4eTqWnRhgzWR2WyS7jXngpVJS2sybWT2s2HQCcTGmMAEK6xbG7NibxXV5KvSZXguptXV6zcWnqB",
+          "address": "slug1qcr8te4kr609gcawutmrza0j4xv80jy8z3ud7hl",
+          "script_pub_key": "0014c0cebcd6c3d3ca8c75dc5ec62ebe55330ef910e2"
+        },
+        {
+          "path": "m/84'/0'/0'/1/0",
+          "public_key": "03025324888e429ab8e3dbaf1f7802648b9cd01e9b418485c5fa4c1b9b5700e1a6",
+          "slug_xpub": "JgduaQuApVJLGbuCKAabDNF4HFq62hh5TYFoVSiBDt9E4jHPZDGpZLDgUW94n8bxLQteTzSX7Vre56295tcmVRYbna7v78dnpFKskkbpqwf7iYDA",
+          "slug_xprv_public_fixture_only": "RWC8zhDL4iAwaiuRY5M1CgGFrNxtnYPeoKQbV91fx3bURMFy6s6Z357qTkmHu6ykYHe5eMHmtnNvjsHCvZgYTp7CCWkM6QcBJFbJodJWsNmL3Dh8",
+          "address": "slug1q8c6fshw2dlwun7ekn9qwf37cu2rn755uptkd2u",
+          "script_pub_key": "00143e34985dca6fddc9fb369940e4c7d8e2873f529c"
+        }
+      ],
+      "gym_path_is_not_production_policy": true,
+      "gym": {
+        "path": "m/0'/1'/2'",
+        "network": 1397511495,
+        "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+        "public_key": "0302ea7d274fcdb929e377522b98f875dcfd704e6028698b855b5f2dd2c65d20af",
+        "gym_id": "1d366418253edaa90808f0fdedc6931ca795a759c3ffc9a062b1a8eb25c86b32"
+      }
+    },
+    {
+      "fixture_only": true,
+      "official_english_vector_index": 0,
+      "entropy": "00000000000000000000000000000000",
+      "mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+      "passphrase": "TREZOR",
+      "bip32_seed_public_fixture_only": "c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04",
+      "coin_type_fixture_only": 0,
+      "payment_keys": [
+        {
+          "path": "m/44'/0'/0'/0/0",
+          "public_key": "027440c6c46ec617a202f44bc886a249b10f98a8ff5d8a0aa56a350ab930a0ec79",
+          "slug_xpub": "JgduaQty48jUGoMqsiwSNwxYVBQWqX67uTZAsv98LNHBwNFV2xbvKhCBnvsDsXLuM4GX3x3dZ98dCXqvXKYEpL46LQ23x31ARku538qSfPbjHeRw",
+          "slug_xprv_public_fixture_only": "RWC8zhD8JMc5avN56dhrNFyk4JYKbMnhFEhxscSd4XjSHzE4acReoS6LnBVSzVkxYogrbYJZBYeyBKojckNhjxx1WcaRkm7Ek8NRcu3Qhb9dJXNs",
+          "address": "anHmJ9Nf1L6oAzRkYeLHhHfYJ4F6X6D63h",
+          "script_pub_key": "76a914f3ea0aba73fdb23912ebd21f46e156cdd9e9428088ac"
+        },
+        {
+          "path": "m/44'/0'/0'/1/0",
+          "public_key": "02410fcdf3a7401abf65c925c5aaf13797aeb0d4a2fa93006b427495dc5c5ba0fe",
+          "slug_xpub": "JgduaQtX5gDYZvhBWQuURUDUoVMxdaDA65UVUAVmDTyvKKUipABUv1fPVtJxYpv1GtdyuTr2hTUrxVARBEiEAaWYxWW12A3XGTDTFCbanWEuh2Vh",
+          "slug_xprv_public_fixture_only": "RWC8zhCgKu69t3hQjKftQnEgNcVmPQujRrdHTroFwdSAfwTJMp1DPkZYV8wBfoL1oLAh75YGqPvA92i5XqRboHpbfJdmbtoFzFjPSKY2sGcgiQbF",
+          "address": "akYpR4pUi7cqSAFm7xmJHToUxHddTV9Dto",
+          "script_pub_key": "76a914e0d2a2375a6f47d445450e27b48f6339dedb66d488ac"
+        },
+        {
+          "path": "m/84'/0'/0'/0/0",
+          "public_key": "02a0f073d11f80811fb4e6d2b0299695c866a0988c1acf9f82a96ebb925524f328",
+          "slug_xpub": "JgduaQtLYfwB1eZfhGpt3VaB876usjbAnM6JFxDcjB57Ho3WSZnhMQNrFwSg2Nx7NhzNsZ1TJQ57YL2ZiNwYatsUD6SHEZkQHHBT4Ezbdn2H9Hsp",
+          "slug_xprv_public_fixture_only": "RWC8zhCVntonKmZtvBbJ2obNhEEidaHk88F6FeX7TLXMeR25zDcRq9H1FC4u9MM4hkLXYGyxr49GQHjJAw9VT3HbS7oscT29muJUxAETaDTt7MNn",
+          "address": "slug1qv5rmq0kt9yz3pm36wvzct7p3x6mtgehjuvc72l",
+          "script_pub_key": "00146507b03ecb290510ee3a730585f83136b6b466f2"
+        },
+        {
+          "path": "m/84'/0'/0'/1/0",
+          "public_key": "025c943b74e834861241406f6bce044f7d096ee239b6d2ce52195781c4c7708448",
+          "slug_xpub": "JgduaQu226FKuSryomBGHVa2yp8eqUESUJ8YqtWtwnPjtbiSyehN6t8EBYYTWMNQqTBSrmSocjN1uEJymcVPA4sqVPdBgNFY1ZDuFvq2EigmhZGu",
+          "slug_xprv_public_fixture_only": "RWC8zhDBGK7wDZsD2fwgGobEYwGTbJw1p5HLqapPfwqzFDh2XJX6ad2PAoAgdKmKucqgKfT3c8p6RCK2mCyBsGZURHDNEsgixSDqJADPsc4R1MCs",
+          "address": "slug1qest2x6zfncjezklycdghhjxzlptky4xx6slwa7",
+          "script_pub_key": "0014cc16a368499e25915be4c3517bc8c2f8576254c6"
+        }
+      ],
+      "gym_path_is_not_production_policy": true,
+      "gym": {
+        "path": "m/1'/2'/3'",
+        "network": 1397511495,
+        "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+        "public_key": "02f8d0bcaffecdbb7125a24ca1e87a37a4b07a27bbcf2334a170e30550c3b7da02",
+        "gym_id": "d58e1ad4667b6d0bc75c88ac6690dbd708fe738f57f864c9525c17c8f1104327"
+      }
+    },
+    {
+      "fixture_only": true,
+      "official_english_vector_index": 8,
+      "entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+      "mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+      "passphrase": "",
+      "bip32_seed_public_fixture_only": "408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840",
+      "coin_type_fixture_only": 0,
+      "payment_keys": [
+        {
+          "path": "m/44'/0'/0'/0/0",
+          "public_key": "0342d943b8dba93a4ce29b858479c67f1e4f1110eecbe1f83dc01b455eb8b123b3",
+          "slug_xpub": "JgduaQtkdGofVKZubdvFh3FnTUYhQTUDk5H1QoyZ5s531Pn9pPyy5jt1DbE41XcxXmbqEj8PjhStzF2qhnXR5ni8VFTddEt5Wh6PySmtzmponaZ4",
+          "slug_xprv_public_fixture_only": "RWC8zhCusVgGoSa8pYgfgMGz2bgWAJAo5rRoQWH3p2XHN1kjN3ohZUnACqrH8W1Rct6Yvzj9R5JtJA1fpVkaMcaanzfSSGwcy3EA2EVbFHrkDiQB",
+          "address": "aiEhKC3LRX8PPG5haqRFUcFvj3pXpBts2P",
+          "script_pub_key": "76a914c774f7875f704f56898371b6424b6e6f6328d7fa88ac"
+        },
+        {
+          "path": "m/44'/0'/0'/1/0",
+          "public_key": "024f7f02f1338817bc5b448e83f56c6f67419945743cc7ec69cc1c7f2b5bcd9792",
+          "slug_xpub": "JgduaQuNirCjkAtM2BqptgEXQjhAzVsdB4vRMvnfnyCbSeNXe1LKYJYh7j8VY9X352bgexNc4W91E4UKUGk9MPxRFoLx8HSRxJr9amEtKBdq2FZU",
+          "slug_xprv_public_fixture_only": "RWC8zhDXy55M4HtaF6cEszFiyrpykLaCWr5DMd6AX8eqoGM7BfA423Sr6ykif7wXDmzwFxJcU5TEu61kNqiu8GtcWzREjhPPRZ874KF6XV6vhw2W",
+          "address": "ahs7NRM7Go5wv5W57ZLNC98sZu1ob4rMxm",
+          "script_pub_key": "76a914c35fe57bca7e84441fab38bc3ef8eadab1a2d72488ac"
+        },
+        {
+          "path": "m/84'/0'/0'/0/0",
+          "public_key": "03c5db199831f23a3a1575518c8e9e948bfd495481aac442dec64b447ee76bd6fa",
+          "slug_xpub": "JgduaQu7xLF5TaNsntcH9PXTAHSP3zHbxW3XvU3gdqXfsF538JuxsiUJzaHT9KSuFbi7gsZQfZ6iQi1wKfG9qTViZRmtX8kBvfuqXMrThamqxtBv",
+          "slug_xprv_public_fixture_only": "RWC8zhDHCZ7gmhP71oNh8hYejQaBopzBJHCKvAMBMzyvDs3cfxjhMTNTypugGHnvnXo4yAmtxccRL6fAnXAgsaL8US24XLbMdfjHkZDgBpZfBhZk",
+          "address": "slug1qzmtrqsfuaf6l6kkcsseumq26ukaphfj9s9ptme",
+          "script_pub_key": "001416d630413cea75fd5ad88433cd815ae5ba1ba645"
+        },
+        {
+          "path": "m/84'/0'/0'/1/0",
+          "public_key": "02138f643e36e664e9cf9683947cbde1717d0ebaae1f58e971c7add17503fdf300",
+          "slug_xpub": "JgduaQtiHmtouZBNCt75Ex1MTYojFSncLQEDGh7tDKobyKxNSFZksv7jr2E8JtGFwrpDKTQupu7Ks4FJDni6KET4nCM4vZjq4pfrNhbH3haKwDua",
+          "slug_xprv_public_fixture_only": "RWC8zhCsXzmRDgBbRnsVEG2Z2fwY1HVBgBP1GPRNwVFrKwvwyuPVMf1tqGrMRrfcJwMKS4ewCrTwgHNwan7qZm5CLjKxUA91rRewkEXwUj8H68cx",
+          "address": "slug1qes80p0st92xjem9aw48v57fk35f44kjzmecdxc",
+          "script_pub_key": "0014cc0ef0be0b2a8d2cecbd754eca79368d135ada42"
+        }
+      ],
+      "gym_path_is_not_production_policy": true,
+      "gym": {
+        "path": "m/0'/1'/2'",
+        "network": 1397511495,
+        "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+        "public_key": "036298fe0df281a091f4e246ac006ce16a18aa7d70ff141c6fc0e91fcea890c55a",
+        "gym_id": "ccef5a7ef2fe379d1be7a204369b56d779f8beb32254145d1f3059bd0f7eac4c"
+      }
+    }
+  ]
+}

@@ -4408,7 +4408,7 @@ func CreateWatchingOnly(db walletdb.DB, pubPass []byte,
 func create(db walletdb.DB, pubPass, privPass []byte,
 	rootKey *hdkeychain.ExtendedKey, params *chaincfg.Params,
 	birthday time.Time, isWatchingOnly bool,
-	cb func(walletdb.ReadWriteTx) error) error {
+	cb func(walletdb.ReadWriteTx) error, recoveryData ...*recoveryCreation) error {
 
 	// If no root key was provided, we create one now from a random seed.
 	// But only if this is not a watching-only wallet where the accounts are
@@ -4445,10 +4445,12 @@ func create(db walletdb.DB, pubPass, privPass []byte,
 			return err
 		}
 
-		err = waddrmgr.Create(
-			addrmgrNs, rootKey, pubPass, privPass, params, nil,
-			birthday,
-		)
+		if len(recoveryData) != 0 {
+			data := recoveryData[0]
+			err = waddrmgr.CreateWithRecovery(addrmgrNs, rootKey, pubPass, privPass, params, nil, birthday, data.public, data.private)
+		} else {
+			err = waddrmgr.Create(addrmgrNs, rootKey, pubPass, privPass, params, nil, birthday)
+		}
 		if err != nil {
 			return err
 		}
@@ -4458,6 +4460,11 @@ func create(db walletdb.DB, pubPass, privPass []byte,
 			return err
 		}
 
+		if len(recoveryData) != 0 {
+			if err := restoreRecoveryCursors(addrmgrNs, pubPass, params, recoveryData[0].manifest); err != nil {
+				return err
+			}
+		}
 		if cb != nil {
 			return cb(tx)
 		}
@@ -4511,6 +4518,12 @@ func OpenWithRetry(db walletdb.DB, pubPass []byte, cbs *waddrmgr.OpenCallbacks,
 		addrMgr, err = waddrmgr.Open(addrMgrBucket, pubPass, params)
 		if err != nil {
 			return err
+		}
+		if addrMgr.RecoveryEnabled() {
+			if _, _, err := readRecoveryBase(addrMgrBucket, addrMgr, params); err != nil {
+				addrMgr.Close()
+				return err
+			}
 		}
 		txMgr, err = wtxmgr.Open(txMgrBucket, params)
 		if err != nil {

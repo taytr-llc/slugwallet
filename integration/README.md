@@ -39,3 +39,64 @@ login/custody/phrase export, gym identity derivation, encrypted recovery-file
 export, user-issuance approval, or fighter transfer. No BIP39 phrase contract is
 introduced. The test is deliberately excluded from cheap-PoW builds and normal
 short unit-test runs; allow up to 15 minutes for the production-PoW gate.
+
+## Retained phrase and gym recovery gate (set 24)
+
+The separate recovery gate uses the approved English 24-word phrase profile
+with no additional BIP39 passphrase, plus its versioned recovery manifest:
+
+```sh
+SLUG_WALLET_NODE=/absolute/path/to/normal/slugd \
+  ./integration/run-recovery.sh
+```
+
+This explicitly enables both `integration` and `recoveryintegration` build tags
+and runs only `TestWalletRecoveryNormalPoW`. The set-23 raw-seed test is unchanged.
+The published `zero256` entropy fixture and independently derived expected
+addresses/public identities come from `recovery/testdata/recovery_v1.json`.
+`testdata/reference_recovery_highwater.py` extends that independent Python
+oracle with high-index vectors for every scope; it reads no Go outputs.
+The launcher checks both independent oracles before running the gate.
+
+The test issues receive/change addresses in all four supported scopes and
+mines only to legacy receive index 25, beyond the ordinary 20-address lookahead.
+It confirms a real spend under normal Argon2id, closes and reopens the wallet,
+then exports the retained phrase and current high-water manifest after unlock.
+It closes and renames the original database before restoring an empty database
+using only the exported file. Exact balance, signed transaction history and
+ownership of the independently derived addresses must survive; the restored
+wallet must make a second confirmed spend that consumes recovered change from
+the first spend. The exported file contains only
+published test secrets and is created with owner-only permissions in a temporary
+directory. The test never reads a real recovery file or wallet.
+
+Legacy wallet RPC supplies addresses, balances, unlock, history and both
+`sendtoaddress` spends. Taproot address generation uses the existing wallet API
+because the legacy RPC lacks a taproot address option. Both spends are broadcast
+to and confirmed by the normal isolated node.
+
+Segwit and Taproot are inactive on the current chain. The first native-funded
+attempt reached maturity but the node rejected its witness spend; this is a
+separate activation issue. This gate therefore proves live legacy-funded
+recovery, plus independent derivation/ownership/high-water restoration for the
+other scopes. It does **not** claim a successful funded native-witness or
+Taproot round trip. The helper accepts an explicit funding scope for a later
+activation test, without changing any node rules. The inherited RPC selection
+and change behavior is left intact until that separate workstream.
+
+The same fixture also checks the original and restored gym public identity,
+automatic signing through the worker's pinned callback, identical authorization
+for identical evidence, a new schema-4 authority admission, and immutable receipt
+replay. Production `prospect.Verify` runs outside the wallet signer. Its local
+authority uses an explicitly synthetic all-ff prospect threshold and a
+coinbase-only share anchored to the isolated node's current parent. These
+fixture shares are never broadcast as blocks; the test does not calibrate a
+production prospect target or claim full-block validity. The trusted-context
+RPC adapter and block-winning broadcast ordering have separate integration
+coverage.
+
+This gate covers retained phrase export, fresh restoration and wallet-backed
+gym signing for the bounded fixture profile. It does not establish hosted
+login/custody, universal external-wallet compatibility, exclusive migration,
+imported-key export or fighter transfer. Both node and wallet shutdown remain
+checked by the shared fixture lifecycle.

@@ -344,12 +344,14 @@ type Manager struct {
 	externalAddrSchemas map[AddressType][]KeyScope
 	internalAddrSchemas map[AddressType][]KeyScope
 
-	syncState    syncState
-	watchingOnly atomic.Bool
-	birthday     time.Time
-	locked       atomic.Bool
-	closed       bool
-	chainParams  *chaincfg.Params
+	syncState       syncState
+	watchingOnly    atomic.Bool
+	birthday        time.Time
+	locked          atomic.Bool
+	closed          bool
+	derivationMode  DerivationMode
+	recoveryEnabled bool
+	chainParams     *chaincfg.Params
 
 	// masterKeyPub is the secret key used to secure the cryptoKeyPub key
 	// and masterKeyPriv is the secret key used to secure the cryptoKeyPriv
@@ -591,7 +593,7 @@ func (m *Manager) NewScopedKeyManager(ns walletdb.ReadWriteBucket,
 		// cointype key using the master HD private key, then encrypt
 		// it along with the first account using our crypto keys.
 		err = createManagerKeyScope(
-			ns, scope, rootPriv, m.cryptoKeyPub, m.cryptoKeyPriv,
+			ns, scope, rootPriv, m.cryptoKeyPub, m.cryptoKeyPriv, m.derivationMode,
 		)
 		if err != nil {
 			return nil, err
@@ -681,6 +683,9 @@ func (m *Manager) ScopesForInternalAddrTypes(addrType AddressType) []KeyScope {
 func (m *Manager) NeuterRootKey(ns walletdb.ReadWriteBucket) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
+	if m.recoveryEnabled {
+		return ErrRecoveryProtected
+	}
 
 	// First, we'll fetch the current master HD keys from the database.
 	masterRootPrivEnc, _ := fetchMasterHDKeys(ns)
@@ -1059,6 +1064,9 @@ func (m *Manager) ChangePassphrase(ns walletdb.ReadWriteBucket, oldPassphrase,
 func (m *Manager) ConvertToWatchingOnly(ns walletdb.ReadWriteBucket) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
+	if m.recoveryEnabled {
+		return ErrRecoveryProtected
+	}
 
 	// Exit now if the manager is already watching-only.
 	if m.WatchOnly() {
@@ -1436,7 +1444,7 @@ func newManager(chainParams *chaincfg.Params, masterKeyPub *snacl.SecretKey,
 // In particular this is the hierarchical deterministic extended key path:
 // m/purpose'/<coin type>'
 func deriveCoinTypeKey(masterNode *hdkeychain.ExtendedKey,
-	scope KeyScope) (*hdkeychain.ExtendedKey, error) {
+	scope KeyScope, modes ...DerivationMode) (*hdkeychain.ExtendedKey, error) {
 
 	// Enforce maximum coin type.
 	if scope.Coin > maxCoinType {
@@ -1456,17 +1464,14 @@ func deriveCoinTypeKey(masterNode *hdkeychain.ExtendedKey,
 	// The branch is 0 for external addresses and 1 for internal addresses.
 
 	// Derive the purpose key as a child of the master node.
-	purpose, err := masterNode.DeriveNonStandard( // nolint:staticcheck
-		scope.Purpose + hdkeychain.HardenedKeyStart,
-	)
+	purpose, err := deriveHDChild(masterNode, scope.Purpose+hdkeychain.HardenedKeyStart, modes...)
 	if err != nil {
 		return nil, err
 	}
 
 	// Derive the coin type key as a child of the purpose key.
-	coinTypeKey, err := purpose.DeriveNonStandard( // nolint:staticcheck
-		scope.Coin + hdkeychain.HardenedKeyStart,
-	)
+	defer purpose.Zero()
+	coinTypeKey, err := deriveHDChild(purpose, scope.Coin+hdkeychain.HardenedKeyStart, modes...)
 	if err != nil {
 		return nil, err
 	}
@@ -1481,7 +1486,7 @@ func deriveCoinTypeKey(masterNode *hdkeychain.ExtendedKey,
 //
 //	m/purpose'/<coin type>'/<account>'
 func deriveAccountKey(coinTypeKey *hdkeychain.ExtendedKey,
-	account uint32) (*hdkeychain.ExtendedKey, error) {
+	account uint32, modes ...DerivationMode) (*hdkeychain.ExtendedKey, error) {
 
 	// Enforce maximum account number.
 	if account > MaxAccountNum {
@@ -1490,9 +1495,7 @@ func deriveAccountKey(coinTypeKey *hdkeychain.ExtendedKey,
 	}
 
 	// Derive the account key as a child of the coin type key.
-	return coinTypeKey.DeriveNonStandard( // nolint:staticcheck
-		account + hdkeychain.HardenedKeyStart,
-	)
+	return deriveHDChild(coinTypeKey, account+hdkeychain.HardenedKeyStart, modes...)
 }
 
 // checkBranchKeys ensures deriving the extended keys for the internal and
@@ -1506,14 +1509,19 @@ func deriveAccountKey(coinTypeKey *hdkeychain.ExtendedKey,
 //	m/purpose'/<coin type>'/<account>'/<branch>
 //
 // The branch is 0 for external addresses and 1 for internal addresses.
-func checkBranchKeys(acctKey *hdkeychain.ExtendedKey) error {
+func checkBranchKeys(acctKey *hdkeychain.ExtendedKey, modes ...DerivationMode) error {
 	// Derive the external branch as the first child of the account key.
-	if _, err := acctKey.DeriveNonStandard(ExternalBranch); err != nil { // nolint:staticcheck
+	if key, err := deriveHDChild(acctKey, ExternalBranch, modes...); err != nil {
 		return err
+	} else {
+		key.Zero()
 	}
 
 	// Derive the internal branch as the second child of the account key.
-	_, err := acctKey.DeriveNonStandard(InternalBranch) // nolint:staticcheck
+	key, err := deriveHDChild(acctKey, InternalBranch, modes...)
+	if err == nil {
+		key.Zero()
+	}
 	return err
 }
 
@@ -1532,17 +1540,24 @@ func loadManager(ns walletdb.ReadBucket, pubPassphrase []byte,
 	if version < latestMgrVersion {
 		str := "database upgrade required"
 		return nil, managerError(ErrUpgrade, str, nil)
-	} else if version > latestMgrVersion {
+	} else if version > latestMgrVersion && version != RecoveryManagerVersion {
 		str := "database version is greater than latest understood version"
 		return nil, managerError(ErrUpgrade, str, nil)
 	}
 
+	mode, hasRecovery, err := fetchRecoveryState(ns)
+	if err != nil {
+		return nil, err
+	}
 	// Load whether or not the manager is watching-only from the db.
 	watchingOnly, err := fetchWatchingOnly(ns)
 	if err != nil {
 		return nil, maybeConvertDbError(err)
 	}
 
+	if hasRecovery && watchingOnly {
+		return nil, ErrRecoveryState
+	}
 	// Load the master key params from the db.
 	masterKeyPubParams, masterKeyPrivParams, err := fetchMasterKeyParams(ns)
 	if err != nil {
@@ -1647,6 +1662,7 @@ func loadManager(ns walletdb.ReadBucket, pubPassphrase []byte,
 		birthday, privPassphraseSalt, scopedManagers, watchingOnly,
 	)
 
+	mgr.derivationMode, mgr.recoveryEnabled = mode, hasRecovery
 	for _, scopedManager := range scopedManagers {
 		scopedManager.rootManager = mgr
 	}
@@ -1683,10 +1699,10 @@ func Open(ns walletdb.ReadBucket, pubPassphrase []byte,
 // multiple address derivation schems to be maintained concurrently.
 func createManagerKeyScope(ns walletdb.ReadWriteBucket,
 	scope KeyScope, root *hdkeychain.ExtendedKey,
-	cryptoKeyPub, cryptoKeyPriv EncryptorDecryptor) error {
+	cryptoKeyPub, cryptoKeyPriv EncryptorDecryptor, mode DerivationMode) error {
 
 	// Derive the cointype key according to the passed scope.
-	coinTypeKeyPriv, err := deriveCoinTypeKey(root, scope)
+	coinTypeKeyPriv, err := deriveCoinTypeKey(root, scope, mode)
 	if err != nil {
 		str := "failed to derive cointype extended key"
 		return managerError(ErrKeyChain, str, err)
@@ -1695,7 +1711,7 @@ func createManagerKeyScope(ns walletdb.ReadWriteBucket,
 
 	// Derive the account key for the first account according our
 	// BIP0044-like derivation.
-	acctKeyPriv, err := deriveAccountKey(coinTypeKeyPriv, 0)
+	acctKeyPriv, err := deriveAccountKey(coinTypeKeyPriv, 0, mode)
 	if err != nil {
 		// The seed is unusable if the any of the children in the
 		// required hierarchy can't be derived due to invalid child.
@@ -1710,7 +1726,7 @@ func createManagerKeyScope(ns walletdb.ReadWriteBucket,
 
 	// Ensure the branch keys can be derived for the provided seed according
 	// to our BIP0044-like derivation.
-	if err := checkBranchKeys(acctKeyPriv); err != nil {
+	if err := checkBranchKeys(acctKeyPriv, mode); err != nil {
 		// The seed is unusable if the any of the children in the
 		// required hierarchy can't be derived due to invalid child.
 		if err == hdkeychain.ErrInvalidChild {
@@ -1809,7 +1825,13 @@ func Create(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 	pubPassphrase, privPassphrase []byte,
 	chainParams *chaincfg.Params, config *ScryptOptions,
 	birthday time.Time) error {
+	return createManager(ns, rootKey, pubPassphrase, privPassphrase, chainParams, config, birthday, DerivationLegacy, nil, nil)
+}
 
+func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
+	pubPassphrase, privPassphrase []byte, chainParams *chaincfg.Params,
+	config *ScryptOptions, birthday time.Time, mode DerivationMode,
+	recoveryPublic, recoveryPrivate []byte) error {
 	// If the seed argument is nil we create in watchingOnly mode.
 	isWatchingOnly := rootKey == nil
 
@@ -1938,7 +1960,7 @@ func Create(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 		// first default account.
 		for _, defaultScope := range DefaultKeyScopes {
 			err := createManagerKeyScope(
-				ns, defaultScope, rootKey, cryptoKeyPub, cryptoKeyPriv,
+				ns, defaultScope, rootKey, cryptoKeyPub, cryptoKeyPriv, mode,
 			)
 			if err != nil {
 				return maybeConvertDbError(err)
@@ -1964,6 +1986,11 @@ func Create(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 			return maybeConvertDbError(err)
 		}
 
+		if mode == DerivationStandard {
+			if err := putRecoveryData(ns, recoveryPublic, recoveryPrivate, cryptoKeyPub, cryptoKeyPriv); err != nil {
+				return err
+			}
+		}
 		privParams = masterKeyPriv.Marshal()
 	}
 

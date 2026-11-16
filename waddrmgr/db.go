@@ -378,7 +378,7 @@ func fetchScopeAddrSchema(ns walletdb.ReadBucket,
 
 	scopeKey := scopeToBytes(scope)
 	schemaBytes := schemaBucket.Get(scopeKey[:])
-	if schemaBytes == nil {
+	if len(schemaBytes) != 2 {
 		str := fmt.Sprintf("unable to find scope %v", scope)
 		return nil, managerError(ErrScopeNotFound, str, nil)
 	}
@@ -417,8 +417,11 @@ func fetchWriteScopeBucket(ns walletdb.ReadWriteBucket,
 // fetchManagerVersion fetches the current manager version from the database.
 func fetchManagerVersion(ns walletdb.ReadBucket) (uint32, error) {
 	mainBucket := ns.NestedReadBucket(mainBucketName)
+	if mainBucket == nil {
+		return 0, managerError(ErrDatabase, "required main bucket missing", nil)
+	}
 	verBytes := mainBucket.Get(mgrVersionName)
-	if verBytes == nil {
+	if len(verBytes) != 4 {
 		str := "required version number not stored in database"
 		return 0, managerError(ErrDatabase, str, nil)
 	}
@@ -722,6 +725,9 @@ func deserializeAccountRow(accountID []byte, serializedAccount []byte) (*dbAccou
 	row := dbAccountRow{}
 	row.acctType = accountType(serializedAccount[0])
 	rdlen := binary.LittleEndian.Uint32(serializedAccount[1:5])
+	if uint64(rdlen) != uint64(len(serializedAccount)-5) {
+		return nil, managerError(ErrDatabase, "malformed serialized account length", nil)
+	}
 	row.rawData = make([]byte, rdlen)
 	copy(row.rawData, serializedAccount[5:5+rdlen])
 
@@ -765,22 +771,40 @@ func deserializeDefaultAccountRow(accountID []byte, row *dbAccountRow) (*dbDefau
 		dbAccountRow: *row,
 	}
 
-	pubLen := binary.LittleEndian.Uint32(row.rawData[0:4])
-	retRow.pubKeyEncrypted = make([]byte, pubLen)
-	copy(retRow.pubKeyEncrypted, row.rawData[4:4+pubLen])
-	offset := 4 + pubLen
-	privLen := binary.LittleEndian.Uint32(row.rawData[offset : offset+4])
-	offset += 4
-	retRow.privKeyEncrypted = make([]byte, privLen)
-	copy(retRow.privKeyEncrypted, row.rawData[offset:offset+privLen])
-	offset += privLen
-	retRow.nextExternalIndex = binary.LittleEndian.Uint32(row.rawData[offset : offset+4])
-	offset += 4
-	retRow.nextInternalIndex = binary.LittleEndian.Uint32(row.rawData[offset : offset+4])
-	offset += 4
-	nameLen := binary.LittleEndian.Uint32(row.rawData[offset : offset+4])
-	offset += 4
-	retRow.name = string(row.rawData[offset : offset+nameLen])
+	// Lengths are disk input. Check before slicing or allocating, including
+	// all remaining fixed-width fields; damaged rows must fail, not panic.
+	data := row.rawData
+	take := func(reserved int) ([]byte, bool) {
+		if len(data) < 4 {
+			return nil, false
+		}
+		n := uint64(binary.LittleEndian.Uint32(data[:4]))
+		data = data[4:]
+		if len(data) < reserved || n > uint64(len(data)-reserved) {
+			return nil, false
+		}
+		value := data[:int(n)]
+		data = data[int(n):]
+		return value, true
+	}
+	pub, ok := take(16)
+	if !ok {
+		return nil, managerError(ErrDatabase, "malformed account public key length", nil)
+	}
+	priv, ok := take(12)
+	if !ok {
+		return nil, managerError(ErrDatabase, "malformed account private key length", nil)
+	}
+	retRow.pubKeyEncrypted = append([]byte(nil), pub...)
+	retRow.privKeyEncrypted = append([]byte(nil), priv...)
+	retRow.nextExternalIndex = binary.LittleEndian.Uint32(data[:4])
+	retRow.nextInternalIndex = binary.LittleEndian.Uint32(data[4:8])
+	data = data[8:]
+	name, ok := take(0)
+	if !ok || len(data) != 0 {
+		return nil, managerError(ErrDatabase, "malformed account name length", nil)
+	}
+	retRow.name = string(name)
 
 	return &retRow, nil
 }
@@ -850,6 +874,9 @@ func deserializeWatchOnlyAccountRow(accountID []byte,
 	if err != nil {
 		return nil, err
 	}
+	if r.Len() < 17 || uint64(pubLen) > uint64(r.Len()-17) {
+		return nil, managerError(ErrDatabase, "malformed watch-only public key length", nil)
+	}
 	retRow.pubKeyEncrypted = make([]byte, pubLen)
 	err = binary.Read(r, binary.LittleEndian, &retRow.pubKeyEncrypted)
 	if err != nil {
@@ -874,6 +901,9 @@ func deserializeWatchOnlyAccountRow(accountID []byte,
 	err = binary.Read(r, binary.LittleEndian, &nameLen)
 	if err != nil {
 		return nil, err
+	}
+	if r.Len() < 1 || uint64(nameLen) > uint64(r.Len()-1) {
+		return nil, managerError(ErrDatabase, "malformed watch-only name length", nil)
 	}
 	name := make([]byte, nameLen)
 	err = binary.Read(r, binary.LittleEndian, &name)
@@ -1359,6 +1389,9 @@ func deserializeAddressRow(serializedAddress []byte) (*dbAddressRow, error) {
 	row.addTime = binary.LittleEndian.Uint64(serializedAddress[5:13])
 	row.syncStatus = syncStatus(serializedAddress[13])
 	rdlen := binary.LittleEndian.Uint32(serializedAddress[14:18])
+	if uint64(rdlen) != uint64(len(serializedAddress)-18) {
+		return nil, managerError(ErrDatabase, "malformed serialized address length", nil)
+	}
 	row.rawData = make([]byte, rdlen)
 	copy(row.rawData, serializedAddress[18:18+rdlen])
 

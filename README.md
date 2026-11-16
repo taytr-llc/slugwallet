@@ -2,12 +2,14 @@
 
 SLUG wallet foundation, forked from btcsuite/btcwallet **v0.18.1** at
 `43f2950d2a065a7b3d4a4a1cf17ed1e84af6bcb4`. The implementation lives on
-`slug-wallet-foundation`; the fork's upstream-tracking `master` is not this
-release. Upstream source and license history are preserved.
+`slug-wallet-recovery` for set 24 (foundation: `slug-wallet-foundation`); the
+fork's upstream-tracking `master` is not this release. Upstream source and license history are preserved.
 
-This foundation provides a full-node wallet backend and public-fixture recovery
-evidence. It is not a production signup, hosted custody, recovery-phrase export,
-or gym-key derivation product. Do not issue real wallets from this foundation.
+This fork provides a full-node wallet backend and an explicitly public-fixture
+recovery/signing profile. Set24 adds retained 24-word English BIP39 recovery
+with no extra BIP39 passphrase, a SLUG manifest, and a fixed wallet-derived gym
+identity. Hosted login, real custody and real-wallet issuance are not enabled.
+Do not issue real wallets from this fixture foundation.
 
 ## Build with the paired SLUG checkout
 
@@ -16,15 +18,15 @@ Use Go 1.27.4 and sibling checkouts:
 ```text
 slug/
   slug/        # reviewed paired chain revision, including ConnectContext
-  slugwallet/  # slug-wallet-foundation
+  slugwallet/  # slug-wallet-recovery
 ```
 
 The wallet's `go.work` covers its six runtime modules and the ten SLUG modules.
 Every wallet module also has explicit relative replacements for the paired
 sources. The chain workspace is unchanged. `rpcclient.ConnectContext` from the
-paired set23 chain revision is required; upstream btcd cannot substitute for it.
-The paired chain implementation is
-`4dc49e103ce271981a20a08a115dbfacc6aa6891`, also pinned in
+paired set 23 or later chain revision is required; upstream btcd cannot substitute for it.
+The pinned paired set 24 chain revision is
+`dec10e165ac1be541f935502c4e8da2bfaf6cc89`, also pinned in
 `.github/workflows/main.yml`.
 
 ```sh
@@ -89,19 +91,70 @@ spending, reopen, and fresh raw-seed restoration followed by another confirmed
 spend. It uses only the published BIP32 vector seed and a disposable isolated
 loopback chain. It never connects to the live seed.
 
-Mainnet HD exports use SLUG's public/private version bytes for all supported
-scopes. The network prefix alone does not identify purpose, address type, or a
-mixed receive/change schema; that metadata must accompany an eventual recovery
-export. Existing coin type 0 is preserved for fixture compatibility and is not
-a new production derivation decision. The [encoding oracle](waddrmgr/testdata/README.md)
-recomputes SLUG checksums independently of the wallet implementation.
+Mainnet HD exports use SLUG's public/private version bytes for every supported
+scope. The network prefix alone does not identify purpose or address schema.
+The [encoding oracle](waddrmgr/testdata/README.md) independently recomputes SLUG
+checksums; the [recovery oracle](recovery/testdata/README.md) independently derives
+the phrase, BIP32 keys, addresses, and gym identity.
 
-D48 still requires normal hosted login, custody and account authorization,
-retained/exportable recovery material, a complete export format with derivation
-metadata, and independent restore testing of that exact format. Raw seed
-restoration is narrower evidence. No BIP39 phrase contract, later phrase reveal,
-gym identity path, or fighter transfer is introduced here. Ordinary wallet
-`signmessage` is not the prospect admission authorization protocol.
+## Retained fixture recovery (set 24)
 
-See [change set 23 notes](CHANGESET_23_NOTES.md) for the complete scope and checks.
+The new library APIs are `Loader.CreateNewRecoveryWallet`,
+`Wallet.ExportRecovery(context.Context)`, and `Loader.RestoreRecoveryWallet`.
+Creation takes caller-owned 32-byte entropy; restoration takes a validated
+`recovery.Export`. These APIs are deliberately not exposed as daemon/RPC secret
+methods or webview output. The approved phrase is exactly 24 English BIP39 words
+with no additional BIP39 passphrase. Wallet unlock passwords are separate and
+can be rotated without changing the recovery identity.
+
+Creation commits encrypted recovery material, its public manifest and wallet
+initialization in one database transaction. Later export requires the wallet to
+be unlocked and works after close/reopen; it reads committed address cursors in
+one local transaction. Recovery wallets use mandatory address-manager schema 9
+and explicit standard BIP32 derivation. Existing raw-seed wallets retain schema 8
+and historical derivation. No migration invents a phrase, changes an old wallet's
+paths or converts its keys. Old binaries refuse schema 9. Missing or damaged
+recovery state fails closed.
+
+The profile is `slug-phase-a-fixture-bip39-v1`, pinned to normal SLUG mainnet.
+It preserves coin type0 and account 0 in scopes44,49,84,86. Scope49 retains the
+existing mixed nested-witness receive/native-witness change schema. Each branch
+supports next-index 0 through 4096; issuing beyond that limit is refused. Extra
+accounts, imported keys/scripts or unsupported scopes cause export/signing to
+refuse a partial recovery promise. Root-key neutering and conversion to
+watch-only are refused for retained-recovery wallets, since retained entropy
+would contradict their private-key erasure semantics.
+
+The manifest records the exact chain, standard derivation, account schemas,
+current receive/change high-water indexes, genesis scan start and public gym
+identity. Restore into a new database derives every advertised index before
+committing, then scans the chain. The phrase **and current manifest** form this
+recovery export; a bare phrase does not encode address usage or profile details.
+Exports are snapshots: addresses issued after an export need updated metadata
+for recovery beyond the ordinary gap window. The format does not export
+imported keys, arbitrary accounts or registry receipts.
+
+`Wallet.GymIdentity` returns the fixed public identity even while locked.
+`Wallet.SignProspectAdmission` and its pinned worker callback sign only the
+versioned admission action after unlock, without returning a private key or
+accepting an arbitrary derivation path. The fixture path is
+`m/1397511495'/1'/0'`. The authority still separately checks proof work, job
+freshness and canonical eligibility. A signature does not establish account
+ownership, a new birth, transfer or exclusive migration.
+
+Run the separate retained-material and normal-PoW gate with:
+
+```sh
+SLUG_WALLET_NODE=/absolute/path/to/slugd ./integration/run-recovery.sh
+```
+
+See [set 24 notes](CHANGESET_24_NOTES.md) and the [integration contract](integration/README.md)
+for exact evidence and current chain restrictions. D48 still needs hosted normal
+login, custody/account authorization, secure user-facing reveal/export and real
+issuance policy. Exported Go values contain secret caller-owned strings; callers
+must protect them and avoid logs/RPC/webviews. Memory clearing is best effort.
+No production custody, arbitrary-wallet recovery or fighter transfer is claimed.
+
+The [set 23 notes](CHANGESET_23_NOTES.md) preserve the foundation's historical
+scope and verification evidence.
 SLUG wallet retains the ISC license in [LICENSE](LICENSE).

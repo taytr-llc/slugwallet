@@ -436,14 +436,14 @@ func (s *ScopedKeyManager) deriveKey(acctInfo *accountInfo, branch,
 	}
 
 	// Derive and return the key.
-	branchKey, err := acctKey.DeriveNonStandard(branch) // nolint:staticcheck
+	branchKey, err := deriveHDChild(acctKey, branch, s.rootManager.derivationMode)
 	if err != nil {
 		str := fmt.Sprintf("failed to derive extended key branch %d",
 			branch)
 		return nil, managerError(ErrKeyChain, str, err)
 	}
 
-	addressKey, err := branchKey.DeriveNonStandard(index) // nolint:staticcheck
+	addressKey, err := deriveHDChild(branchKey, index, s.rootManager.derivationMode)
 
 	// Zero branch key after it's used.
 	branchKey.Zero()
@@ -1109,8 +1109,12 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 		return nil, managerError(ErrTooManyAddresses, str, nil)
 	}
 
+	if s.rootManager.recoveryEnabled && (nextIndex > maxRecoveryBranchIndex || numAddresses > maxRecoveryBranchIndex-nextIndex) {
+		return nil, managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
+	}
+
 	// Derive the appropriate branch key and ensure it is zeroed when done.
-	branchKey, err := acctKey.DeriveNonStandard(branchNum) // nolint:staticcheck
+	branchKey, err := deriveHDChild(acctKey, branchNum, s.rootManager.derivationMode)
 	if err != nil {
 		str := fmt.Sprintf("failed to derive extended key branch %d",
 			branchNum)
@@ -1126,8 +1130,11 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 		// invalid, so use a loop to derive the next valid child.
 		var nextKey *hdkeychain.ExtendedKey
 		for {
+			if s.rootManager.recoveryEnabled && nextIndex >= maxRecoveryBranchIndex {
+				return nil, managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
+			}
 			// Derive the next child in the external chain branch.
-			key, err := branchKey.DeriveNonStandard(nextIndex) // nolint:staticcheck
+			key, err := deriveHDChild(branchKey, nextIndex, s.rootManager.derivationMode)
 			if err != nil {
 				// When this particular child is invalid, skip to the
 				// next index.
@@ -1337,8 +1344,12 @@ func (s *ScopedKeyManager) extendAddresses(ns walletdb.ReadWriteBucket,
 		return managerError(ErrTooManyAddresses, str, nil)
 	}
 
+	if s.rootManager.recoveryEnabled && lastIndex >= maxRecoveryBranchIndex {
+		return managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
+	}
+
 	// Derive the appropriate branch key and ensure it is zeroed when done.
-	branchKey, err := acctKey.DeriveNonStandard(branchNum) // nolint:staticcheck
+	branchKey, err := deriveHDChild(acctKey, branchNum, s.rootManager.derivationMode)
 	if err != nil {
 		str := fmt.Sprintf("failed to derive extended key branch %d",
 			branchNum)
@@ -1356,8 +1367,11 @@ func (s *ScopedKeyManager) extendAddresses(ns walletdb.ReadWriteBucket,
 		// invalid, so use a loop to derive the next valid child.
 		var nextKey *hdkeychain.ExtendedKey
 		for {
+			if s.rootManager.recoveryEnabled && nextIndex >= maxRecoveryBranchIndex {
+				return managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
+			}
 			// Derive the next child in the external chain branch.
-			key, err := branchKey.DeriveNonStandard(nextIndex) // nolint:staticcheck
+			key, err := deriveHDChild(branchKey, nextIndex, s.rootManager.derivationMode)
 			if err != nil {
 				// When this particular child is invalid, skip to the
 				// next index.
@@ -1739,7 +1753,7 @@ func (s *ScopedKeyManager) newAccount(ns walletdb.ReadWriteBucket,
 	}
 
 	// Derive the account key using the cointype key
-	acctKeyPriv, err := deriveAccountKey(coinTypeKeyPriv, account)
+	acctKeyPriv, err := deriveAccountKey(coinTypeKeyPriv, account, s.rootManager.derivationMode)
 	coinTypeKeyPriv.Zero()
 	if err != nil {
 		str := "failed to convert private key for account"

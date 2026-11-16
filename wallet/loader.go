@@ -235,7 +235,7 @@ func (l *Loader) CreateNewWatchingOnlyWallet(pubPassphrase []byte,
 
 func (l *Loader) createNewWallet(pubPassphrase, privPassphrase []byte,
 	rootKey *hdkeychain.ExtendedKey, bday time.Time,
-	isWatchingOnly bool) (*Wallet, error) {
+	isWatchingOnly bool, recoveryData ...*recoveryCreation) (*Wallet, error) {
 
 	defer l.mu.Unlock()
 	l.mu.Lock()
@@ -278,11 +278,15 @@ func (l *Loader) createNewWallet(pubPassphrase, privPassphrase []byte,
 			return nil, err
 		}
 	} else {
-		err := CreateWithCallback(
+		err := create(
 			l.db, pubPassphrase, privPassphrase, rootKey,
-			l.chainParams, bday, l.walletCreated,
+			l.chainParams, bday, false, l.walletCreated, recoveryData...,
 		)
 		if err != nil {
+			if len(recoveryData) != 0 && l.localDB {
+				err = errors.Join(err, l.db.Close())
+				l.db = nil
+			}
 			return nil, err
 		}
 	}
@@ -293,6 +297,10 @@ func (l *Loader) createNewWallet(pubPassphrase, privPassphrase []byte,
 		l.cfg.walletSyncRetryInterval,
 	)
 	if err != nil {
+		if len(recoveryData) != 0 && l.localDB {
+			err = errors.Join(err, l.db.Close())
+			l.db = nil
+		}
 		return nil, err
 	}
 	w.Start()
