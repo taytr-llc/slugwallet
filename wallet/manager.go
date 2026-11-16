@@ -284,10 +284,15 @@ func (m *Manager) startWallets(ctx context.Context) ([]*Wallet, error) {
 			return wallets, err
 		}
 
-		wallet := newManagedWallet(cfg, walletData, m.chainSyncer, m.cancel)
+		wallet := newManagedWallet(
+			cfg, walletData, m.chainSyncer, m.cancel,
+		)
 		wallets = append(wallets, wallet)
 
-		err = wallet.start(ctx)
+		// SQL promises watch readiness; KVDB retains offline initialization.
+		prepareWatches := m.config.Backend != DBBackendKVDB
+
+		err = wallet.start(ctx, prepareWatches)
 		if err != nil {
 			return wallets, err
 		}
@@ -690,7 +695,10 @@ func (m *Manager) handleCreateWalletReq(req createWalletReq) error {
 		return err
 	}
 
-	err = wallet.start(ctx)
+	// Keep storage adaptation separate from Wallet-owned worker activation.
+	prepareWatches := m.config.Backend != DBBackendKVDB
+
+	err = wallet.start(ctx, prepareWatches)
 	if err != nil {
 		// Failed startup needs the same serialized disposal and reply.
 		m.Lock()

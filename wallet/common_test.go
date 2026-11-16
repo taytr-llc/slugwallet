@@ -468,7 +468,7 @@ func createStartedWalletWithID(t *testing.T, walletID uint32) (*Wallet,
 	expectStopTeardown(deps)
 
 	// Start the wallet.
-	require.NoError(t, w.start(t.Context()))
+	require.NoError(t, w.start(t.Context(), false))
 
 	t.Cleanup(func() {
 		require.NoError(t, w.stop())
