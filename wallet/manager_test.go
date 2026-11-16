@@ -1387,6 +1387,21 @@ func TestManagerStartStopPublishesStableSet(t *testing.T) {
 	// Arrange: Use real Wallet startup dependencies and a strict one-shot
 	// discovery expectation to verify complete, ordered publication.
 
+	// Matching scripts retain the payment emitted by the first native watch
+	// while startup still owns both unpublished candidates.
+	addr, err := address.NewAddressWitnessPubKeyHash(
+		make([]byte, 20), &chainParams,
+	)
+	require.NoError(t, err)
+	script, err := txscript.PayToAddrScript(addr)
+	require.NoError(t, err)
+	record, err := wtxmgr.NewTxRecordFromMsgTx(
+		subscriptionTx(script, 423), time.Now(),
+	)
+	require.NoError(t, err)
+
+	payment := chain.RelevantTx{TxRecord: record}
+
 	data := make([]*walletData, 0, 2)
 	for i, name := range []string{"first", "second"} {
 		_, deps := createTestWalletWithMocks(t)
@@ -1400,6 +1415,9 @@ func TestManagerStartStopPublishesStableSet(t *testing.T) {
 		}).Return([]db.AccountInfo{}, nil).Once()
 		deps.store.On("DeleteExpiredLeases", mock.Anything, id).
 			Return(nil).Once()
+		expectEmptyLiveWatches(
+			deps.store, id, db.AddressInfo{ScriptPubKey: script},
+		)
 		deps.vault.On("Lock").Return().Once()
 		data = append(data, &walletData{
 			id:    id,
@@ -1415,14 +1433,39 @@ func TestManagerStartStopPublishesStableSet(t *testing.T) {
 
 	source := &bwmock.Chain{}
 	source.On("Notifications").Return((<-chan any)(nil)).Once()
-	manager := newManagerLifecycleTest(t, backend, source, DBBackendKVDB)
+	manager := newManagerLifecycleTest(t, backend, source, DBBackendSQLite)
 	chain, ok := manager.config.ChainSource.(*bwmock.Chain)
 	require.True(t, ok)
-	chain.On("IsCurrent").Return(false).Maybe()
+	// Retain native activation's payment while both workers await backend I/O.
+	// The constructor-acquired stream is installed before synchronous Start.
+	notifications := make(chan any, 1)
+	manager.chainEvents = notifications
+	releaseWorkers := make(chan time.Time)
+	releaseSync := sync.OnceFunc(func() { close(releaseWorkers) })
+	t.Cleanup(releaseSync)
+	chain.On("IsCurrent").WaitUntil(releaseWorkers).Return(false).Twice()
+	chain.On("WatchAddrsFromTip", mock.Anything, mock.Anything).
+		Run(func(mock.Arguments) { notifications <- payment }).
+		Return(nil).Once()
+	chain.On("WatchAddrsFromTip", mock.Anything, mock.Anything).
+		Return(nil).Once()
+	chain.On("NotifyBlocks").Return(nil).Twice()
 
 	// Act: Publish the durable set, then reject another Start without
 	// querying storage again or exposing a replacement set.
 	wallets, err := manager.Start(t.Context())
+
+	// Capture delivery before Stop while workers remain held. The final
+	// assertions compare these retained envelopes after lifecycle cleanup.
+	payments := make([]chainEvent, 0, len(wallets))
+	for _, wallet := range wallets {
+		select {
+		case event := <-wallet.chainEventChan:
+			payments = append(payments, event)
+		case <-time.After(time.Second):
+			t.Fatal("payment lost during startup publication")
+		}
+	}
 
 	// Hold Stop before its callback cancels the lifetime or clears started.
 	// A second Start during that pause must reject the still-running Manager
@@ -1447,6 +1490,8 @@ func TestManagerStartStopPublishesStableSet(t *testing.T) {
 	late, lateErr := manager.Start(t.Context())
 
 	releaseStop()
+	<-manager.lifetimeCtx.Done()
+	releaseSync()
 
 	stopErr := <-stopped
 
@@ -1462,6 +1507,8 @@ func TestManagerStartStopPublishesStableSet(t *testing.T) {
 
 	for i, w := range wallets {
 		require.Equal(t, uint32(i+1), w.ID())
+		require.Len(t, payments[i].matches, 1)
+		require.Equal(t, record.Hash, payments[i].matches[0].Rec.Hash)
 	}
 }
 
@@ -2140,26 +2187,49 @@ func TestManagerCreateLifecycleStartFailureStopsManager(t *testing.T) {
 	t.Parallel()
 
 	// Arrange: Hold startup and storage closure separately. Failure must
-	// finish cleanup before either lifecycle caller completes.
+	// finish cleanup before either lifecycle caller completes. A failed
+	// candidate has no worker; only the published sibling can report failure.
 	_, deps := createTestWalletWithMocks(t)
-	createErr := errors.New("candidate birthday")
+	_, sibling := createTestWalletWithMocks(t)
+	sibling.store.On("GetWallet", mock.Anything, "existing").Return(
+		&db.WalletInfo{BirthdayBlock: &db.Block{}}, nil,
+	).Once()
+	sibling.store.On("ListAccounts", mock.Anything, db.ListAccountsQuery{
+		WalletID: 1,
+	}).Return([]db.AccountInfo{}, nil).Once()
+	sibling.store.On("DeleteExpiredLeases", mock.Anything, uint32(1)).
+		Return(nil).Once()
+	expectEmptyLiveWatches(sibling.store, 1)
+	siblingLock := sibling.vault.On("Lock").Return().Once()
+	createErr := errors.New("candidate watch")
 	closeErr := errors.New("backend close")
-	birthdayEntered := make(chan struct{})
-	birthdayRelease := make(chan struct{})
-	deps.store.On("GetWallet", mock.Anything, "candidate").Run(
-		func(mock.Arguments) {
-			close(birthdayEntered)
-			<-birthdayRelease
-		},
-	).Return(nil, createErr).Once()
+	watchEntered := make(chan struct{})
+	watchRelease := make(chan struct{})
+
+	deps.store.On("GetWallet", mock.Anything, "candidate").Return(
+		&db.WalletInfo{BirthdayBlock: &db.Block{}}, nil,
+	).Once()
+	deps.store.On("ListAccounts", mock.Anything, db.ListAccountsQuery{
+		WalletID: 2,
+	}).Return([]db.AccountInfo{}, nil).Once()
+	deps.store.On("DeleteExpiredLeases", mock.Anything, uint32(2)).
+		Return(nil).Once()
+	expectEmptyLiveWatches(deps.store, uint32(2))
 
 	params := managerLifecycleCreateParams("candidate")
 	backend := &managerBackendMock{}
 	backend.On("listWallets", mock.Anything).
-		Return([]*walletData{}, nil).Once()
+		Return([]*walletData{
+			{
+				id:    1,
+				name:  "existing",
+				store: sibling.store,
+				vault: sibling.vault,
+			},
+		}, nil).Once()
 	backend.On("create", mock.Anything, params, mock.Anything).
 		Return(&walletData{
-			id:    1,
+			id:    2,
 			name:  params.Name,
 			store: deps.store,
 			vault: deps.vault,
@@ -2171,20 +2241,40 @@ func TestManagerCreateLifecycleStartFailureStopsManager(t *testing.T) {
 	backend.On("close").Run(func(mock.Arguments) {
 		close(closing)
 		<-release
-	}).Return(closeErr).Once()
+	}).Return(closeErr).Once().NotBefore(siblingLock)
 
+	// The source retains a pending native event while readiness fails; it
+	// must not bypass candidate disposal or the shared Store join.
+	notifications := make(chan any, 1)
 	source := &bwmock.Chain{}
-	source.On("Notifications").Return((<-chan any)(nil)).Once()
-	manager := newManagerLifecycleTest(t, backend, source, DBBackendKVDB)
+	source.On("Notifications").Return((<-chan any)(notifications)).Once()
+	source.On("WatchAddrsFromTip", mock.Anything, mock.Anything).
+		Return(nil).Twice()
+	source.On("NotifyBlocks").Return(nil).Once()
+	source.On("NotifyBlocks").Run(func(mock.Arguments) {
+		close(watchEntered)
+		<-watchRelease
+	}).Return(createErr).Once()
+
+	siblingEntered := make(chan struct{})
+	siblingRelease := make(chan struct{})
+	releaseSibling := sync.OnceFunc(func() { close(siblingRelease) })
+	t.Cleanup(releaseSibling)
+	source.On("IsCurrent").Run(func(mock.Arguments) {
+		close(siblingEntered)
+		<-siblingRelease
+	}).Return(false).Once()
+	manager := newManagerLifecycleTest(t, backend, source, DBBackendSQLite)
 	// Release test gates before fixture Stop, even after failed assertions.
-	releaseBirthday := sync.OnceFunc(func() { close(birthdayRelease) })
+	releaseWatch := sync.OnceFunc(func() { close(watchRelease) })
 	releaseClose := sync.OnceFunc(func() { close(release) })
 
-	t.Cleanup(releaseBirthday)
+	t.Cleanup(releaseWatch)
 	t.Cleanup(releaseClose)
 
 	_, err := manager.Start(t.Context())
 	require.NoError(t, err)
+	<-siblingEntered
 
 	// Keep both results pending until cleanup finishes.
 	type createOutcome struct {
@@ -2205,15 +2295,20 @@ func TestManagerCreateLifecycleStartFailureStopsManager(t *testing.T) {
 		}
 	}()
 
-	<-birthdayEntered
+	<-watchEntered
 
-	// Wait for Stop cancellation before releasing startup, so cleanup
-	// ordering does not depend on mutex scheduling or the runtime owner.
+	notifications <- chain.BlockConnected{}
+
+	// The published sibling reports while Create still owns its
+	// candidate. Failed setup must clear storage once before the loop exits.
+	manager.cancel(dbruntime.ErrAmbiguousTxCommit)
+
 	go func() { stopped <- manager.Stop() }()
 
 	<-manager.lifetimeCtx.Done()
 
-	releaseBirthday()
+	releaseSibling()
+	releaseWatch()
 
 	select {
 	case <-closing:
