@@ -151,7 +151,7 @@ var (
 	ErrUtxoNotFound = errors.New("utxo not found")
 
 	// ErrTxInputConflict is returned when a recorded confirmed transaction
-	// already spends an input, or a wallet-owned input has another spender.
+	// already spends an input, or selected input ancestry is incompatible.
 	ErrTxInputConflict = errors.New(
 		"transaction input conflicts with another wallet spend",
 	)
@@ -449,10 +449,12 @@ type TxStore interface {
 	// wallet history; it does not build or publish transactions on the
 	// caller's behalf.
 	//
-	// The same write also updates the corresponding UTXO state: it marks any
-	// wallet-owned outputs referenced by the new transaction's inputs as spent
-	// and creates new UTXOs for any outputs that are spendable by the wallet.
-	// This keeps the transaction record and UTXO set consistent.
+	// SQL stores retain all ordinary inputs, including unknown parents, and
+	// derive credit availability from eligible claims. Unconfirmed competitors
+	// coexist; a confirming block replaces direct peers and fails descendants.
+	// Unmined echoes of confirmed or terminal rows succeed without recording
+	// new credits or reviving history. A real block can confirm retained
+	// Replaced/Failed history. Native stores keep their own conflict policy.
 	//
 	// CreateTx is also responsible for recording transaction metadata
 	// required by higher-level wallet policy:
