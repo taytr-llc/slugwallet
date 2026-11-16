@@ -72,6 +72,17 @@ type Utxo struct {
 	// Spendable indicates whether the output is considered spendable.
 	Spendable bool
 
+	// HasConflictingTx reports that this output's creator or an unconfirmed
+	// ancestor shares an input with another eligible unconfirmed transaction
+	// known to the wallet. The output itself can still be unspent.
+	// SQL computes this from retained inputs and current transaction state;
+	// it is not a mempool check and does not include the competing txid.
+	// Listed outputs can carry this flag, but safe balances and automatic
+	// selection exclude them. Explicit compatible input selection is allowed.
+	// Totals omit all known competing branches and can understate funds;
+	// owning the alternatives does not guarantee that either will confirm.
+	HasConflictingTx bool
+
 	// Address is the address associated with the output.
 	Address address.Address
 
@@ -228,6 +239,8 @@ type leasedOutputsResp struct {
 }
 
 // ListUnspent returns the wallet-owned UTXOs that match the provided query.
+// SQL wallets omit Pending creators; explicit point lookup remains available
+// for local chaining. Other backends use their native visibility policy.
 //
 // NOTE: This is part of the UtxoManager interface implementation.
 func (w *Wallet) ListUnspent(ctx context.Context,
@@ -369,15 +382,16 @@ func (w *Wallet) buildWalletUtxoFromStore(info *db.UtxoInfo,
 	}
 
 	return &Utxo{
-		OutPoint:      info.OutPoint,
-		Amount:        info.Amount,
-		PkScript:      info.PkScript,
-		Confirmations: confirmations,
-		Spendable:     spendable,
-		Address:       addr,
-		Account:       accountName,
-		AddressType:   walletAddrType,
-		Locked:        info.IsLocked,
+		OutPoint:         info.OutPoint,
+		Amount:           info.Amount,
+		PkScript:         info.PkScript,
+		Confirmations:    confirmations,
+		Spendable:        spendable,
+		Address:          addr,
+		Account:          accountName,
+		AddressType:      walletAddrType,
+		Locked:           info.IsLocked,
+		HasConflictingTx: info.HasConflictingTx,
 	}, nil
 }
 
