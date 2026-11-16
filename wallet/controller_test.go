@@ -2897,7 +2897,7 @@ func TestSyncBackoffPolicy(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			w := &Wallet{
+			s := &syncer{
 				cfg: Config{
 					WalletSyncRetryInterval: retryInterval,
 				},
@@ -2913,7 +2913,7 @@ func TestSyncBackoffPolicy(t *testing.T) {
 
 			// Act: Complete the real retry wait immediately, using the same
 			// scheduled-delay observation for each original policy.
-			nextBackoff, err := w.waitForBackoff(
+			nextBackoff, err := s.waitForBackoff(
 				t.Context(), time.Now().Add(-tc.runAge), tc.backoff, timerFn,
 			)
 
@@ -2935,7 +2935,7 @@ func TestSyncBackoffShutdown(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	w := &Wallet{}
+	s := &syncer{}
 
 	startTime := time.Now()
 	currentBackoff := time.Second
@@ -2945,9 +2945,9 @@ func TestSyncBackoffShutdown(t *testing.T) {
 		return make(chan time.Time)
 	}
 
-	// Act: Wait using the canceled lifetime rather than an implicit Wallet
+	// Act: Wait using the canceled lifetime rather than an implicit owner
 	// context, as required by the blocking helper's contract.
-	nextBackoff, err := w.waitForBackoff(
+	nextBackoff, err := s.waitForBackoff(
 		ctx, startTime, currentBackoff, timerFn,
 	)
 
