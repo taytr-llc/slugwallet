@@ -351,6 +351,8 @@ type Manager struct {
 	closed          bool
 	derivationMode  DerivationMode
 	recoveryEnabled bool
+	recoveryVersion uint32
+	defaultScopes   map[KeyScope]ScopeAddrSchema
 	chainParams     *chaincfg.Params
 
 	// masterKeyPub is the secret key used to secure the cryptoKeyPub key
@@ -512,6 +514,9 @@ func (m *Manager) Close() {
 // mark as gucci?
 func (m *Manager) NewScopedKeyManager(ns walletdb.ReadWriteBucket,
 	scope KeyScope, addrSchema ScopeAddrSchema) (*ScopedKeyManager, error) {
+	if m.recoveryVersion == 2 {
+		return nil, ErrRecoveryInventory
+	}
 
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
@@ -843,13 +848,7 @@ func (m *Manager) ForEachRelevantActiveAddress(ns walletdb.ReadBucket,
 		// If the manager is for a default key scope, we'll return all
 		// addresses, otherwise we'll only return internal addresses, as
 		// that's the branch used for change addresses.
-		isDefaultKeyScope := false
-		for _, defaultKeyScope := range DefaultKeyScopes {
-			if scopedMgr.Scope() == defaultKeyScope {
-				isDefaultKeyScope = true
-				break
-			}
-		}
+		_, isDefaultKeyScope := m.defaultScopes[scopedMgr.Scope()]
 
 		var err error
 		if isDefaultKeyScope {
@@ -1415,6 +1414,7 @@ func newManager(chainParams *chaincfg.Params, masterKeyPub *snacl.SecretKey,
 		scopedManagers:           scopedManagers,
 		externalAddrSchemas:      make(map[AddressType][]KeyScope),
 		internalAddrSchemas:      make(map[AddressType][]KeyScope),
+		defaultScopes:            legacyDefaultScopes(),
 	}
 
 	// Store the atomic.Bool values for the manager.
@@ -1530,6 +1530,13 @@ func checkBranchKeys(acctKey *hdkeychain.ExtendedKey, modes ...DerivationMode) e
 // the public keys.
 func loadManager(ns walletdb.ReadBucket, pubPassphrase []byte,
 	chainParams *chaincfg.Params) (*Manager, error) {
+	return loadManagerInternal(ns, pubPassphrase, chainParams, false)
+}
+
+// candidateCreation is used only inside the validated creation transaction,
+// before retained cursor minima have been materialized. Public Open never sets it.
+func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
+	chainParams *chaincfg.Params, candidateCreation bool) (*Manager, error) {
 
 	// Verify the version is neither too old or too new.
 	version, err := fetchManagerVersion(ns)
@@ -1540,7 +1547,7 @@ func loadManager(ns walletdb.ReadBucket, pubPassphrase []byte,
 	if version < latestMgrVersion {
 		str := "database upgrade required"
 		return nil, managerError(ErrUpgrade, str, nil)
-	} else if version > latestMgrVersion && version != RecoveryManagerVersion {
+	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion {
 		str := "database version is greater than latest understood version"
 		return nil, managerError(ErrUpgrade, str, nil)
 	}
@@ -1617,6 +1624,13 @@ func loadManager(ns walletdb.ReadBucket, pubPassphrase []byte,
 	}
 	cryptoKeyPub.CopyBytes(cryptoKeyPubCT)
 	zero.Bytes(cryptoKeyPubCT)
+	defaults := legacyDefaultScopes()
+	if version == CandidateManagerVersion {
+		if err := validateStoredCandidate(ns, cryptoKeyPub, chainParams, candidateCreation); err != nil {
+			return nil, err
+		}
+		defaults = candidateDefaultScopes()
+	}
 
 	// Create the sync state struct.
 	syncInfo := newSyncState(startBlock, syncedTo)
@@ -1663,6 +1677,13 @@ func loadManager(ns walletdb.ReadBucket, pubPassphrase []byte,
 	)
 
 	mgr.derivationMode, mgr.recoveryEnabled = mode, hasRecovery
+	mgr.defaultScopes = defaults
+	if hasRecovery {
+		mgr.recoveryVersion = 1
+		if version == CandidateManagerVersion {
+			mgr.recoveryVersion = 2
+		}
+	}
 	for _, scopedManager := range scopedManagers {
 		scopedManager.rootManager = mgr
 	}
@@ -1831,7 +1852,7 @@ func Create(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 	pubPassphrase, privPassphrase []byte, chainParams *chaincfg.Params,
 	config *ScryptOptions, birthday time.Time, mode DerivationMode,
-	recoveryPublic, recoveryPrivate []byte) error {
+	recoveryPublic, recoveryPrivate []byte, candidate ...string) error {
 	// If the seed argument is nil we create in watchingOnly mode.
 	isWatchingOnly := rootKey == nil
 
@@ -1851,7 +1872,10 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 	// Perform the initial bucket creation and database namespace setup.
 	defaultScopes := map[KeyScope]ScopeAddrSchema{}
 	if !isWatchingOnly {
-		defaultScopes = ScopeAddrMap
+		defaultScopes = legacyDefaultScopes()
+		if len(candidate) != 0 {
+			defaultScopes = candidateDefaultScopes()
+		}
 	}
 	if err := createManagerNS(ns, defaultScopes); err != nil {
 		return maybeConvertDbError(err)
@@ -1958,7 +1982,7 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 		// Next, for each registers default manager scope, we'll
 		// create the hardened cointype key for it, as well as the
 		// first default account.
-		for _, defaultScope := range DefaultKeyScopes {
+		for _, defaultScope := range creationDefaultScopes(candidate...) {
 			err := createManagerKeyScope(
 				ns, defaultScope, rootKey, cryptoKeyPub, cryptoKeyPriv, mode,
 			)
@@ -1987,7 +2011,7 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 		}
 
 		if mode == DerivationStandard {
-			if err := putRecoveryData(ns, recoveryPublic, recoveryPrivate, cryptoKeyPub, cryptoKeyPriv); err != nil {
+			if err := putRecoveryData(ns, recoveryPublic, recoveryPrivate, cryptoKeyPub, cryptoKeyPriv, candidate...); err != nil {
 				return err
 			}
 		}

@@ -7,6 +7,7 @@ package wallet
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -2889,7 +2890,22 @@ func (w *Wallet) AccountBalances(scope waddrmgr.KeyScope,
 			if err != nil || len(addrs) == 0 {
 				continue
 			}
-			outputAcct, err := manager.AddrAccount(addrmgrNs, addrs[0])
+			var outputAcct uint32
+			if w.Manager.RecoveryVersion() == 2 {
+				// A candidate has one account shared by its four compiled
+				// payment scopes. Its ordinary RPC address is native84,
+				// while account names are resolved through scope44.
+				var owner *waddrmgr.ScopedKeyManager
+				owner, outputAcct, err = w.Manager.AddrAccount(addrmgrNs, addrs[0])
+				if err == nil {
+					allowed, scopeErr := w.Manager.PaymentScope(owner.Scope().Purpose)
+					if scopeErr != nil || owner.Scope() != allowed || outputAcct != 0 {
+						continue
+					}
+				}
+			} else {
+				outputAcct, err = manager.AddrAccount(addrmgrNs, addrs[0])
+			}
 			if err != nil {
 				continue
 			}
@@ -4475,7 +4491,11 @@ func create(db walletdb.DB, pubPass, privPass []byte,
 
 		if len(recoveryData) != 0 {
 			data := recoveryData[0]
-			err = waddrmgr.CreateWithRecovery(addrmgrNs, rootKey, pubPass, privPass, params, nil, birthday, data.public, data.private)
+			if data.candidate != nil {
+				err = waddrmgr.CreateWithCandidateRecovery(context.Background(), addrmgrNs, rootKey, pubPass, privPass, params, nil, birthday, data.public, data.private)
+			} else {
+				err = waddrmgr.CreateWithRecovery(addrmgrNs, rootKey, pubPass, privPass, params, nil, birthday, data.public, data.private)
+			}
 		} else {
 			err = waddrmgr.Create(addrmgrNs, rootKey, pubPass, privPass, params, nil, birthday)
 		}
@@ -4489,7 +4509,13 @@ func create(db walletdb.DB, pubPass, privPass []byte,
 		}
 
 		if len(recoveryData) != 0 {
-			if err := restoreRecoveryCursors(addrmgrNs, pubPass, params, recoveryData[0].manifest); err != nil {
+			var err error
+			if recoveryData[0].candidate != nil {
+				err = restoreCandidateCursors(addrmgrNs, pubPass, params, *recoveryData[0].candidate)
+			} else {
+				err = restoreRecoveryCursors(addrmgrNs, pubPass, params, recoveryData[0].manifest)
+			}
+			if err != nil {
 				return err
 			}
 		}
@@ -4548,7 +4574,13 @@ func OpenWithRetry(db walletdb.DB, pubPass []byte, cbs *waddrmgr.OpenCallbacks,
 			return err
 		}
 		if addrMgr.RecoveryEnabled() {
-			if _, _, err := readRecoveryBase(addrMgrBucket, addrMgr, params); err != nil {
+			var err error
+			if addrMgr.RecoveryVersion() == 2 {
+				_, _, _, err = readCandidatePublic(context.Background(), addrMgrBucket, addrMgr, params)
+			} else {
+				_, _, err = readRecoveryBase(addrMgrBucket, addrMgr, params)
+			}
+			if err != nil {
 				addrMgr.Close()
 				return err
 			}

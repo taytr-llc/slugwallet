@@ -153,6 +153,42 @@ func (w *Wallet) txToOutputs(outputs []*wire.TxOut,
 	if len(selectionOptions) != 0 && selectionOptions[0] != nil {
 		opts = selectionOptions[0]
 	}
+	if w.Manager.RecoveryVersion() == 2 {
+		if account != waddrmgr.DefaultAccountNum {
+			return nil, waddrmgr.ErrRecoveryInventory
+		}
+		allowed := make([]waddrmgr.KeyScope, 0, 4)
+		for _, purpose := range []uint32{44, 49, 84, 86} {
+			scope, err := w.Manager.PaymentScope(purpose)
+			if err != nil {
+				return nil, err
+			}
+			allowed = append(allowed, scope)
+		}
+		valid := func(scope waddrmgr.KeyScope) bool {
+			for _, expected := range allowed {
+				if scope == expected {
+					return true
+				}
+			}
+			return false
+		}
+		if (coinSelectKeyScope != nil && !valid(*coinSelectKeyScope)) || (changeKeyScope != nil && !valid(*changeKeyScope)) {
+			return nil, waddrmgr.ErrRecoveryInventory
+		}
+		owned := *opts
+		if opts.coinSelectScopes == nil {
+			owned.coinSelectScopes = allowed
+		} else {
+			owned.coinSelectScopes = append([]waddrmgr.KeyScope(nil), opts.coinSelectScopes...)
+			for _, scope := range owned.coinSelectScopes {
+				if !valid(scope) {
+					return nil, waddrmgr.ErrRecoveryInventory
+				}
+			}
+		}
+		opts = &owned
+	}
 	if opts.minimumBlockHeight > txscript.LockTimeThreshold {
 		return nil, errors.New("minimum block height is outside height-lock range")
 	}
@@ -301,7 +337,7 @@ func (w *Wallet) txToOutputs(outputs []*wire.TxOut,
 			// (NP2WKH, P2WKH, P2TR), so any key scope provided
 			// doesn't impact the result of this call.
 			watchOnly, err = w.Manager.IsWatchOnlyAccount(
-				addrmgrNs, waddrmgr.KeyScopeBIP0086, account,
+				addrmgrNs, w.defaultChangeScope(), account,
 			)
 		} else {
 			watchOnly, err = w.Manager.IsWatchOnlyAccount(
@@ -471,9 +507,9 @@ func (w *Wallet) addrMgrWithChangeSource(dbtx walletdb.ReadWriteTx,
 	// Determine the address type for change addresses of the given
 	// account.
 	if changeKeyScope == nil {
-		changeKeyScope = &waddrmgr.KeyScopeBIP0086
+		scope := w.defaultChangeScope()
+		changeKeyScope = &scope
 	}
-	addrType := waddrmgr.ScopeAddrMap[*changeKeyScope].InternalAddrType
 
 	// It's possible for the account to have an address schema override, so
 	// prefer that if it exists.
@@ -482,6 +518,7 @@ func (w *Wallet) addrMgrWithChangeSource(dbtx walletdb.ReadWriteTx,
 	if err != nil {
 		return nil, nil, err
 	}
+	addrType := scopeMgr.AddrSchema().InternalAddrType
 	accountInfo, err := scopeMgr.AccountProperties(addrmgrNs, account)
 	if err != nil {
 		return nil, nil, err

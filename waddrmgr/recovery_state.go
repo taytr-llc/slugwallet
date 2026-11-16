@@ -26,14 +26,15 @@ const (
 )
 
 var (
-	ErrRecoveryUnavailable = errors.New("wallet recovery material unavailable")
-	ErrRecoveryState       = errors.New("invalid wallet recovery state")
-	ErrRecoveryProtected   = errors.New("retained recovery material prevents this destructive operation")
-	ErrRecoveryInventory   = errors.New("wallet contains material outside its recovery profile")
-	derivationModeName     = []byte("slug-derivation-mode")
-	recoveryVersionName    = []byte("slug-recovery-version")
-	recoveryPublicName     = []byte("slug-recovery-public")
-	recoveryPrivateName    = []byte("slug-recovery-private")
+	ErrRecoveryUnavailable  = errors.New("wallet recovery material unavailable")
+	ErrRecoveryState        = errors.New("invalid wallet recovery state")
+	ErrRecoveryProtected    = errors.New("retained recovery material prevents this destructive operation")
+	ErrRecoveryInventory    = errors.New("wallet contains material outside its recovery profile")
+	ErrRecoveryScanRequired = errors.New("recovery requires resumable scanning outside the bounded fixture runtime")
+	derivationModeName      = []byte("slug-derivation-mode")
+	recoveryVersionName     = []byte("slug-recovery-version")
+	recoveryPublicName      = []byte("slug-recovery-public")
+	recoveryPrivateName     = []byte("slug-recovery-private")
 )
 
 func deriveHDChild(key *hdkeychain.ExtendedKey, index uint32, modes ...DerivationMode) (*hdkeychain.ExtendedKey, error) {
@@ -65,18 +66,27 @@ func fetchRecoveryState(ns walletdb.ReadBucket) (DerivationMode, bool, error) {
 	}
 	mode, version := b.Get(derivationModeName), b.Get(recoveryVersionName)
 	pub, priv := b.Get(recoveryPublicName), b.Get(recoveryPrivateName)
-	if managerVersion == latestMgrVersion && mode == nil && version == nil && pub == nil && priv == nil {
+	if managerVersion == latestMgrVersion && mode == nil && version == nil && pub == nil && priv == nil && b.Get(candidateFixtureName) == nil {
 		return DerivationLegacy, false, nil
 	}
-	if managerVersion != RecoveryManagerVersion || len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) ||
-		len(version) != 4 || binary.LittleEndian.Uint32(version) != 1 ||
+	wantVersion := uint32(1)
+	if managerVersion == CandidateManagerVersion {
+		wantVersion = 2
+		if !validCandidateFixture(string(b.Get(candidateFixtureName))) {
+			return 0, false, ErrRecoveryState
+		}
+	} else if b.Get(candidateFixtureName) != nil {
+		return 0, false, ErrRecoveryState
+	}
+	if (managerVersion != RecoveryManagerVersion && managerVersion != CandidateManagerVersion) || len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) ||
+		len(version) != 4 || binary.LittleEndian.Uint32(version) != wantVersion ||
 		len(pub) <= 40 || len(pub) > maxRecoveryData+40 || len(priv) <= 40 || len(priv) > maxRecoveryData+40 {
 		return 0, false, ErrRecoveryState
 	}
 	return DerivationStandard, true, nil
 }
 
-func putRecoveryData(ns walletdb.ReadWriteBucket, pub, priv []byte, pubKey, privKey EncryptorDecryptor) error {
+func putRecoveryData(ns walletdb.ReadWriteBucket, pub, priv []byte, pubKey, privKey EncryptorDecryptor, candidate ...string) error {
 	pubCipher, err := pubKey.Encrypt(pub)
 	if err != nil {
 		return ErrRecoveryState
@@ -86,16 +96,26 @@ func putRecoveryData(ns walletdb.ReadWriteBucket, pub, priv []byte, pubKey, priv
 		return ErrRecoveryState
 	}
 	b := ns.NestedReadWriteBucket(mainBucketName)
+	version, schema := uint32(1), RecoveryManagerVersion
+	if len(candidate) != 0 {
+		version, schema = 2, CandidateManagerVersion
+		if len(candidate) != 1 || !validCandidateFixture(candidate[0]) {
+			return ErrRecoveryState
+		}
+		if err := b.Put(candidateFixtureName, []byte(candidate[0])); err != nil {
+			return err
+		}
+	}
 	for _, item := range []struct{ key, value []byte }{
 		{derivationModeName, uint32ToBytes(uint32(DerivationStandard))},
-		{recoveryVersionName, uint32ToBytes(1)},
+		{recoveryVersionName, uint32ToBytes(version)},
 		{recoveryPublicName, pubCipher}, {recoveryPrivateName, privCipher},
 	} {
 		if err := b.Put(item.key, item.value); err != nil {
 			return err
 		}
 	}
-	return putManagerVersion(ns, RecoveryManagerVersion)
+	return putManagerVersion(ns, schema)
 }
 
 // CreateWithRecovery creates an explicitly standard-BIP32 manager and retains
@@ -119,6 +139,10 @@ func (m *Manager) DerivationMode() DerivationMode { return m.derivationMode }
 // RecoveryEnabled reports whether this manager was explicitly created with
 // retained material. It does not promise that the supported inventory is intact.
 func (m *Manager) RecoveryEnabled() bool { return m.recoveryEnabled }
+
+// RecoveryVersion distinguishes immutable retained formats without changing
+// legacy mode. Zero means no retained recovery profile.
+func (m *Manager) RecoveryVersion() uint32 { return m.recoveryVersion }
 
 // RecoveryData returns an owned decrypted payload. Private reads require an
 // unlocked non-watch-only manager; callers must clear the returned plaintext.
@@ -190,6 +214,14 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 	if !enabled {
 		return nil, ErrRecoveryUnavailable
 	}
+	expectedScopes := legacyDefaultScopes()
+	candidate := false
+	if version, err := fetchManagerVersion(ns); err != nil {
+		return nil, ErrRecoveryState
+	} else if version == CandidateManagerVersion {
+		expectedScopes = candidateDefaultScopes()
+		candidate = true
+	}
 	var accounts []RecoveryAccount
 	scopeBucket := ns.NestedReadBucket(scopeBucketName)
 	if scopeBucket == nil {
@@ -200,11 +232,11 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 			return ErrRecoveryInventory
 		}
 		scope := KeyScope{Purpose: binary.LittleEndian.Uint32(key), Coin: binary.LittleEndian.Uint32(key[4:])}
-		if len(accounts) >= len(DefaultKeyScopes) {
+		if len(accounts) >= len(expectedScopes) {
 			return ErrRecoveryInventory
 		}
-		expected, ok := ScopeAddrMap[scope]
-		if !ok || scope.Coin != 0 {
+		expected, ok := expectedScopes[scope]
+		if !ok {
 			return ErrRecoveryInventory
 		}
 		schema, err := fetchScopeAddrSchema(ns, &scope)
@@ -246,12 +278,18 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 				return nil
 			}
 			foundDefault = true
+			if candidate && (data.nextExternalIndex > maxRecoveryBranchIndex || data.nextInternalIndex > maxRecoveryBranchIndex) {
+				return ErrRecoveryScanRequired
+			}
 			if len(data.pubKeyEncrypted) == 0 || len(data.privKeyEncrypted) == 0 || data.nextExternalIndex > maxRecoveryBranchIndex || data.nextInternalIndex > maxRecoveryBranchIndex {
 				return ErrRecoveryInventory
 			}
 			state.NextExternal, state.NextInternal = data.nextExternalIndex, data.nextInternalIndex
 			return nil
 		})
+		if errors.Is(err, ErrRecoveryScanRequired) {
+			return err
+		}
 		if err != nil || !foundDefault || !foundImported {
 			return ErrRecoveryInventory
 		}
@@ -299,7 +337,7 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(accounts) != len(DefaultKeyScopes) {
+	if len(accounts) != len(expectedScopes) {
 		return nil, ErrRecoveryInventory
 	}
 	return accounts, nil

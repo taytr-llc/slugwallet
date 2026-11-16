@@ -8,6 +8,7 @@ import (
 	"github.com/taytr-llc/slug/txscript/v2"
 	"github.com/taytr-llc/slug/wire/v2"
 	"github.com/taytr-llc/slugwallet/chain"
+	"github.com/taytr-llc/slugwallet/productionprofile"
 	"github.com/taytr-llc/slugwallet/waddrmgr"
 	"github.com/taytr-llc/slugwallet/wallet"
 	"github.com/taytr-llc/slugwallet/wtxmgr"
@@ -17,6 +18,31 @@ type spendActivation struct {
 	segwit, taproot bool
 	// Phase-A fixed activation height; zero on voting/test networks.
 	minimumHeight uint32
+}
+
+// rpcKeyScope maps only the compiled candidate profile. Legacy RPC defaults
+// and all old coin-0 account semantics remain unchanged.
+func rpcKeyScope(w *wallet.Wallet, scope waddrmgr.KeyScope) waddrmgr.KeyScope {
+	if w.Manager.RecoveryVersion() == productionprofile.Version2 {
+		scope.Coin = productionprofile.CandidateCoinType
+	}
+	return scope
+}
+
+func rpcSpendOptionsForWallet(w *wallet.Wallet, account uint32, outputs []*wire.TxOut, state spendActivation) ([]wallet.TxCreateOption, error) {
+	options, err := rpcSpendOptions(account, outputs, state)
+	if err != nil || w.Manager.RecoveryVersion() != productionprofile.Version2 {
+		return options, err
+	}
+	if !state.segwit {
+		return nil, errors.New("candidate native witness change is not active for the next block")
+	}
+	scopes := rpcSpendScopes(account, state)
+	for i := range scopes {
+		scopes[i] = rpcKeyScope(w, scopes[i])
+	}
+	change := rpcKeyScope(w, waddrmgr.KeyScopeBIP0084)
+	return append(options, wallet.WithCoinSelectionScopes(scopes...), wallet.WithCustomChangeScope(&change)), nil
 }
 
 func rpcSpendActivation(params *chaincfg.Params, backend chain.Interface) (spendActivation, error) {

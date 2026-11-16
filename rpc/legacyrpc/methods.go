@@ -399,7 +399,7 @@ func dumpPrivKey(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 func getAddressesByAccount(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	cmd := icmd.(*btcjson.GetAddressesByAccountCmd)
 
-	account, err := w.AccountNumber(waddrmgr.KeyScopeBIP0044, cmd.Account)
+	account, err := w.AccountNumber(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), cmd.Account)
 	if err != nil {
 		return nil, err
 	}
@@ -435,7 +435,7 @@ func getBalance(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 		}
 	} else {
 		var account uint32
-		account, err = w.AccountNumber(waddrmgr.KeyScopeBIP0044, accountName)
+		account, err = w.AccountNumber(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), accountName)
 		if err != nil {
 			return nil, err
 		}
@@ -538,7 +538,7 @@ func getAccount(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 		return nil, &ErrAddressNotInWallet
 	}
 
-	acctName, err := w.AccountName(waddrmgr.KeyScopeBIP0044, account)
+	acctName, err := w.AccountName(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), account)
 	if err != nil {
 		return nil, &ErrAccountNameNotFound
 	}
@@ -554,11 +554,15 @@ func getAccount(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 func getAccountAddress(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	cmd := icmd.(*btcjson.GetAccountAddressCmd)
 
-	account, err := w.AccountNumber(waddrmgr.KeyScopeBIP0044, cmd.Account)
+	account, err := w.AccountNumber(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), cmd.Account)
 	if err != nil {
 		return nil, err
 	}
-	addr, err := w.CurrentAddress(account, waddrmgr.KeyScopeBIP0044)
+	receiveScope := rpcKeyScope(w, waddrmgr.KeyScopeBIP0044)
+	if w.Manager.RecoveryVersion() == 2 {
+		receiveScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0084)
+	}
+	addr, err := w.CurrentAddress(account, receiveScope)
 	if err != nil {
 		return nil, err
 	}
@@ -575,7 +579,7 @@ func getUnconfirmedBalance(icmd interface{}, w *wallet.Wallet) (interface{}, err
 	if cmd.Account != nil {
 		acctName = *cmd.Account
 	}
-	account, err := w.AccountNumber(waddrmgr.KeyScopeBIP0044, acctName)
+	account, err := w.AccountNumber(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), acctName)
 	if err != nil {
 		return nil, err
 	}
@@ -614,7 +618,7 @@ func importPrivKey(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	}
 
 	// Import the private key, handling any errors.
-	_, err = w.ImportPrivateKey(waddrmgr.KeyScopeBIP0044, wif, nil, *cmd.Rescan)
+	_, err = w.ImportPrivateKey(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), wif, nil, *cmd.Rescan)
 	switch {
 	case waddrmgr.IsError(err, waddrmgr.ErrDuplicateAddress):
 		// Do not return duplicate key errors to the client.
@@ -644,7 +648,7 @@ func createNewAccount(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 		return nil, &ErrReservedAccountName
 	}
 
-	_, err := w.NextAccount(waddrmgr.KeyScopeBIP0044, cmd.Account)
+	_, err := w.NextAccount(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), cmd.Account)
 	if waddrmgr.IsError(err, waddrmgr.ErrLocked) {
 		return nil, &btcjson.RPCError{
 			Code: btcjson.ErrRPCWalletUnlockNeeded,
@@ -667,11 +671,11 @@ func renameAccount(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	}
 
 	// Check that given account exists
-	account, err := w.AccountNumber(waddrmgr.KeyScopeBIP0044, cmd.OldAccount)
+	account, err := w.AccountNumber(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), cmd.OldAccount)
 	if err != nil {
 		return nil, err
 	}
-	return nil, w.RenameAccount(waddrmgr.KeyScopeBIP0044, account, cmd.NewAccount)
+	return nil, w.RenameAccount(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), account, cmd.NewAccount)
 }
 
 // getNewAddress handles a getnewaddress request by returning a new
@@ -686,14 +690,23 @@ func getNewAddress(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	if cmd.Account != nil {
 		acctName = *cmd.Account
 	}
-	keyScope := waddrmgr.KeyScopeBIP0044
+	keyScope := rpcKeyScope(w, waddrmgr.KeyScopeBIP0044)
+	if w.Manager.RecoveryVersion() == 2 {
+		keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0084)
+	}
 	if cmd.AddressType != nil {
 		switch *cmd.AddressType {
 		case "p2sh-segwit":
-			keyScope = waddrmgr.KeyScopeBIP0049Plus
+			keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0049Plus)
 		case "bech32":
-			keyScope = waddrmgr.KeyScopeBIP0084
-		case "legacy": // default if unset
+			keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0084)
+		case "bech32m":
+			if w.Manager.RecoveryVersion() != 2 {
+				return nil, &ErrAddressTypeUnknown
+			}
+			keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0086)
+		case "legacy":
+			keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0044)
 		default:
 			return nil, &ErrAddressTypeUnknown
 		}
@@ -723,14 +736,23 @@ func getRawChangeAddress(icmd interface{}, w *wallet.Wallet) (interface{}, error
 	if cmd.Account != nil {
 		acctName = *cmd.Account
 	}
-	keyScope := waddrmgr.KeyScopeBIP0044
+	keyScope := rpcKeyScope(w, waddrmgr.KeyScopeBIP0044)
+	if w.Manager.RecoveryVersion() == 2 {
+		keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0084)
+	}
 	if cmd.AddressType != nil {
 		switch *cmd.AddressType {
 		case "p2sh-segwit":
-			keyScope = waddrmgr.KeyScopeBIP0049Plus
+			keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0049Plus)
 		case "bech32":
-			keyScope = waddrmgr.KeyScopeBIP0084
-		case "legacy": // default if unset
+			keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0084)
+		case "bech32m":
+			if w.Manager.RecoveryVersion() != 2 {
+				return nil, &ErrAddressTypeUnknown
+			}
+			keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0086)
+		case "legacy":
+			keyScope = rpcKeyScope(w, waddrmgr.KeyScopeBIP0044)
 		default:
 			return nil, &ErrAddressTypeUnknown
 		}
@@ -753,7 +775,7 @@ func getRawChangeAddress(icmd interface{}, w *wallet.Wallet) (interface{}, error
 func getReceivedByAccount(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	cmd := icmd.(*btcjson.GetReceivedByAccountCmd)
 
-	account, err := w.AccountNumber(waddrmgr.KeyScopeBIP0044, cmd.Account)
+	account, err := w.AccountNumber(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), cmd.Account)
 	if err != nil {
 		return nil, err
 	}
@@ -762,7 +784,7 @@ func getReceivedByAccount(icmd interface{}, w *wallet.Wallet) (interface{}, erro
 	// algorithm is already dominated by reading every transaction in the
 	// wallet's history.
 	results, err := w.TotalReceivedForAccounts(
-		waddrmgr.KeyScopeBIP0044, int32(*cmd.MinConf),
+		rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), int32(*cmd.MinConf),
 	)
 	if err != nil {
 		return nil, err
@@ -906,7 +928,7 @@ func getTransaction(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 			address = addr.EncodeAddress()
 			account, err := w.AccountOfAddress(addr)
 			if err == nil {
-				name, err := w.AccountName(waddrmgr.KeyScopeBIP0044, account)
+				name, err := w.AccountName(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), account)
 				if err == nil {
 					accountName = name
 				}
@@ -1055,7 +1077,7 @@ func listAccounts(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	cmd := icmd.(*btcjson.ListAccountsCmd)
 
 	accountBalances := map[string]float64{}
-	results, err := w.AccountBalances(waddrmgr.KeyScopeBIP0044, int32(*cmd.MinConf))
+	results, err := w.AccountBalances(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), int32(*cmd.MinConf))
 	if err != nil {
 		return nil, err
 	}
@@ -1089,7 +1111,7 @@ func listReceivedByAccount(icmd interface{}, w *wallet.Wallet) (interface{}, err
 	cmd := icmd.(*btcjson.ListReceivedByAccountCmd)
 
 	results, err := w.TotalReceivedForAccounts(
-		waddrmgr.KeyScopeBIP0044, int32(*cmd.MinConf),
+		rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), int32(*cmd.MinConf),
 	)
 	if err != nil {
 		return nil, err
@@ -1395,13 +1417,14 @@ func sendPairs(w *wallet.Wallet, amounts map[string]btcutil.Amount,
 	if err != nil {
 		return "", err
 	}
-	options, err := rpcSpendOptions(account, outputs, activation)
+	options, err := rpcSpendOptionsForWallet(w, account, outputs, activation)
 	if err != nil {
 		return "", err
 	}
 	var selectionScope *waddrmgr.KeyScope
 	if account != waddrmgr.DefaultAccountNum {
-		selectionScope = &waddrmgr.KeyScopeBIP0044
+		scope := rpcKeyScope(w, waddrmgr.KeyScopeBIP0044)
+		selectionScope = &scope
 	}
 	tx, err := w.SendOutputsWithOptions(
 		outputs, selectionScope, account, minconf, feeSatPerKb,
@@ -1451,7 +1474,7 @@ func sendFrom(icmd interface{}, w *wallet.Wallet, chainClient *chain.RPCClient) 
 	}
 
 	account, err := w.AccountNumber(
-		waddrmgr.KeyScopeBIP0044, cmd.FromAccount,
+		rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), cmd.FromAccount,
 	)
 	if err != nil {
 		return nil, err
@@ -1495,7 +1518,7 @@ func sendMany(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 		}
 	}
 
-	account, err := w.AccountNumber(waddrmgr.KeyScopeBIP0044, cmd.FromAccount)
+	account, err := w.AccountNumber(rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), cmd.FromAccount)
 	if err != nil {
 		return nil, err
 	}
@@ -1803,7 +1826,7 @@ func validateAddress(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	// information about it available and it is "mine".
 	result.IsMine = true
 	acctName, err := w.AccountName(
-		waddrmgr.KeyScopeBIP0044, ainfo.InternalAccount(),
+		rpcKeyScope(w, waddrmgr.KeyScopeBIP0044), ainfo.InternalAccount(),
 	)
 	if err != nil {
 		return nil, &ErrAccountNameNotFound

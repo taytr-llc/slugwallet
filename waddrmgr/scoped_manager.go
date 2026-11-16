@@ -650,7 +650,7 @@ func (s *ScopedKeyManager) AccountProperties(ns walletdb.ReadBucket,
 		// the account public key consistent with what the caller
 		// provided. Note that his is only done for the default key
 		// scopes, as we only know the HD versions for those.
-		isDefaultKeyScope := IsDefaultScope(s.scope)
+		isDefaultKeyScope := s.rootManager.IsDefaultScope(s.scope)
 		if acctInfo.acctType == accountDefault && isDefaultKeyScope {
 			props.AccountPubKey, err = s.cloneKeyWithVersion(
 				acctInfo.acctKeyPub,
@@ -1110,6 +1110,9 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 	}
 
 	if s.rootManager.recoveryEnabled && (nextIndex > maxRecoveryBranchIndex || numAddresses > maxRecoveryBranchIndex-nextIndex) {
+		if s.rootManager.recoveryVersion == 2 {
+			return nil, ErrRecoveryScanRequired
+		}
 		return nil, managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
 	}
 
@@ -1131,6 +1134,9 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 		var nextKey *hdkeychain.ExtendedKey
 		for {
 			if s.rootManager.recoveryEnabled && nextIndex >= maxRecoveryBranchIndex {
+				if s.rootManager.recoveryVersion == 2 {
+					return nil, ErrRecoveryScanRequired
+				}
 				return nil, managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
 			}
 			// Derive the next child in the external chain branch.
@@ -1345,6 +1351,9 @@ func (s *ScopedKeyManager) extendAddresses(ns walletdb.ReadWriteBucket,
 	}
 
 	if s.rootManager.recoveryEnabled && lastIndex >= maxRecoveryBranchIndex {
+		if s.rootManager.recoveryVersion == 2 {
+			return ErrRecoveryScanRequired
+		}
 		return managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
 	}
 
@@ -1368,6 +1377,9 @@ func (s *ScopedKeyManager) extendAddresses(ns walletdb.ReadWriteBucket,
 		var nextKey *hdkeychain.ExtendedKey
 		for {
 			if s.rootManager.recoveryEnabled && nextIndex >= maxRecoveryBranchIndex {
+				if s.rootManager.recoveryVersion == 2 {
+					return ErrRecoveryScanRequired
+				}
 				return managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
 			}
 			// Derive the next child in the external chain branch.
@@ -1719,6 +1731,9 @@ func (s *ScopedKeyManager) NewAccount(ns walletdb.ReadWriteBucket, name string) 
 // NOTE: This function MUST be called with the manager lock held for writes.
 func (s *ScopedKeyManager) newAccount(ns walletdb.ReadWriteBucket,
 	account uint32, name string) error {
+	if s.rootManager.recoveryVersion == 2 {
+		return ErrRecoveryInventory
+	}
 
 	// Validate the account name.
 	if err := ValidateAccountName(name); err != nil {
@@ -1847,6 +1862,9 @@ func (s *ScopedKeyManager) NewAccountWatchingOnly(ns walletdb.ReadWriteBucket,
 func (s *ScopedKeyManager) newAccountWatchingOnly(ns walletdb.ReadWriteBucket,
 	account uint32, name string, pubKey *hdkeychain.ExtendedKey,
 	masterKeyFingerprint uint32, addrSchema *ScopeAddrSchema) error {
+	if s.rootManager.recoveryVersion == 2 {
+		return ErrRecoveryInventory
+	}
 
 	// Validate the account name.
 	if err := ValidateAccountName(name); err != nil {
@@ -1888,6 +1906,9 @@ func (s *ScopedKeyManager) newAccountWatchingOnly(ns walletdb.ReadWriteBucket,
 // already exists, ErrDuplicateAccount will be returned.
 func (s *ScopedKeyManager) RenameAccount(ns walletdb.ReadWriteBucket,
 	account uint32, name string) error {
+	if s.rootManager.recoveryVersion == 2 {
+		return ErrRecoveryInventory
+	}
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
@@ -1986,6 +2007,9 @@ func (s *ScopedKeyManager) RenameAccount(ns walletdb.ReadWriteBucket,
 // errors returned are generally unexpected.
 func (s *ScopedKeyManager) ImportPrivateKey(ns walletdb.ReadWriteBucket,
 	wif *btcutil.WIF, bs *BlockStamp) (ManagedPubKeyAddress, error) {
+	if s.rootManager.recoveryVersion == 2 {
+		return nil, ErrRecoveryInventory
+	}
 
 	// Ensure the address is intended for network the address manager is
 	// associated with.
@@ -2040,6 +2064,9 @@ func (s *ScopedKeyManager) ImportPrivateKey(ns walletdb.ReadWriteBucket,
 // ImportedAddrAccount constant.
 func (s *ScopedKeyManager) ImportPublicKey(ns walletdb.ReadWriteBucket,
 	pubKey *btcec.PublicKey, bs *BlockStamp) (ManagedAddress, error) {
+	if s.rootManager.recoveryVersion == 2 {
+		return nil, ErrRecoveryInventory
+	}
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
@@ -2061,6 +2088,9 @@ func (s *ScopedKeyManager) ImportPublicKey(ns walletdb.ReadWriteBucket,
 func (s *ScopedKeyManager) importPublicKey(ns walletdb.ReadWriteBucket,
 	serializedPubKey, encryptedPrivKey []byte, addrType AddressType,
 	bs *BlockStamp) error {
+	if s.rootManager.recoveryVersion == 2 {
+		return ErrRecoveryInventory
+	}
 
 	// Compute the addressID for our key based on its address type.
 	var addressID []byte
@@ -2244,6 +2274,9 @@ func (s *ScopedKeyManager) ImportWitnessScript(ns walletdb.ReadWriteBucket,
 func (s *ScopedKeyManager) ImportTaprootScript(ns walletdb.ReadWriteBucket,
 	tapscript *Tapscript, bs *BlockStamp, witnessVersion byte,
 	isSecretScript bool) (ManagedTaprootScriptAddress, error) {
+	if s.rootManager.recoveryVersion == 2 {
+		return nil, ErrRecoveryInventory
+	}
 
 	// Make sure we have everything we need to calculate the script root and
 	// tweak the taproot key.
@@ -2275,6 +2308,9 @@ func (s *ScopedKeyManager) importScriptAddress(ns walletdb.ReadWriteBucket,
 	identity Identity, script []byte, bs *BlockStamp, addrType AddressType,
 	witnessVersion byte, isSecretScript bool) (ManagedScriptAddress,
 	error) {
+	if s.rootManager.recoveryVersion == 2 {
+		return nil, ErrRecoveryInventory
+	}
 
 	s.mtx.Lock()
 	unlockNeeded := true

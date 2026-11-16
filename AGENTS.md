@@ -6,6 +6,14 @@ and continued build/test/promotion work toward the desktop pilot. No per-set
 approval is needed for that scope. Real signup/custody and production genesis
 remain separate decisions.
 
+Mike approved D73's separate production recovery profile on November 16:
+dedicated SLUG coin type, four payment scopes, native84 receive/change defaults
+and a permanent-chain-bound gym. Preserve existing fixture/legacy profiles;
+final allocation/genesis and frozen recovery tests still gate real issuance.
+See the paired chain PRODUCTION_WALLET_PROFILE.md. He also requires a thorough
+joint design review before friends/tester or public product release (D74);
+the paired LAUNCH_READINESS.md tracks that gate. Engineering work continues.
+
 ## Source and branches
 
 - Origin: `taytr-llc/slugwallet`; upstream: `btcsuite/btcwallet`.

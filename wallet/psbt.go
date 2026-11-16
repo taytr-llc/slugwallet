@@ -501,8 +501,12 @@ func (w *Wallet) FinalizePsbt(keyScope *waddrmgr.KeyScope, account uint32,
 				// wallet accounts (NP2WKH, P2WKH, P2TR), so any
 				// key scope provided doesn't impact the result
 				// of this call.
+				scope, scopeErr := w.Manager.PaymentScope(84)
+				if scopeErr != nil {
+					return scopeErr
+				}
 				watchOnly, err = w.Manager.IsWatchOnlyAccount(
-					ns, waddrmgr.KeyScopeBIP0084, account,
+					ns, scope, account,
 				)
 			} else {
 				watchOnly, err = w.Manager.IsWatchOnlyAccount(

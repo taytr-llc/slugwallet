@@ -12,6 +12,7 @@ import (
 	"github.com/taytr-llc/slug/chaincfg/v2"
 	"github.com/taytr-llc/slug/wire/v2"
 	"github.com/taytr-llc/slugwallet/internal/zero"
+	"github.com/taytr-llc/slugwallet/productionprofile"
 	"github.com/taytr-llc/slugwallet/recovery"
 	"github.com/taytr-llc/slugwallet/waddrmgr"
 	"github.com/taytr-llc/slugwallet/walletdb"
@@ -22,6 +23,7 @@ var ErrRecoveryProfile = errors.New("wallet does not match the supported fixture
 type recoveryCreation struct {
 	public, private []byte
 	manifest        recovery.Manifest
+	candidate       *productionprofile.Manifest
 }
 
 func recoveryChain(params *chaincfg.Params) error {
@@ -153,7 +155,7 @@ func readRecoveryBase(ns walletdb.ReadBucket, mgr *waddrmgr.Manager, params *cha
 	if err := recoveryChain(params); err != nil {
 		return none, nil, err
 	}
-	if !mgr.RecoveryEnabled() {
+	if !mgr.RecoveryEnabled() || mgr.RecoveryVersion() != recovery.Version1 {
 		return none, nil, waddrmgr.ErrRecoveryUnavailable
 	}
 	if mgr.DerivationMode() != waddrmgr.DerivationStandard {

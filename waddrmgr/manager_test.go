@@ -2173,14 +2173,14 @@ func TestManagerHigherVersion(t *testing.T) {
 	teardown, db, _ := setupManager(t)
 	defer teardown()
 
-	// Use a version newer than both legacy and explicit recovery schemas.
+	// Use a version newer than legacy and both explicit recovery schemas.
 	latestVersion := getLatestVersion()
 	err := walletdb.Update(db, func(tx walletdb.ReadWriteTx) error {
 		ns := tx.ReadWriteBucket(waddrmgrNamespaceKey)
 		if ns == nil {
 			return errors.New("top-level namespace does not exist")
 		}
-		return putManagerVersion(ns, RecoveryManagerVersion+1)
+		return putManagerVersion(ns, CandidateManagerVersion+1)
 	})
 	if err != nil {
 		t.Fatalf("unable to update manager version %v", err)
