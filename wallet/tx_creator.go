@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"slices"
 	"sort"
 
 	"github.com/btcsuite/btcd/btcutil/v2"
@@ -293,6 +294,8 @@ type InputsManual struct {
 
 // InputsPolicy implements the Inputs interface and specifies the policy
 // for coin selection by the wallet.
+// SQL default/account sources use Published-listed credits. Explicit outpoint
+// sources retain point lookup for Pending credits and advanced chaining.
 type InputsPolicy struct {
 	// Strategy is the algorithm to use for selecting coins (e.g., largest
 	// first, random). If this is nil, the wallet's default coin selection
@@ -674,6 +677,8 @@ type authoredTxResp struct {
 // remain in FundPsbt.
 // Accepted authoring and any supplied coin selector finish before return,
 // even if the caller cancels after admission.
+// SQL account selection omits Pending creators; explicitly named inputs can
+// still use those local credits for chaining.
 func (w *Wallet) CreateTransaction(ctx context.Context, intent *TxIntent) (
 	*txauthor.AuthoredTx, error) {
 
@@ -1065,9 +1070,68 @@ func (w *Wallet) createManualInputSource(ctx context.Context,
 		eligibleSelectedUtxo = append(eligibleSelectedUtxo, *credit)
 	}
 
+	// Only selected outputs with known competing transactions need the
+	// history walk; ordinary manual inputs keep the existing point-read path.
+	if slices.ContainsFunc(
+		eligibleSelectedUtxo, func(credit db.UtxoInfo) bool {
+			return credit.HasConflictingTx
+		},
+	) {
+
+		err := w.checkManualInputCompatibility(ctx, inputs.UTXOs)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Return a constant input source that will only provide the selected
 	// UTXOs.
 	return constantInputSource(eligibleSelectedUtxo), nil
+}
+
+// checkManualInputCompatibility rejects a selected set that requires competing
+// transactions. Load active unconfirmed wallet history, decode its inputs and
+// reuse the DB branch check; confirmed or unknown ancestors end the walk.
+func (w *Wallet) checkManualInputCompatibility(ctx context.Context,
+	inputs []wire.OutPoint) error {
+
+	// History retains terminal rows too; only active unconfirmed facts
+	// can be required ancestors of an explicitly selected live branch.
+	rows, err := w.store.ListTxns(
+		ctx, db.ListTxnsQuery{
+			WalletID: w.id, UnminedOnly: true,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("load selected input ancestry: %w", err)
+	}
+
+	// Discard terminal history from this local snapshot so the ancestry
+	// walk considers only current unconfirmed candidates.
+	live := slices.DeleteFunc(
+		rows, func(row db.TxInfo) bool {
+			return !db.IsUnminedStatus(row.Status)
+		},
+	)
+
+	// The pure walk uses hashes rather than SQL IDs, so reuse the raw
+	// decoder with an unused ID instead of adding another graph type.
+	records, err := db.BuildUnminedTxRecords(
+		live,
+		func(row db.TxInfo) (int64, []byte, []byte) {
+			return 0, row.Hash[:], row.SerializedTx
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("decode selected input ancestry: %w", err)
+	}
+
+	err = db.ValidateInputBranchCompatibility(inputs, records)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrUtxoNotEligible, err)
+	}
+
+	return nil
 }
 
 // createPolicyInputSource creates an input source that will perform automatic
@@ -1268,6 +1332,12 @@ func (w *Wallet) getEligibleUTXOsFromList(ctx context.Context,
 		if credit.IsLocked {
 			return nil, fmt.Errorf("%w: %v",
 				ErrUtxoNotEligible, outpoint)
+		}
+
+		// A supplied policy pool remains automatic selection. Naming an
+		// outpoint does not make its contingent change safe to use.
+		if credit.HasConflictingTx {
+			continue
 		}
 
 		// A UTXO is only eligible if it has reached the required
@@ -1529,8 +1599,9 @@ func (w *Wallet) outputEligibleForSelection(rawImported bool,
 		return false
 	}
 
-	// Locked unspent outputs are skipped.
-	if output.IsLocked {
+	// Automatic selection excludes leases and change that has competing
+	// ancestry; explicit compatible branch selection has its own path.
+	if output.IsLocked || output.HasConflictingTx {
 		return false
 	}
 

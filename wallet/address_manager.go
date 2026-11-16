@@ -88,8 +88,11 @@ type AddressProperty struct {
 	// Address is the address.
 	Address address.Address
 
-	// Balance is the total unspent balance of the address, including both
-	// confirmed and unconfirmed funds.
+	// Balance sums listed credits, excluding outputs on competing branches.
+	// SQL listing omits Pending creators, so it may differ from factual
+	// account balances. Other backends retain their native visibility policy.
+	// It omits all known competing change; owning the alternatives does not
+	// guarantee one will confirm, so the amount can understate funds.
 	Balance btcutil.Amount
 }
 
@@ -499,7 +502,8 @@ func storeAddressPubKeyCompressed(pubKey []byte) bool {
 	return len(pubKey) == btcec.PubKeyBytesLenCompressed
 }
 
-// addrBalances returns wallet address balances from store UTXO rows.
+// addrBalances sums the backend's listed credits per address.
+// SQL discovery omits Pending creators while factual account reads retain them.
 func (w *Wallet) addrBalances(ctx context.Context) (map[string]btcutil.Amount,
 	error) {
 
@@ -513,6 +517,12 @@ func (w *Wallet) addrBalances(ctx context.Context) (map[string]btcutil.Amount,
 	}
 
 	for i := range utxos {
+		// Listed credits still need the compatibility filter: two competing
+		// change outputs cannot both contribute funds to the same script.
+		if utxos[i].HasConflictingTx {
+			continue
+		}
+
 		addr := extractAddrFromPKScript(
 			utxos[i].PkScript, w.cfg.ChainParams,
 		)
@@ -1164,6 +1174,8 @@ func (w *Wallet) getAddressInfo(ctx context.Context, a address.Address) (
 // balances. The account is resolved in the key scope of addrType; if no such
 // account exists there, the returned error wraps ErrAccountNotFound. An
 // existing account with no addresses yields an empty list.
+// SQL balances aggregate Published-listed credits and can differ from factual
+// account balances that retain local Pending credits.
 func (w *Wallet) ListAddresses(ctx context.Context, accountName string,
 	addrType waddrmgr.AddressType) ([]AddressProperty, error) {
 

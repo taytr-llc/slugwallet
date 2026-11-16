@@ -946,6 +946,8 @@ func validatePsbtParentOutput(outPoint wire.OutPoint,
 // registration next to its own lease, cleanup, and publication obligations.
 // Accepted funding finishes before return, including packet updates and any
 // supplied coin selector, even if the caller cancels after admission.
+// SQL account-policy funding selects Published-listed credits. Explicit
+// packet inputs can still name Pending credits for local chaining.
 func (w *Wallet) FundPsbt(ctx context.Context, intent *FundIntent) (
 	*FundResult, error) {
 
