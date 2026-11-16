@@ -256,6 +256,9 @@ type Querier interface {
 	// Performance:
 	// - Uses the wallet-scoped unique `(wallet_id, tx_hash)` lookup path.
 	GetTransactionMetaByHash(ctx context.Context, arg GetTransactionMetaByHashParams) (GetTransactionMetaByHashRow, error)
+	// Check recorded inputs for invalid known parents or a confirmed competitor.
+	// An unknown parent is allowed; its credit need not be discovered first.
+	GetTxInputValidity(ctx context.Context, arg GetTxInputValidityParams) (GetTxInputValidityRow, error)
 	// Retrieves a single unspent UTXO by its outpoint.
 	//
 	// How:
@@ -303,6 +306,9 @@ type Querier interface {
 	GetUtxoSpendByOutpoint(ctx context.Context, arg GetUtxoSpendByOutpointParams) (GetUtxoSpendByOutpointRow, error)
 	GetWalletByID(ctx context.Context, id int64) (GetWalletByIDRow, error)
 	GetWalletByName(ctx context.Context, walletName string) (GetWalletByNameRow, error)
+	// Credit replay checks immutable ownership even after a credit has been spent.
+	// Availability belongs to the input relation, not this ownership lookup.
+	GetWalletCreditByOutpoint(ctx context.Context, arg GetWalletCreditByOutpointParams) ([]byte, error)
 	GetWalletSecrets(ctx context.Context, walletID int64) (WalletSecret, error)
 	// Reports whether an outpoint belongs to a wallet-owned UTXO whose parent
 	// transaction is already invalid.
@@ -316,6 +322,9 @@ type Querier interface {
 	// - Targets one wallet-scoped outpoint through the parent tx lookup plus the
 	//   unique `(tx_id, output_index)` key.
 	HasInvalidWalletUtxoByOutpoint(ctx context.Context, arg HasInvalidWalletUtxoByOutpointParams) (bool, error)
+	// Report whether the requested status/block change involves terminal history
+	// or competing input claims, so UpdateTx can reject it before writing metadata.
+	HasTxGraphStateChange(ctx context.Context, arg HasTxGraphStateChangeParams) (bool, error)
 	// Inserts address secret information (private key and/or script) for imported
 	// addresses.
 	// Not used for derived addresses (their keys are derived from account key).
@@ -422,6 +431,9 @@ type Querier interface {
 	// address are simply absent from the result. The Go caller is responsible for
 	// short-circuiting an empty script set before issuing this query.
 	ListAddressesByScriptPubKeys(ctx context.Context, arg ListAddressesByScriptPubKeysParams) ([]ListAddressesByScriptPubKeysRow, error)
+	// Lists unconfirmed transactions that share an input with this transaction.
+	// Parent credits need not be known: the lookup matches retained prevouts.
+	ListConflictingTransactions(ctx context.Context, arg ListConflictingTransactionsParams) ([]ListConflictingTransactionsRow, error)
 	// Lists all key scopes for a wallet, ordered by ID.
 	ListKeyScopesByWallet(ctx context.Context, walletID int64) ([]ListKeyScopesByWalletRow, error)
 	// Lists every output a recovery rescan must keep watching for one wallet.
