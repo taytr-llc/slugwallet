@@ -516,12 +516,12 @@ func (s *syncer) waitUntilBackendSynced(ctx context.Context) error {
 
 // checkRollback ensures the wallet is synchronized with the current chain tip.
 // It checks if the wallet's synced tip is still on the main chain, and if not,
-// rewinds the wallet state to the common ancestor.
+// requests shared recovery at the common ancestor and returns ErrStateChanged.
 // If no recorded ancestor is found for a non-genesis tip, it returns
 // db.ErrBlockNotFound without rewinding.
 func (s *syncer) checkRollback(ctx context.Context) error {
 	// Keep traversal tied to the committed Wallet tip; individual batches
-	// retain their existing Store reads and atomic Store rewind boundary.
+	// retain their Store reads while Manager owns any resulting shared rewind.
 	syncedTo, err := s.syncedTo(ctx)
 	if err != nil {
 		return err
@@ -553,10 +553,10 @@ func (s *syncer) checkRollback(ctx context.Context) error {
 }
 
 // checkRollbackBatch compares one recorded range within the remote tip;
-// a common ancestor is rewound synchronously through the existing Store.
+// a common ancestor is handed to Manager for ordered shared recovery.
 // With done false, it returns the next end height and a nil error; -1 marks
-// exhausted history. With done true, the error is the final outcome: nil for
-// a confirmed tip or successful rewind, otherwise the read or rewind failure.
+// exhausted history. With done true, nil confirms the saved tip; otherwise
+// the error reports a failed comparison or ErrStateChanged recovery handoff.
 func (s *syncer) checkRollbackBatch(ctx context.Context,
 	syncedTo waddrmgr.BlockStamp, endHeight int32) (int32, bool, error) {
 
@@ -605,8 +605,8 @@ func (s *syncer) checkRollbackBatch(ctx context.Context,
 		return startHeight - 1, false, nil
 	}
 
-	// Resolve the matching ancestor before entering persistence or the
-	// Store rollback, so backend I/O never holds a storage transaction.
+	// Resolve the matching ancestor before handing recovery to Manager,
+	// keeping backend I/O outside the later storage transaction.
 	//nolint:gosec // matchIndex < batchSize (10).
 	forkHeight := startHeight + int32(matchIndex)
 	forkHash := localHashes[matchIndex]
@@ -646,8 +646,8 @@ func (s *syncer) resolveMissingHistoricalBlock(listErr error,
 	return listErr
 }
 
-// rewindToBlock rewinds wallet sync and transaction state to the given fork
-// point.
+// rewindToBlock requests shared recovery from the given fork point. The owner
+// pauses writers before persistence; this worker retries from committed state.
 func (s *syncer) rewindToBlock(ctx context.Context,
 	block waddrmgr.BlockStamp) error {
 
@@ -658,17 +658,31 @@ func (s *syncer) rewindToBlock(ctx context.Context,
 		return fmt.Errorf("rollback height %d: %w", rollbackBoundary, err)
 	}
 
-	// Roll transaction state back and rewind the wallet sync tip to the same
-	// fork point in one atomic store call so a failure cannot leave the sync
-	// tip rewound while transaction state still references the abandoned
-	// chain. RollbackToBlock derives the new sync tip from the stored
-	// fork-point block, so the caller only supplies the rollback boundary.
-	err = s.store.RollbackToBlock(ctx, rollbackHeight)
+	// The owner serializes a proven fork against this Wallet and any siblings.
+	blocks, err := s.store.ListSyncedBlocks(ctx, db.ListSyncedBlocksQuery{
+		StartHeight: rollbackHeight,
+		EndHeight:   rollbackHeight,
+	})
 	if err != nil {
-		return fmt.Errorf("rollback to block: %w", err)
+		return fmt.Errorf("read recovery boundary: %w", err)
 	}
 
-	return nil
+	if len(blocks) != 0 {
+		boundary, err := db.BlockStampFromBlock(&blocks[0])
+		if err != nil {
+			return err
+		}
+
+		s.requestRollback(ctx, chainRecoveryRequest{
+			Block: wtxmgr.Block{
+				Height: boundary.Height,
+				Hash:   blocks[0].Hash,
+			},
+			Time: blocks[0].Timestamp,
+		})
+	}
+
+	return ErrStateChanged
 }
 
 // requestRollback offers fork evidence without waiting on this worker's pause.
