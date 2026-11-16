@@ -3,10 +3,10 @@ package waddrmgr
 import (
 	"testing"
 
-	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/btcsuite/btcd/btcec/v2/schnorr"
-	"github.com/btcsuite/btcd/txscript/v2"
 	"github.com/stretchr/testify/require"
+	"github.com/taytr-llc/slug/btcec/v2"
+	"github.com/taytr-llc/slug/btcec/v2/schnorr"
+	"github.com/taytr-llc/slug/txscript/v2"
 )
 
 var (

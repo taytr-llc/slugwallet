@@ -6,18 +6,18 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/btcsuite/btcd/btcec/v2/schnorr"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/internal/zero"
-	"github.com/btcsuite/btcwallet/netparams"
-	"github.com/btcsuite/btcwallet/walletdb"
 	"github.com/lightninglabs/neutrino/cache/lru"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcec/v2"
+	"github.com/taytr-llc/slug/btcec/v2/schnorr"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/internal/zero"
+	"github.com/taytr-llc/slugwallet/netparams"
+	"github.com/taytr-llc/slugwallet/walletdb"
 )
 
 // HDVersion represents the different supported schemes of hierarchical
@@ -25,6 +25,10 @@ import (
 type HDVersion uint32
 
 const (
+	// HDVersionSLUG is the existing SLUG mainnet public key encoding.
+	// The derivation scope must be carried separately from this version.
+	HDVersionSLUG HDVersion = 0x534c5547
+
 	// HDVersionMainNetBIP0044 is the HDVersion for BIP-0044 on the main
 	// network.
 	HDVersionMainNetBIP0044 HDVersion = 0x0488b21e // xpub
@@ -300,6 +304,14 @@ type ScopedKeyManager struct {
 	// operations each time a key need to be obtained.
 	privKeyCache *lru.Cache[DerivationPath, *cachedKey]
 
+	// privateKeyMtx serializes cache access and account private key wiping.
+	// Cache derivation takes mtx then this mutex, without taking the root
+	// mutex. Root lock transitions take only this mutex while wiping keys.
+	privateKeyMtx sync.Mutex
+
+	// closed prevents cached private key use after this scope is closed.
+	closed bool
+
 	mtx sync.RWMutex
 }
 
@@ -331,8 +343,37 @@ func (s *ScopedKeyManager) Close() {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
+	if s.closed {
+		return
+	}
+	s.privateKeyMtx.Lock()
+	s.clearPrivateKeyCache()
+	s.privateKeyMtx.Unlock()
+	s.closed = true
+
 	// Attempt to clear sensitive public key material from memory too.
 	s.zeroSensitivePublicData()
+}
+
+// clearPrivateKeyCache removes and zeros every cached private key. The scope's
+// private-key mutex must be held. Clearing a cache never invalidates a previously
+// returned private key copy; callers must clear their own copies.
+func (s *ScopedKeyManager) clearPrivateKeyCache() {
+	s.privKeyCache.Range(func(path DerivationPath, key *cachedKey) bool {
+		key.key.Zero()
+		s.privKeyCache.Delete(path)
+		return true
+	})
+}
+
+// newPrivateKeyCache also clears entries removed by ordinary LRU eviction.
+func newPrivateKeyCache() *lru.Cache[DerivationPath, *cachedKey] {
+	return lru.NewCache[DerivationPath, *cachedKey](
+		defaultPrivKeyCacheSize,
+		lru.WithDeleteCallback(func(_ DerivationPath, key *cachedKey) {
+			key.key.Zero()
+		}),
+	)
 }
 
 // keyToManaged returns a new managed address for the provided derived key and
@@ -666,6 +707,22 @@ func (s *ScopedKeyManager) DeriveFromKeyPathCache(
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
+	s.privateKeyMtx.Lock()
+	defer s.privateKeyMtx.Unlock()
+
+	// Root Lock publishes its locked flag before waiting for this private
+	// key mutex, and keeps account keys intact until any current derivation
+	// finishes. Avoid nesting the root and scope mutexes here: imports take
+	// them in the opposite order.
+	if s.closed {
+		return nil, managerError(ErrLocked, "address manager is closed", nil)
+	}
+	if s.rootManager.WatchOnly() {
+		return nil, managerError(ErrWatchingOnly, errWatchingOnly, nil)
+	}
+	if s.rootManager.IsLocked() {
+		return nil, managerError(ErrLocked, errLocked, nil)
+	}
 
 	// First, try to look up the key itself in the proper cache, if the key
 	// is here, then we don't need to do anything further.
@@ -686,13 +743,15 @@ func (s *ScopedKeyManager) DeriveFromKeyPathCache(
 			"", fmt.Errorf("acct %v not cached", kp.InternalAccount),
 		)
 	}
-
-	watchOnly := s.rootManager.WatchOnly()
-	private := !s.rootManager.IsLocked() && !watchOnly
+	if acctInfo.acctKeyPriv == nil {
+		return nil, managerError(ErrWatchingOnly, errWatchingOnly, nil)
+	}
 
 	// Now that we have the account information, we can derive the key
-	// directly.
-	addrKey, err := s.deriveKey(acctInfo, kp.Branch, kp.Index, private)
+	// directly. The initial state check authorized private derivation and
+	// privateKeyMtx keeps the account key intact until this call finishes,
+	// even if Lock publishes its locked flag while waiting for that mutex.
+	addrKey, err := s.deriveKey(acctInfo, kp.Branch, kp.Index, true)
 	if err != nil {
 		return nil, err
 	}
@@ -700,11 +759,13 @@ func (s *ScopedKeyManager) DeriveFromKeyPathCache(
 	// Now that we have the key, we'll attempt to insert it into the cache,
 	// and return it as is.
 	privKey, err := addrKey.ECPrivKey()
+	addrKey.Zero()
 	if err != nil {
 		return nil, err
 	}
 	_, err = s.privKeyCache.Put(kp, &cachedKey{key: *privKey})
 	if err != nil {
+		privKey.Zero()
 		return nil, err
 	}
 
@@ -2522,16 +2583,11 @@ func (s *ScopedKeyManager) cloneKeyWithVersion(key *hdkeychain.ExtendedKey) (
 	net := s.rootManager.ChainParams().Net
 	switch net {
 	case wire.MainNet:
-		switch s.scope {
-		case KeyScopeBIP0044, KeyScopeBIP0086:
-			version = HDVersionMainNetBIP0044
-		case KeyScopeBIP0049Plus:
-			version = HDVersionMainNetBIP0049
-		case KeyScopeBIP0084:
-			version = HDVersionMainNetBIP0084
-		default:
-			return nil, fmt.Errorf("unsupported scope %v", s.scope)
+		params := s.rootManager.ChainParams()
+		if key.IsPrivate() {
+			return key.CloneWithVersion(params.HDPrivateKeyID[:])
 		}
+		return key.CloneWithVersion(params.HDPublicKeyID[:])
 
 	case wire.TestNet, wire.TestNet3, wire.TestNet4,
 		netparams.SigNetWire(s.rootManager.ChainParams()):

@@ -1,12 +1,12 @@
 package chain
 
 import (
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
 )
 
 // BlockFilterer is used to iteratively scan blocks for a set of addresses of

@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/chain"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/chain"
 )
 
 var Block100000 = wire.MsgBlock{

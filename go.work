@@ -1,0 +1,20 @@
+go 1.27.3
+
+use (
+	.
+	./wallet/txauthor
+	./wallet/txrules
+	./wallet/txsizes
+	./walletdb
+	./wtxmgr
+	../slug
+	../slug/address
+	../slug/btcec
+	../slug/btcutil
+	../slug/chaincfg
+	../slug/chainhash
+	../slug/psbt
+	../slug/txscript
+	../slug/v2transport
+	../slug/wire
+)

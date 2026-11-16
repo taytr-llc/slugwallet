@@ -1,19 +1,20 @@
 package wallet
 
 import (
+	"encoding/binary"
 	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/walletdb"
-	_ "github.com/btcsuite/btcwallet/walletdb/bdb"
-	"github.com/btcsuite/btcwallet/wtxmgr"
 	"github.com/stretchr/testify/require"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/walletdb"
+	_ "github.com/taytr-llc/slugwallet/walletdb/bdb"
+	"github.com/taytr-llc/slugwallet/wtxmgr"
 )
 
 const (
@@ -43,7 +44,7 @@ var _ chainConn = (*mockChainConn)(nil)
 // createMockChainConn creates a new mock chain connection backed by a chain
 // with N blocks. Each block has a timestamp that is exactly blockInterval after
 // the previous block's timestamp.
-func createMockChainConn(genesis *wire.MsgBlock, n uint32,
+func createMockChainConn(params *chaincfg.Params, n uint32,
 	blockInterval time.Duration) *mockChainConn {
 
 	c := &mockChainConn{
@@ -52,9 +53,12 @@ func createMockChainConn(genesis *wire.MsgBlock, n uint32,
 		blocks:      make(map[chainhash.Hash]*wire.MsgBlock),
 	}
 
-	genesisHash := genesis.BlockHash()
+	// This mock tests height/time lookup, not proof of work. Keep its lookup
+	// identifiers deterministic without allocating a production Argon arena
+	// for every one of the thousands of synthetic, unmined headers.
+	genesisHash := *params.GenesisHash
 	c.blockHashes[0] = genesisHash
-	c.blocks[genesisHash] = genesis
+	c.blocks[genesisHash] = params.GenesisBlock
 
 	for i := uint32(1); i <= n; i++ {
 		prevTimestamp := c.blocks[c.blockHashes[i-1]].Header.Timestamp
@@ -64,7 +68,9 @@ func createMockChainConn(genesis *wire.MsgBlock, n uint32,
 			},
 		}
 
-		blockHash := block.BlockHash()
+		var blockHash chainhash.Hash
+		copy(blockHash[:], "birthday lookup fixture")
+		binary.LittleEndian.PutUint32(blockHash[28:], i)
 		c.blockHashes[i] = blockHash
 		c.blocks[blockHash] = block
 	}
@@ -188,7 +194,7 @@ func TestCatchUpHashesMaturesOutputLocks(t *testing.T) {
 	addMaturingOutputLock(t, w, spendHeight)
 
 	chainConn := createMockChainConn(
-		w.chainParams.GenesisBlock, catchUpHeight, defaultBlockInterval,
+		w.chainParams, catchUpHeight, defaultBlockInterval,
 	)
 	err := w.catchUpHashes(chainConn, catchUpHeight)
 	require.NoError(t, err)
@@ -276,7 +282,7 @@ func TestBirthdaySanityCheckVerifiedBirthdayBlock(t *testing.T) {
 
 	const chainTip = 5000
 	chainConn := createMockChainConn(
-		chainParams.GenesisBlock, chainTip, defaultBlockInterval,
+		&chainParams, chainTip, defaultBlockInterval,
 	)
 	expectedBirthdayBlock := waddrmgr.BlockStamp{Height: 1337}
 
@@ -323,7 +329,7 @@ func TestBirthdaySanityCheckLowerEstimate(t *testing.T) {
 
 	// We'll establish a connection to a mock chain of 5000 blocks.
 	chainConn := createMockChainConn(
-		chainParams.GenesisBlock, 5000, defaultBlockInterval,
+		&chainParams, 5000, defaultBlockInterval,
 	)
 
 	// Our birthday store will reflect that our birthday block is currently
@@ -376,7 +382,7 @@ func TestBirthdaySanityCheckHigherEstimate(t *testing.T) {
 
 	// We'll establish a connection to a mock chain of 5000 blocks.
 	chainConn := createMockChainConn(
-		chainParams.GenesisBlock, 5000, defaultBlockInterval,
+		&chainParams, 5000, defaultBlockInterval,
 	)
 
 	// Our birthday store will reflect that our birthday block is currently
@@ -386,7 +392,7 @@ func TestBirthdaySanityCheckHigherEstimate(t *testing.T) {
 	birthdayStore := &mockBirthdayStore{
 		birthday: birthday,
 		birthdayBlock: &waddrmgr.BlockStamp{
-			Hash:      bestBlock.BlockHash(),
+			Hash:      chainConn.blockHashes[5000],
 			Height:    5000,
 			Timestamp: bestBlock.Header.Timestamp,
 		},

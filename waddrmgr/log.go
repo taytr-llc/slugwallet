@@ -2,7 +2,7 @@ package waddrmgr
 
 import (
 	"github.com/btcsuite/btclog"
-	"github.com/btcsuite/btcwallet/build"
+	"github.com/taytr-llc/slugwallet/build"
 )
 
 // log is a logger that is initialized with no output filters.  This

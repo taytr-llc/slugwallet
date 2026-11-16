@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/walletdb"
-	"github.com/btcsuite/btcwallet/wtxmgr"
 	"github.com/stretchr/testify/require"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/walletdb"
+	"github.com/taytr-llc/slugwallet/wtxmgr"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -95,7 +95,7 @@ func TestLocateBirthdayBlock(t *testing.T) {
 		testCase := testCase
 		success := t.Run(testCase.name, func(t *testing.T) {
 			chainConn := createMockChainConn(
-				chainParams.GenesisBlock, numBlocks, blockInterval,
+				&chainParams, numBlocks, blockInterval,
 			)
 			birthdayBlock, err := locateBirthdayBlock(
 				chainConn, testCase.birthday,

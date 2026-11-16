@@ -7,10 +7,10 @@ package wallet
 import (
 	"testing"
 
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
 )
 
 // TestComputeInputScript checks that the wallet can create the full

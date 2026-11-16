@@ -9,19 +9,20 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcjson"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/btcutil/v2/gcs"
-	"github.com/btcsuite/btcd/btcutil/v2/gcs/builder"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/rpcclient"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/wtxmgr"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcjson"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/btcutil/v2/gcs"
+	"github.com/taytr-llc/slug/btcutil/v2/gcs/builder"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/rpcclient"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/wtxmgr"
 )
 
 // RPCClient represents a persistent client connection to a bitcoin RPC server
@@ -36,10 +37,12 @@ type RPCClient struct {
 	dequeueNotification chan interface{}
 	currentBlock        chan *waddrmgr.BlockStamp
 
-	quit    chan struct{}
-	wg      sync.WaitGroup
-	started bool
-	quitMtx sync.Mutex
+	quit     chan struct{}
+	wg       sync.WaitGroup
+	started  bool
+	verified atomic.Bool
+	startMu  sync.Mutex
+	quitMtx  sync.Mutex
 }
 
 // A compile-time check to ensure that RPCClient satisfies the chain.Interface
@@ -57,43 +60,11 @@ var _ Interface = (*RPCClient)(nil)
 func NewRPCClient(chainParams *chaincfg.Params, connect, user, pass string, certs []byte,
 	disableTLS bool, reconnectAttempts int) (*RPCClient, error) {
 
-	if reconnectAttempts < 0 {
-		return nil, errors.New("reconnectAttempts must be positive")
-	}
-
-	client := &RPCClient{
-		connConfig: &rpcclient.ConnConfig{
-			Host:                 connect,
-			Endpoint:             "ws",
-			User:                 user,
-			Pass:                 pass,
-			Certificates:         certs,
-			DisableAutoReconnect: false,
-			DisableConnectOnNew:  true,
-			DisableTLS:           disableTLS,
-		},
-		chainParams:         chainParams,
-		reconnectAttempts:   reconnectAttempts,
-		enqueueNotification: make(chan interface{}),
-		dequeueNotification: make(chan interface{}),
-		currentBlock:        make(chan *waddrmgr.BlockStamp),
-		quit:                make(chan struct{}),
-	}
-	ntfnCallbacks := &rpcclient.NotificationHandlers{
-		OnClientConnected:   client.onClientConnect,
-		OnBlockConnected:    client.onBlockConnected,
-		OnBlockDisconnected: client.onBlockDisconnected,
-		OnRecvTx:            client.onRecvTx,
-		OnRedeemingTx:       client.onRedeemingTx,
-		OnRescanFinished:    client.onRescanFinished,
-		OnRescanProgress:    client.onRescanProgress,
-	}
-	rpcClient, err := rpcclient.New(client.connConfig, ntfnCallbacks)
-	if err != nil {
-		return nil, err
-	}
-	client.Client = rpcClient
-	return client, nil
+	return NewRPCClientWithConfig(&RPCClientConfig{
+		Chain: chainParams, ReconnectAttempts: reconnectAttempts,
+		Conn: &rpcclient.ConnConfig{Host: connect, Endpoint: "ws", User: user,
+			Pass: pass, Certificates: certs, DisableTLS: disableTLS},
+	})
 }
 
 // RPCClientConfig defines the config options used when initializing the RPC
@@ -107,12 +78,12 @@ type RPCClientConfig struct {
 	Chain *chaincfg.Params
 
 	// NotificationHandlers defines callback function pointers to invoke
-	// with notifications. If not set, the default handlers defined in this
-	// client will be used.
+	// with notifications. Custom callbacks are not supported in the SLUG
+	// foundation: all notifications pass through the verified chain gate.
 	NotificationHandlers *rpcclient.NotificationHandlers
 
-	// ReconnectAttempts defines the number to reties (each after an
-	// increasing backoff) if the connection can not be established.
+	// ReconnectAttempts accepts zero or one. Both mean one transport attempt;
+	// reconnecting requires constructing and validating a fresh client.
 	ReconnectAttempts int
 }
 
@@ -123,8 +94,8 @@ func (r *RPCClientConfig) validate() error {
 	}
 
 	// Make sure retry attempts is positive.
-	if r.ReconnectAttempts < 0 {
-		return errors.New("reconnectAttempts must be positive")
+	if r.ReconnectAttempts < 0 || r.ReconnectAttempts > 1 {
+		return errors.New("reconnectAttempts must be zero or one")
 	}
 
 	// Make sure the chain params are configed.
@@ -141,6 +112,16 @@ func (r *RPCClientConfig) validate() error {
 	// in the certs slice.
 	if !r.Conn.DisableTLS && r.Conn.Certificates == nil {
 		return errors.New("must provide certs when TLS is enabled")
+	}
+
+	if r.Chain.GenesisHash == nil {
+		return errors.New("missing chain genesis")
+	}
+	if r.NotificationHandlers != nil {
+		return errors.New("custom notification handlers are unsupported")
+	}
+	if r.Conn.HTTPPostMode {
+		return errors.New("wallet chain backend requires WebSocket RPC")
 	}
 
 	return nil
@@ -161,11 +142,15 @@ func NewRPCClientWithConfig(cfg *RPCClientConfig) (*RPCClient, error) {
 
 	// Mimic the old behavior defined in `NewRPCClient`. We will remove
 	// these hard-codings once this package is more properly refactored.
-	cfg.Conn.DisableAutoReconnect = false
-	cfg.Conn.DisableConnectOnNew = true
+	// A reconnect is a fresh validated client, never a transport replay.
+	// rpcclient otherwise resends pending transactions before its async
+	// OnClientConnected callback can check the new server's identity.
+	conn := *cfg.Conn
+	conn.DisableAutoReconnect = true
+	conn.DisableConnectOnNew = true
 
 	client := &RPCClient{
-		connConfig:          cfg.Conn,
+		connConfig:          &conn,
 		chainParams:         cfg.Chain,
 		reconnectAttempts:   cfg.ReconnectAttempts,
 		enqueueNotification: make(chan interface{}),
@@ -174,19 +159,15 @@ func NewRPCClientWithConfig(cfg *RPCClientConfig) (*RPCClient, error) {
 		quit:                make(chan struct{}),
 	}
 
-	// Use the configed notification callbacks, if not set, default to the
-	// callbacks defined in this package.
-	ntfnCallbacks := cfg.NotificationHandlers
-	if ntfnCallbacks == nil {
-		ntfnCallbacks = &rpcclient.NotificationHandlers{
-			OnClientConnected:   client.onClientConnect,
-			OnBlockConnected:    client.onBlockConnected,
-			OnBlockDisconnected: client.onBlockDisconnected,
-			OnRecvTx:            client.onRecvTx,
-			OnRedeemingTx:       client.onRedeemingTx,
-			OnRescanFinished:    client.onRescanFinished,
-			OnRescanProgress:    client.onRescanProgress,
-		}
+	// Do not register OnClientConnected: Start emits that event only after
+	// validating both network and genesis on this transport.
+	ntfnCallbacks := &rpcclient.NotificationHandlers{
+		OnBlockConnected:    client.onBlockConnected,
+		OnBlockDisconnected: client.onBlockDisconnected,
+		OnRecvTx:            client.onRecvTx,
+		OnRedeemingTx:       client.onRedeemingTx,
+		OnRescanFinished:    client.onRescanFinished,
+		OnRescanProgress:    client.onRescanProgress,
 	}
 
 	// Create the RPC client using the above config.
@@ -222,30 +203,73 @@ func (c *RPCClient) SubmitPackage(_ []*wire.MsgTx,
 // sent by the server.  After a limited number of connection attempts, this
 // function gives up, and therefore will not block forever waiting for the
 // connection to be established to a server that may not exist.
-func (c *RPCClient) Start(_ context.Context) error {
-	err := c.Connect(c.reconnectAttempts)
-	if err != nil {
-		return err
+func (c *RPCClient) Start(ctx context.Context) error {
+	c.startMu.Lock()
+	defer c.startMu.Unlock()
+	select {
+	case <-c.quit:
+		return errors.New("client is stopped")
+	default:
 	}
-
-	// Verify that the server is running on the expected network.
-	net, err := c.GetCurrentNet()
-	if err != nil {
-		c.Disconnect()
-		return err
-	}
-	if net != c.chainParams.Net {
-		c.Disconnect()
-		return errors.New("mismatched networks")
-	}
-
 	c.quitMtx.Lock()
-	c.started = true
+	started := c.started
 	c.quitMtx.Unlock()
-
+	if started {
+		return nil
+	}
+	if err := ctx.Err(); err != nil {
+		c.Stop()
+		return err
+	}
+	// One deadline covers transport establishment and identity RPCs. The
+	// paired SLUG client cancels actual dial/handshake/retry work, not only
+	// the caller waiting for it.
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := c.ConnectContext(ctx, 1); err != nil {
+		c.Stop()
+		return err
+	}
+	if err := ctx.Err(); err != nil {
+		c.Stop()
+		return err
+	}
+	stopTimeout := context.AfterFunc(ctx, c.Client.Shutdown)
+	defer stopTimeout()
+	network, err := c.GetCurrentNet()
+	if err != nil || network != c.chainParams.Net {
+		c.Stop()
+		return errors.New("SLUG node network verification failed")
+	}
+	genesis, err := c.GetBlockHash(0)
+	if err != nil || genesis == nil || *genesis != *c.chainParams.GenesisHash {
+		c.Stop()
+		return errors.New("SLUG node genesis verification failed")
+	}
+	if ctx.Err() != nil {
+		c.Stop()
+		return ctx.Err()
+	}
+	c.quitMtx.Lock()
+	select {
+	case <-c.quit:
+		c.quitMtx.Unlock()
+		return errors.New("client is stopped")
+	default:
+	}
+	c.started = true
 	c.wg.Add(1)
+	c.quitMtx.Unlock()
 	go c.handler()
-	return nil
+	// Transport loss must terminate the wrapper queue too, allowing the
+	// daemon to construct and revalidate a new client before resyncing.
+	go func() { c.Client.WaitForShutdown(); c.Stop() }()
+	select {
+	case c.enqueueNotification <- ClientConnected{}:
+		return nil
+	case <-c.quit:
+		return errors.New("client stopped before verification completed")
+	}
 }
 
 // Stop disconnects the client and signals the shutdown of all goroutines
@@ -255,6 +279,7 @@ func (c *RPCClient) Stop() {
 	select {
 	case <-c.quit:
 	default:
+		c.verified.Store(false)
 		close(c.quit)
 		c.Client.Shutdown()
 		c.Client.WaitForShutdown()
@@ -431,14 +456,10 @@ func parseBlock(block *btcjson.BlockDetails) (*wtxmgr.BlockMeta, error) {
 	return blk, nil
 }
 
-func (c *RPCClient) onClientConnect() {
-	select {
-	case c.enqueueNotification <- ClientConnected{}:
-	case <-c.quit:
-	}
-}
-
 func (c *RPCClient) onBlockConnected(hash *chainhash.Hash, height int32, time time.Time) {
+	if !c.verified.Load() {
+		return
+	}
 	select {
 	case c.enqueueNotification <- BlockConnected{
 		Block: wtxmgr.Block{
@@ -452,6 +473,9 @@ func (c *RPCClient) onBlockConnected(hash *chainhash.Hash, height int32, time ti
 }
 
 func (c *RPCClient) onBlockDisconnected(hash *chainhash.Hash, height int32, time time.Time) {
+	if !c.verified.Load() {
+		return
+	}
 	select {
 	case c.enqueueNotification <- BlockDisconnected{
 		Block: wtxmgr.Block{
@@ -465,6 +489,9 @@ func (c *RPCClient) onBlockDisconnected(hash *chainhash.Hash, height int32, time
 }
 
 func (c *RPCClient) onRecvTx(tx *btcutil.Tx, block *btcjson.BlockDetails) {
+	if !c.verified.Load() {
+		return
+	}
 	blk, err := parseBlock(block)
 	if err != nil {
 		// Log and drop improper notification.
@@ -490,6 +517,9 @@ func (c *RPCClient) onRedeemingTx(tx *btcutil.Tx, block *btcjson.BlockDetails) {
 }
 
 func (c *RPCClient) onRescanProgress(hash *chainhash.Hash, height int32, blkTime time.Time) {
+	if !c.verified.Load() {
+		return
+	}
 	select {
 	case c.enqueueNotification <- &RescanProgress{*hash, height, blkTime}:
 	case <-c.quit:
@@ -497,6 +527,9 @@ func (c *RPCClient) onRescanProgress(hash *chainhash.Hash, height int32, blkTime
 }
 
 func (c *RPCClient) onRescanFinished(hash *chainhash.Hash, height int32, blkTime time.Time) {
+	if !c.verified.Load() {
+		return
+	}
 	select {
 	case c.enqueueNotification <- &RescanFinished{hash, height, blkTime}:
 	case <-c.quit:
@@ -507,11 +540,12 @@ func (c *RPCClient) onRescanFinished(hash *chainhash.Hash, height int32, blkTime
 // handler maintains a queue of notifications and the current state (best
 // block) of the chain.
 func (c *RPCClient) handler() {
+	defer c.wg.Done()
+	defer close(c.dequeueNotification)
 	hash, height, err := c.GetBestBlock()
 	if err != nil {
 		log.Errorf("Failed to receive best block from chain server: %v", err)
 		c.Stop()
-		c.wg.Done()
 		return
 	}
 
@@ -541,6 +575,19 @@ out:
 				// nil channel so no more reads can occur.
 				enqueue = nil
 				continue
+			}
+			if _, connected := n.(ClientConnected); connected {
+				// Publish the identity barrier before the connection event
+				// can reach the wallet, preserving notification order.
+				c.quitMtx.Lock()
+				select {
+				case <-c.quit:
+					c.quitMtx.Unlock()
+					break out
+				default:
+				}
+				c.verified.Store(true)
+				c.quitMtx.Unlock()
 			}
 			if len(notifications) == 0 {
 				next = n
@@ -577,8 +624,6 @@ out:
 	}
 
 	c.Stop()
-	close(c.dequeueNotification)
-	c.wg.Done()
 }
 
 // POSTClient creates the equivalent HTTP POST rpcclient.Client.

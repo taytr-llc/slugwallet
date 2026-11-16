@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package walletrpc;
 
-option go_package = "github.com/btcsuite/btcwallet/rpc/walletrpc";
+option go_package = "github.com/taytr-llc/slugwallet/rpc/walletrpc";
 
 // VersionService provides version information for the wallet.
 service VersionService {

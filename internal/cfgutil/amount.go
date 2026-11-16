@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/btcsuite/btcd/btcutil/v2"
+	"github.com/taytr-llc/slug/btcutil/v2"
 )
 
 // AmountFlag embeds a btcutil.Amount and implements the flags.Marshaler and

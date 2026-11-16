@@ -5,8 +5,8 @@
 package netparams
 
 import (
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/wire/v2"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/wire/v2"
 )
 
 // Params is used to group parameters for various networks such as the main
@@ -21,8 +21,8 @@ type Params struct {
 // btcd on the main network (wire.MainNet).
 var MainNetParams = Params{
 	Params:        &chaincfg.MainNetParams,
-	RPCClientPort: "8334",
-	RPCServerPort: "8332",
+	RPCClientPort: "29332",
+	RPCServerPort: "29334",
 }
 
 // TestNet3Params contains parameters specific running btcwallet and

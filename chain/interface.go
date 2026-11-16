@@ -2,16 +2,15 @@ package chain
 
 import (
 	"context"
+	"errors"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcjson"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/rpcclient"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/wtxmgr"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcjson"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/wtxmgr"
 )
 
 // isCurrentDelta is the delta duration we'll use from the present time to
@@ -23,10 +22,7 @@ const isCurrentDelta = 2 * time.Hour
 // TODO: Refactor each into a driver and use dynamic registration.
 func BackEnds() []string {
 	return []string{
-		"bitcoind",
 		"btcd",
-		"neutrino",
-		"bitcoind-rpc-polling",
 	}
 }
 
@@ -135,35 +131,5 @@ type (
 	}
 )
 
-// batchClient defines an interface that is used to interact with the RPC
-// client.
-//
-// NOTE: the client returned from `rpcclient.NewBatch` will implement this
-// interface. Unlike the client from `rpcclient.New`, calling `GetRawMempool`
-// on this client will block and won't return.
-//
-// TODO(yy): create a new type BatchClient in `rpcclient`.
-type batchClient interface {
-	// GetRawMempoolAsync returns an instance of a type that can be used to
-	// get the result of the RPC at some future time by invoking the
-	// Receive function on the returned instance.
-	GetRawMempoolAsync() rpcclient.FutureGetRawMempoolResult
-
-	// GetRawTransactionAsync returns an instance of a type that can be
-	// used to get the result of the RPC at some future time by invoking
-	// the Receive function on the returned instance.
-	GetRawTransactionAsync(
-		txHash *chainhash.Hash) rpcclient.FutureGetRawTransactionResult
-
-	// Send marshalls bulk requests and sends to the server creates a
-	// response channel to receive the response
-	Send() error
-}
-
-// getRawTxReceiver defines an interface that's used to receive response from
-// `GetRawTransactionAsync`.
-type getRawTxReceiver interface {
-	// Receive waits for the Response promised by the future and returns a
-	// transaction given its hash.
-	Receive() (*btcutil.Tx, error)
-}
+// ErrUnimplemented identifies a backend operation unavailable in slugd.
+var ErrUnimplemented = errors.New("unimplemented")

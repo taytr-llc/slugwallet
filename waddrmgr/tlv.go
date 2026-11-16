@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/btcsuite/btcd/btcec/v2/schnorr"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/lightningnetwork/lnd/tlv"
+	"github.com/taytr-llc/slug/btcec/v2/schnorr"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slugwallet/internal/tlv"
 )
 
 const (

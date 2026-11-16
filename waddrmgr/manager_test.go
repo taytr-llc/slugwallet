@@ -15,17 +15,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/btcsuite/btcd/btcec/v2/schnorr"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcwallet/snacl"
-	"github.com/btcsuite/btcwallet/walletdb"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/require"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcec/v2"
+	"github.com/taytr-llc/slug/btcec/v2/schnorr"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slugwallet/snacl"
+	"github.com/taytr-llc/slugwallet/walletdb"
 )
 
 // failingCryptoKey is an implementation of the EncryptorDecryptor interface
@@ -734,9 +734,9 @@ func testImportPrivateKey(tc *testContext) bool {
 	}{
 		{
 			name: "wif for uncompressed pubkey address",
-			in:   "5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ",
+			in:   "85FRqWinafskRdCFe1j1LqXB4prro6Wew7WVGB26xtQ7Z6JGYtm",
 			expected: expectedAddr{
-				address:     "1GAehh7TsJAHuUAeKZcXf5CnwuGuGgyX2S",
+				address:     "afDiRhrNoGd1nSjqMPFyuUo6BmfCMdcdoi",
 				addressHash: hexToBytes("a65d1a239d4ec666643d350c7bb8fc44d2881128"),
 				internal:    false,
 				imported:    true,
@@ -750,9 +750,9 @@ func testImportPrivateKey(tc *testContext) bool {
 		},
 		{
 			name: "wif for compressed pubkey address",
-			in:   "KwdMAjGmerYanjeui5SHS7JkmpZvVipYvB2LJGU1ZxJwYvP98617",
+			in:   "YDkgd8BSBcazfgkfcNCQWZABRtF4nTKtRqj9jyDsKfs1vPt6MquC",
 			expected: expectedAddr{
-				address:     "1LoVGDgRs9hTfTNJNuXKSpywcbdvwRXpmK",
+				address:     "ajrYzERLo8ABYRwVQjAmhEaErU2DyD7Qes",
 				addressHash: hexToBytes("d9351dcbad5b8f3b8bfa2f2cdc85c28118ca9326"),
 				internal:    false,
 				imported:    true,
@@ -909,7 +909,7 @@ func testImportScript(tc *testContext) bool {
 				"ed9493a9fc20fdb4a714808f0b680f1f1d935277" +
 				"48b5e3f629ffac"),
 			expected: expectedAddr{
-				address:     "3MbyWAu9UaoBewR3cArF1nwf4aQgVwzrA5",
+				address:     "VuunVLaALVP1dYcmDrqH24uabsQwTNwHUo",
 				addressHash: hexToBytes("da6e6a632d96dc5530d7b3c9f3017725d023093e"),
 				internal:    false,
 				imported:    true,
@@ -930,7 +930,7 @@ func testImportScript(tc *testContext) bool {
 				"6ffefb2238af8627363bdf2ed97c1f89784a1aec" +
 				"db43384f11d2acc64443c7fc299cef0400421a53ae"),
 			expected: expectedAddr{
-				address:     "34CRZpt8j81rgh9QhzuBepqPi4cBQSjhjr",
+				address:     "VcWEYzZ9b2bgfJM8KgtDf6oKFMcSH7mC4c",
 				addressHash: hexToBytes("1b800cec1fe92222f36a502c139bed47c5959715"),
 				internal:    false,
 				imported:    true,
@@ -949,7 +949,7 @@ func testImportScript(tc *testContext) bool {
 				"09033b4a7821029dd72aba87324af59508380f9564d34" +
 				"b0f7b20d864d186e7d0428c9ea241c61653ae"),
 			expected: expectedAddr{
-				address:     "bc1q0jljr70qchwtk3ag0w3gyg9mjhg4c95xr7h8ezhvdrfgppcpz4esfdl9an",
+				address:     "slug1q0jljr70qchwtk3ag0w3gyg9mjhg4c95xr7h8ezhvdrfgppcpz4esz56fu8",
 				addressHash: hexToBytes("7cbf21f9e0c5dcbb47a87ba28220bb95d15c16861fae7c8aec68d28087011573"),
 				internal:    false,
 				imported:    true,
@@ -968,7 +968,7 @@ func testImportScript(tc *testContext) bool {
 				"09033b4a7821024794b65a83e9ba415096e59abc4d4d1" +
 				"1710968e52bf5eec56fe0e5bdb3d3ec0e53ae"),
 			expected: expectedAddr{
-				address:         "bc1q3a79gkjulrsgp864yskp4d5zmwm49xsdrfwvdypkqtlpj7spd3fqrl5nes",
+				address:         "slug1q3a79gkjulrsgp864yskp4d5zmwm49xsdrfwvdypkqtlpj7spd3fqgx3lcy",
 				addressHash:     hexToBytes("8f7c545a5cf8e0809f55242c1ab682dbb7529a0d1a5cc6903602fe197a016c52"),
 				internal:        false,
 				imported:        true,
@@ -993,7 +993,7 @@ func testImportScript(tc *testContext) bool {
 					"3b033a2fd64fe14a9b955e5355f0c6ac",
 			),
 			expected: expectedAddr{
-				address:     "bc1pu92qt24cl4spyp4rsj9sa3y4ma6a3fszgewcmway9f6f80vgnduq5lnd0u",
+				address:     "slug1pu92qt24cl4spyp4rsj9sa3y4ma6a3fszgewcmway9f6f80vgnduqlxkpwg",
 				addressHash: hexToBytes("e15405aab8fd601206a3848b0ec495df75d8a602465d8dbba42a7493bd889b78"),
 				internal:    false,
 				imported:    true,
@@ -3016,9 +3016,10 @@ func TestTaprootPubKeyDerivation(t *testing.T) {
 	defer teardown()
 
 	// From: https://github.com/bitcoin/bips/blob/master/bip-0086.mediawiki
+	// The public fixture key/address payloads are unchanged. SLUG version
+	// and HRP checksums come from testdata/reencode_vectors.py.
 	rootKey, _ := hdkeychain.NewKeyFromString(
-		"xprv9s21ZrQH143K3GJpoapnV8SFfukcVBSfeCficPSGfubmSFDxo1kuHnLi" +
-			"sriDvSnRRuL2Qrg5ggqHKNVpxR86QEC8w35uxmGoggxtQTPvfUu",
+		"RWC8zh2hyeVQ3jDP6tu6cL3UeKSzX6KSCb569dQpq6YvmsLrX7841YvETbK2g4nJXyQyWLiRPHL12yQijvhsf2Mn93o7jZPfXNUiKCnqLLUmz2J4",
 	)
 
 	// We'll start the test by creating a new root manager that will be
@@ -3071,7 +3072,7 @@ func TestTaprootPubKeyDerivation(t *testing.T) {
 		t, db, func(ns walletdb.ReadWriteBucket) (ManagedAddress, error) {
 			return scopedMgr.DeriveFromKeyPath(ns, externalPath)
 		},
-		"bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr",
+		"slug1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqaqg0eh",
 		scopedMgr,
 	)
 	assertAddressDerivation(
@@ -3082,21 +3083,21 @@ func TestTaprootPubKeyDerivation(t *testing.T) {
 			}
 			return addrs[0], nil
 		},
-		"bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr",
+		"slug1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqaqg0eh",
 		scopedMgr,
 	)
 	assertAddressDerivation(
 		t, db, func(ns walletdb.ReadWriteBucket) (ManagedAddress, error) {
 			return scopedMgr.LastExternalAddress(ns, 0)
 		},
-		"bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr",
+		"slug1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqaqg0eh",
 		scopedMgr,
 	)
 	assertAddressDerivation(
 		t, db, func(ns walletdb.ReadWriteBucket) (ManagedAddress, error) {
 			return scopedMgr.DeriveFromKeyPath(ns, internalPath)
 		},
-		"bc1p3qkhfews2uk44qtvauqyr2ttdsw7svhkl9nkm9s9c3x4ax5h60wqwruhk7",
+		"slug1p3qkhfews2uk44qtvauqyr2ttdsw7svhkl9nkm9s9c3x4ax5h60wq96emh2",
 		scopedMgr,
 	)
 	assertAddressDerivation(
@@ -3107,14 +3108,14 @@ func TestTaprootPubKeyDerivation(t *testing.T) {
 			}
 			return addrs[0], nil
 		},
-		"bc1p3qkhfews2uk44qtvauqyr2ttdsw7svhkl9nkm9s9c3x4ax5h60wqwruhk7",
+		"slug1p3qkhfews2uk44qtvauqyr2ttdsw7svhkl9nkm9s9c3x4ax5h60wq96emh2",
 		scopedMgr,
 	)
 	assertAddressDerivation(
 		t, db, func(ns walletdb.ReadWriteBucket) (ManagedAddress, error) {
 			return scopedMgr.LastInternalAddress(ns, 0)
 		},
-		"bc1p3qkhfews2uk44qtvauqyr2ttdsw7svhkl9nkm9s9c3x4ax5h60wqwruhk7",
+		"slug1p3qkhfews2uk44qtvauqyr2ttdsw7svhkl9nkm9s9c3x4ax5h60wq96emh2",
 		scopedMgr,
 	)
 }

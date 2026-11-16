@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcjson"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/chain"
-	"github.com/btcsuite/btcwallet/waddrmgr"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcjson"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/chain"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
 )
 
 type mockChainClient struct {

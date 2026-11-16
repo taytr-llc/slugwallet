@@ -10,14 +10,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/txscript/v2"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcec/v2"
+	"github.com/taytr-llc/slug/btcec/v2/ecdsa"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/txscript/v2"
 )
 
 const dummyDir = ""

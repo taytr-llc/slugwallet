@@ -7,10 +7,10 @@ package wallet
 import (
 	"fmt"
 
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/walletdb"
-	"github.com/btcsuite/btcwallet/wtxmgr"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/walletdb"
+	"github.com/taytr-llc/slugwallet/wtxmgr"
 )
 
 var (

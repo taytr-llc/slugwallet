@@ -1,151 +1,107 @@
-name: CI
+name: SLUG wallet foundation
 
 on:
   push:
-    branches:
-      - "master"
-  pull_request:
-    branches:
-      - "*"
+    branches: [slug-wallet-foundation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 concurrency:
-  # Cancel any previous workflows if they are from a PR or push.
-  group: ${{ github.event.pull_request.number || github.ref }}
+  group: slugwallet-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  GO_VERSION: '1.27.4'
+  # Reviewed paired set23 chain implementation; do not float this dependency.
+  SLUG_CHAIN_REF: 4dc49e103ce271981a20a08a115dbfacc6aa6891
+  GOFLAGS: ''
 
 defaults:
   run:
     shell: bash
-
-env:
-  # go needs absolute directories, using the $HOME variable doesn't work here.
-  GOCACHE: /home/runner/work/go/pkg/build
-  GOPATH: /home/runner/work/go
-  GOBIN: /home/runner/work/go/bin
-  GO111MODULE: on
-
-  # If you change this please run `make lint` to see where else it needs to be
-  # updated as well.
-  GO_VERSION: 1.27.3
-
-  BITCOIND_VERSION: '22.0'
-  BITCOIND_IMAGE: 'lightninglabs/bitcoin-core'
+    working-directory: slugwallet
 
 jobs:
-  ########################
-  # Format, compileation and lint check
-  ########################
-  lint-check:
-    name: Format, compilation and lint check
+  modules:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
-      - name: git checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
-
-      - name: Clean up runner space
-        uses: ./.github/actions/cleanup-space
-
-      - name: setup go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v5
+          path: slugwallet
+          persist-credentials: false
+      - uses: actions/checkout@v5
         with:
-          go-version: '${{ env.GO_VERSION }}'
+          repository: taytr-llc/slug
+          ref: ${{ env.SLUG_CHAIN_REF }}
+          path: slug
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: |
+            slugwallet/**/go.sum
+            slug/**/go.sum
+      - name: Paired connection cancellation regressions
+        working-directory: slug
+        run: go test -race -count=1 -timeout=2m ./rpcclient
+      - name: Independent public fixture oracles
+        run: |
+          python3 waddrmgr/testdata/reencode_vectors.py --check
+          python3 integration/testdata/reference_addresses.py --check
+      - name: Format and dependency identity
+        run: |
+          test -z "$(git ls-files '*.go' | xargs gofmt -l)"
+          go list -deps ./... > "$RUNNER_TEMP/wallet-dependencies.txt"
+          if grep -Eq '^github.com/btcsuite/(btcd|btcwallet)(/|$)' "$RUNNER_TEMP/wallet-dependencies.txt"; then
+            echo 'Upstream Bitcoin runtime dependency found'
+            exit 1
+          fi
+      - name: Six runtime module builds, tests, and vet
+        run: |
+          for module in . wallet/txauthor wallet/txrules wallet/txsizes walletdb wtxmgr; do
+            (cd "$module" && go build ./... && go test -parallel=2 -count=1 -timeout=5m ./... && go vet ./...)
+          done
+      - name: Runtime race checks
+        run: |
+          go test -race -parallel=2 -count=1 -timeout=20m . ./chain ./wallet ./waddrmgr
+          for module in wallet/txauthor wallet/txrules wallet/txsizes walletdb wtxmgr; do
+            (cd "$module" && go test -race -count=1 -timeout=3m ./...)
+          done
+      - name: Disabled cheap-profile daemon
+        run: go test -tags=slugtestpow -count=1 -timeout=30s . ./chain
+      - name: Namespace and sample configuration
+        run: |
+          mkdir -p "$RUNNER_TEMP/slugwallet-bin"
+          go build -o "$RUNNER_TEMP/slugwallet-bin/slugwallet" .
+          PATH="$RUNNER_TEMP/slugwallet-bin:$PATH" scripts/check-sample-slugwallet-conf.sh
 
-      - name: Check default values in sample-btcwallet.conf file
-        run: make sample-conf-check
-
-      - name: Check code format
-        run: make fmt-check
-
-      - name: Check go modules tidiness
-        run: make tidy-module-check
-
-      - name: Check RPC format
-        run: make rpc-check
-
-      - name: compile code
-        run: go install -v ./...
-
-      - name: Lint proto files
-        run: make protolint
-
-      - name: run lint
-        run: make lint-check
-
-  check-commits:
-    if: github.event_name == 'pull_request'
-    name: Check commits
+  production-pow-fixture:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: git checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
-
-      - name: Clean up runner space
-        uses: ./.github/actions/cleanup-space
-
-      - name: setup go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v5
+          path: slugwallet
+          persist-credentials: false
+      - uses: actions/checkout@v5
         with:
-          go-version: '${{ env.GO_VERSION }}'
-
-      - name: fetch and rebase on ${{ github.base_ref }}
-        uses: ./.github/actions/rebase
-
-      - name: check commits
-        run: scripts/check-each-commit.sh upstream/${{ github.base_ref }}
-
-  ########################
-  # run unit tests
-  ########################
-  unit-test:
-    name: run unit tests
-    runs-on: ubuntu-latest
-    strategy:
-      # Allow other tests in the matrix to continue if one fails.
-      fail-fast: false
-      matrix:
-        unit_type:
-          - unit-race
-          - unit-cover
-    steps:
-      - name: extract bitcoind from docker image
-        run: |-
-          docker pull ${{ env.BITCOIND_IMAGE }}:${{ env.BITCOIND_VERSION }}
-          CONTAINER_ID=$(docker create ${{ env.BITCOIND_IMAGE }}:${{ env.BITCOIND_VERSION }})
-          sudo docker cp $CONTAINER_ID:/opt/bitcoin-${{ env.BITCOIND_VERSION }}/bin/bitcoind /usr/local/bin/bitcoind
-          docker rm $CONTAINER_ID
-
-      - name: git checkout
-        uses: actions/checkout@v5
-
-      - name: Clean up runner space
-        uses: ./.github/actions/cleanup-space
-
-      - name: go cache
-        uses: actions/cache@v4
+          repository: taytr-llc/slug
+          ref: ${{ env.SLUG_CHAIN_REF }}
+          path: slug
+          persist-credentials: false
+      - uses: actions/setup-go@v5
         with:
-          path: /home/runner/work/go
-          key: btcwallet-${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ github.job }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            btcwallet-${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ github.job }}-${{ hashFiles('**/go.sum') }}
-            btcwallet-${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ github.job }}-
-            btcwallet-${{ runner.os }}-go-${{ env.GO_VERSION }}-
-            btcwallet-${{ runner.os }}-go-
-
-      - name: setup go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v5
-        with:
-          go-version: '${{ env.GO_VERSION }}'
-
-      - name: run ${{ matrix.unit_type }}
-        run: make ${{ matrix.unit_type }}
-
-      - name: Send coverage
-        uses: shogo82148/actions-goveralls@v1
-        if: matrix.unit_type == 'unit-cover'
-        continue-on-error: true
-        with:
-          path-to-profile: coverage.txt
-          parallel: true
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: |
+            slugwallet/**/go.sum
+            slug/**/go.sum
+      - name: Build normal SLUG node
+        working-directory: slug
+        run: go build -tags= -o "$RUNNER_TEMP/slugd" .
+      - name: Isolated fixture restore and spend
+        env:
+          SLUG_WALLET_NODE: ${{ runner.temp }}/slugd
+        run: ./integration/run-foundation.sh

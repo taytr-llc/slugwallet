@@ -7,10 +7,10 @@ package txauthor
 import (
 	"testing"
 
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/wallet/txrules"
-	"github.com/btcsuite/btcwallet/wallet/txsizes"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/wallet/txrules"
+	"github.com/taytr-llc/slugwallet/wallet/txsizes"
 )
 
 func p2pkhOutputs(amounts ...btcutil.Amount) []*wire.TxOut {

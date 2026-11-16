@@ -1,17 +1,7 @@
 #!/bin/bash
-
-SUBMODULES=$(find . -mindepth 2 -name "go.mod" | cut -d'/' -f2)
-
-
-# Run 'go mod tidy' for root.
-go mod tidy
-
-# Run 'go mod tidy' for each module.
-for submodule in $SUBMODULES
-do
-  pushd $submodule
-
-  go mod tidy
-
-  popd
+# Keep the six runtime modules consistent with the paired local SLUG checkout.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+for module in . wallet/txauthor wallet/txrules wallet/txsizes walletdb wtxmgr; do
+    (cd "$module" && GOWORK=off go mod tidy)
 done

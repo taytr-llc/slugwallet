@@ -8,12 +8,12 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
 	"github.com/stretchr/testify/require"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
 )
 
 // TestFetchInputInfo checks that the wallet can gather information about an

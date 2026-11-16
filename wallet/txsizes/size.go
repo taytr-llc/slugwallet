@@ -5,9 +5,9 @@
 package txsizes
 
 import (
-	"github.com/btcsuite/btcd/blockchain"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcd/wire/v2"
+	"github.com/taytr-llc/slug/blockchain"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slug/wire/v2"
 )
 
 // Worst case script and input/output size estimates.

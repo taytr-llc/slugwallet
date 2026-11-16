@@ -15,24 +15,24 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/blockchain"
-	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/btcsuite/btcd/btcjson"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/chain"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/wallet/txauthor"
-	"github.com/btcsuite/btcwallet/wallet/txrules"
-	"github.com/btcsuite/btcwallet/walletdb"
-	"github.com/btcsuite/btcwallet/walletdb/migration"
-	"github.com/btcsuite/btcwallet/wtxmgr"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/blockchain"
+	"github.com/taytr-llc/slug/btcec/v2"
+	"github.com/taytr-llc/slug/btcjson"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/chain"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/wallet/txauthor"
+	"github.com/taytr-llc/slugwallet/wallet/txrules"
+	"github.com/taytr-llc/slugwallet/walletdb"
+	"github.com/taytr-llc/slugwallet/walletdb/migration"
+	"github.com/taytr-llc/slugwallet/wtxmgr"
 )
 
 const (
@@ -229,14 +229,6 @@ func (w *Wallet) SynchronizeRPC(chainClient chain.Interface) {
 	}
 	w.chainClient = chainClient
 
-	// If the chain client is a NeutrinoClient instance, set a birthday so
-	// we don't download all the filters as we go.
-	switch cc := chainClient.(type) {
-	case *chain.NeutrinoClient:
-		cc.SetStartTime(w.Manager.Birthday())
-	case *chain.BitcoindClient:
-		cc.SetBirthday(w.Manager.Birthday())
-	}
 	w.chainClientLock.Unlock()
 
 	// TODO: It would be preferable to either run these goroutines
@@ -404,21 +396,8 @@ func (w *Wallet) syncWithChain(birthdayStamp *waddrmgr.BlockStamp) error {
 		return err
 	}
 
-	// Neutrino relies on the information given to it by the cfheader server
-	// so it knows exactly whether it's synced up to the server's state or
-	// not, even on dev chains. To recover a Neutrino wallet, we need to
-	// make sure it's synced before we start scanning for addresses,
-	// otherwise we might miss some if we only scan up to its current sync
-	// point.
-	neutrinoRecovery := chainClient.BackEnd() == "neutrino" &&
-		w.recoveryWindow > 0
-
-	// We'll wait until the backend is synced to ensure we get the latest
-	// MaxReorgDepth blocks to store. We don't do this for development
-	// environments as we can't guarantee a lively chain, except for
-	// Neutrino, where the cfheader server tells us what it believes the
-	// chain tip is.
-	if !w.isDevEnv() || neutrinoRecovery {
+	// A full-node backend must be current before scanning a live network.
+	if !w.isDevEnv() {
 		log.Debug("Waiting for chain backend to sync to tip")
 		if err := w.waitUntilBackendSynced(chainClient); err != nil {
 			return err
@@ -2607,18 +2586,6 @@ func (w *Wallet) GetTransactions(startBlock, endBlock *BlockIdentifier,
 					return nil, err
 				}
 				start = startHeader.Height
-			case *chain.BitcoindClient:
-				var err error
-				start, err = client.GetBlockHeight(startBlock.hash)
-				if err != nil {
-					return nil, err
-				}
-			case *chain.NeutrinoClient:
-				var err error
-				start, err = client.GetBlockHeight(startBlock.hash)
-				if err != nil {
-					return nil, err
-				}
 			}
 		}
 	}
@@ -2638,18 +2605,6 @@ func (w *Wallet) GetTransactions(startBlock, endBlock *BlockIdentifier,
 					return nil, err
 				}
 				end = endHeader.Height
-			case *chain.BitcoindClient:
-				var err error
-				start, err = client.GetBlockHeight(endBlock.hash)
-				if err != nil {
-					return nil, err
-				}
-			case *chain.NeutrinoClient:
-				var err error
-				end, err = client.GetBlockHeight(endBlock.hash)
-				if err != nil {
-					return nil, err
-				}
 			}
 		}
 	}

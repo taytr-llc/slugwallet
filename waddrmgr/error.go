@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
 )
 
 var (

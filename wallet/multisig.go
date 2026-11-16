@@ -9,10 +9,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/walletdb"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/walletdb"
 )
 
 // MakeMultiSigScript creates a multi-signature script that can be redeemed with

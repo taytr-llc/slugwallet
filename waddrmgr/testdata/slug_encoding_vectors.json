@@ -1,0 +1,374 @@
+[
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 47,
+    "bitcoin": "14wtcepMNiEazuN7YosWY8bwD9tcCtxXRB",
+    "kind": "base58",
+    "payload": "2b49ecd0cf72006173e6e95acf416b6735b5f889",
+    "slug": "aTzxLfZGJghJsswJadWxnYCET2GuFKReD3"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 54,
+    "bitcoin": "L3jmpy54Pc7MLXTN2mL8Xas7BJziwKaUGmgnXXzgGbVRdiAniXZk",
+    "kind": "base58",
+    "payload": "c27d6581b92785834b381fa697c4b0ffc4574b495743722e0acb7601b1b68b9901",
+    "slug": "YKs7HMyivN9mDUZ7w46Fc2iXqNfsE45onSPbyEkY2K3W1BgmmnMx"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 63,
+    "bitcoin": "1N3D8jy2aQuUsKBsDgZ6ZPTVR9VhHgJYpE",
+    "kind": "base58",
+    "payload": "e6c59a1542138d1bf08f45cd18899557cf56b356",
+    "slug": "am6GrkhwWPNCkHm4FWCYoo3nf1szCet5Dd"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 70,
+    "bitcoin": "Kx4DNid19W8sjNFN3uPqQE7UYnCqyEp7unCvdkf2LrVUFpnDtwpB",
+    "kind": "base58",
+    "payload": "18f3b191019e83878a81557abebb2afda199e31d22e150d8bf4df4561671be6c01",
+    "slug": "YEBYq7XfgGBHcKM7xC9xUfxuCqszFyKTRSuk5TQt6a3YdJFxZ7ME"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 79,
+    "bitcoin": "1VTfwD4iHre2bMrR9qGiJMwoiZGQZ8e6s",
+    "kind": "base58",
+    "payload": "0561e9373986965b647a57a09718e9c050215cfe",
+    "slug": "aQYXPwwyeGKMuZw3SyUixhxF3awZNcRmz8"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 86,
+    "bitcoin": "L45fWF6Yd736fDohuB97vwRRLdQQJr3ZGvbokk9ubiT7aNrg7tTn",
+    "kind": "base58",
+    "payload": "ccb8f6305b73136b363644b647f6efc0fd27b6b7d9c11c7e560662ed38db7b3401",
+    "slug": "YLCzxe1D9s5WYAuToTuF1PGqzh5YbaYtnbJdCSumMS1BwrNCwREH"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 95,
+    "bitcoin": "13TdEj4ehUuYFiSaB47eLVBwM2XhAhrK2J",
+    "kind": "base58",
+    "payload": "1af950be02584ca230b7078cec0cfd38dd71b468",
+    "slug": "aSWgxjoZdTNG8h1mCsm6atnEatuz5WFdCP"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 102,
+    "bitcoin": "L4R8XyxYQyPSpTwj8w96tM86a6j3QA9jbRPj3RA7DVTVWk71ndeP",
+    "kind": "base58",
+    "payload": "d6bc8ff768814fede2adcdb74826bd846924341b3862e3b6e31cdc084e99294001",
+    "slug": "YLYTzNsCwjRrhR3V3DuDxnyXEAQBgtf5766YV7uxyD1ZtDcaVbf9"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 111,
+    "bitcoin": "1LTjSghkBecT59VjEKke331HxVdqcFwUDa",
+    "kind": "base58",
+    "payload": "d578a267a7174c6ba7f76b0ab2397ce0ba0c5c3c",
+    "slug": "ajWoAhSf7d5Ax84vG9Q6HSbbCN28Y77G42"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 118,
+    "bitcoin": "L1h16Hunxomww4FrpyQP2iFmWNgG7U1u3awp6Vd3s2uGf7v5VU8c",
+    "kind": "base58",
+    "payload": "8563ade061110e03aee50695ffc5cb1c06c8310bde0a3674257c853c966968c001",
+    "slug": "YHpLYgpTVZpMp1McjGAW7A7CASMQQCXEZFedYCNuckTM2bTX3hmt"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 127,
+    "bitcoin": "15HNivzKhsLaMs1qRdQN1ifoJYUnJ2xW9z",
+    "kind": "base58",
+    "payload": "2ef94abb9ee8f785d087c3ec8d6ee467e92d0d0a",
+    "slug": "aULSSwjEdqoJEqb2TT3pG8G6YQs5Gzqx7o"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 134,
+    "bitcoin": "L5k4HivqXvohxBMpuwD38iUgi6uewffwZny91ZNYfM39RXH2x3QR",
+    "kind": "base58",
+    "payload": "fe4f855fcf059ec6ddf7b25f63b19aa49c771d1fcb9850b68ae3d65e20657a6001",
+    "slug": "YMsPk7qW4gr7q8TapDyADAL7NAaoEQBH5TfxTG8QR4bDnzpE9ewh"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 143,
+    "bitcoin": "1LJpGrAP1vWHuvfHqmUutQqFVYca2qwxhy",
+    "kind": "base58",
+    "payload": "d3c8ec46891f599bfeaa4c25918bfb3d46ea334c",
+    "slug": "ajMszruHwty1nuEUsb8N8pRYjQzryfigGa"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 150,
+    "bitcoin": "L3eomUajnTDM3Pc8GU47qqXUFuCjvpqY7NYN9mH3x1ZFjDgiY4BU",
+    "kind": "base58",
+    "payload": "bfef521317c65b018ae7e6d7ecc3aa700d5d0f7ea84d567be9270382d0b5e3e601",
+    "slug": "YKn9DsVQKDFkvLhtAkpEvHNtuxstDZLsd3FBbU2uhj7L6hHfEYJE"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 159,
+    "bitcoin": "13NhXy2nCLMwNug1TZ6uwaWnxp3uTqdDQq",
+    "kind": "base58",
+    "payload": "1a0ad2a04fde3b2afe068057591e1871c289c4b8",
+    "slug": "aSRmFymh8JpfFtFCVNkNBz76CgSCQbqoYJ"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 166,
+    "bitcoin": "L5S1bVQUPqQb1Su82fLoSpnGCjcPfdAQE1pJxWRopJSBdYNDHESv",
+    "kind": "base58",
+    "payload": "f506dffd4494c24006df7a35f3291f7ca0297a1a431557a1339bfed6f48738ca01",
+    "slug": "YMZM3tK8vbSztPzsvx6vXGdgroHXxMfjjgX8QDBfa1zG11tPU1w9"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 175,
+    "bitcoin": "1AY6yAHvojvpFcevAichLMnJfxgE8eSe4N",
+    "kind": "base58",
+    "payload": "689b0249c628265215fd1de6142d5d5594eb8dc2",
+    "slug": "aZbAhB2qjiPY8bE7CYG9amNbuq4X9L2P89"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 182,
+    "bitcoin": "L3EQsGeEnyXmKaux54cG4DQeCSQDvGuvEuy3W2ss4geum7AtWaHw",
+    "kind": "base58",
+    "payload": "b3629de8ef6a275b4ffae41aa2bbbc2952eb92282ea6402435abbb010ecc1fb801",
+    "slug": "YKMkKfYuKjaBCY1hyMNP8fG4rW5ND1RFkafrwjdipQCz8ai5fDLd"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 191,
+    "bitcoin": "1Jc7An3JqjzRQULVr6Wh3iYR7miB6WPJCD",
+    "kind": "base58",
+    "payload": "c11dd8a3577978807a0453febedee2994a6144d4",
+    "slug": "ahfAtnnDmiT9HSugsvA9J88iMe6UBgoGms"
+  },
+  {
+    "file": "waddrmgr/common_test.go",
+    "upstream_line": 198,
+    "bitcoin": "L41Frac75RPbTELKzw1EGC2qCkdveiVumpmsyX4daAvyyCMxit1W",
+    "kind": "base58",
+    "payload": "ca747a7ef815ea0dbe68655272cecbfbd65f2a109019a9ed28e0d3dcaffe05c301",
+    "slug": "YL8bJyWmcBS1LBS5uDmMLdtFrpK4wT1FHVUhRDpVKtV4LfrUhzoA"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 737,
+    "bitcoin": "5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ",
+    "kind": "base58",
+    "payload": "0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d",
+    "slug": "85FRqWinafskRdCFe1j1LqXB4prro6Wew7WVGB26xtQ7Z6JGYtm"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 739,
+    "bitcoin": "1GAehh7TsJAHuUAeKZcXf5CnwuGuGgyX2S",
+    "kind": "base58",
+    "payload": "a65d1a239d4ec666643d350c7bb8fc44d2881128",
+    "slug": "afDiRhrNoGd1nSjqMPFyuUo6BmfCMdcdoi"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 753,
+    "bitcoin": "KwdMAjGmerYanjeui5SHS7JkmpZvVipYvB2LJGU1ZxJwYvP98617",
+    "kind": "base58",
+    "payload": "0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d01",
+    "slug": "YDkgd8BSBcazfgkfcNCQWZABRtF4nTKtRqj9jyDsKfs1vPt6MquC"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 755,
+    "bitcoin": "1LoVGDgRs9hTfTNJNuXKSpywcbdvwRXpmK",
+    "kind": "base58",
+    "payload": "d9351dcbad5b8f3b8bfa2f2cdc85c28118ca9326",
+    "slug": "ajrYzERLo8ABYRwVQjAmhEaErU2DyD7Qes"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 912,
+    "bitcoin": "3MbyWAu9UaoBewR3cArF1nwf4aQgVwzrA5",
+    "kind": "base58",
+    "payload": "da6e6a632d96dc5530d7b3c9f3017725d023093e",
+    "slug": "VuunVLaALVP1dYcmDrqH24uabsQwTNwHUo"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 933,
+    "bitcoin": "34CRZpt8j81rgh9QhzuBepqPi4cBQSjhjr",
+    "kind": "base58",
+    "payload": "1b800cec1fe92222f36a502c139bed47c5959715",
+    "slug": "VcWEYzZ9b2bgfJM8KgtDf6oKFMcSH7mC4c"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 952,
+    "bitcoin": "bc1q0jljr70qchwtk3ag0w3gyg9mjhg4c95xr7h8ezhvdrfgppcpz4esfdl9an",
+    "kind": "witness",
+    "payload": "7cbf21f9e0c5dcbb47a87ba28220bb95d15c16861fae7c8aec68d28087011573",
+    "slug": "slug1q0jljr70qchwtk3ag0w3gyg9mjhg4c95xr7h8ezhvdrfgppcpz4esz56fu8"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 971,
+    "bitcoin": "bc1q3a79gkjulrsgp864yskp4d5zmwm49xsdrfwvdypkqtlpj7spd3fqrl5nes",
+    "kind": "witness",
+    "payload": "8f7c545a5cf8e0809f55242c1ab682dbb7529a0d1a5cc6903602fe197a016c52",
+    "slug": "slug1q3a79gkjulrsgp864yskp4d5zmwm49xsdrfwvdypkqtlpj7spd3fqgx3lcy"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 996,
+    "bitcoin": "bc1pu92qt24cl4spyp4rsj9sa3y4ma6a3fszgewcmway9f6f80vgnduq5lnd0u",
+    "kind": "witness",
+    "payload": "e15405aab8fd601206a3848b0ec495df75d8a602465d8dbba42a7493bd889b78",
+    "slug": "slug1pu92qt24cl4spyp4rsj9sa3y4ma6a3fszgewcmway9f6f80vgnduqlxkpwg"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 3020,
+    "bitcoin": "xprv9s21ZrQH143K3GJpoapnV8SFfukcVBSfeCficPSGfubmSFDxo1kuHnLisriDvSnRRuL2Qrg5ggqHKNVpxR86QEC8w35uxmGoggxtQTPvfUu",
+    "kind": "hd_private",
+    "payload": "0000000000000000007923408dadd3c7b56eed15567707ae5e5dca089de972e07f3b860450e2a3b70e001837c1be8e2995ec11cda2b066151be2cfb48adf9e47b151d46adab3a21cdf67",
+    "slug": "RWC8zh2hyeVQ3jDP6tu6cL3UeKSzX6KSCb569dQpq6YvmsLrX7841YvETbK2g4nJXyQyWLiRPHL12yQijvhsf2Mn93o7jZPfXNUiKCnqLLUmz2J4"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 3074,
+    "bitcoin": "bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr",
+    "kind": "witness",
+    "payload": "a60869f0dbcf1dc659c9cecbaf8050135ea9e8cdc487053f1dc6880949dc684c",
+    "slug": "slug1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqaqg0eh"
+  },
+  {
+    "file": "waddrmgr/manager_test.go",
+    "upstream_line": 3099,
+    "bitcoin": "bc1p3qkhfews2uk44qtvauqyr2ttdsw7svhkl9nkm9s9c3x4ax5h60wqwruhk7",
+    "kind": "witness",
+    "payload": "882d74e5d0572d5a816cef0041a96b6c1de832f6f9676d9605c44d5e9a97d3dc",
+    "slug": "slug1p3qkhfews2uk44qtvauqyr2ttdsw7svhkl9nkm9s9c3x4ax5h60wq96emh2"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 77,
+    "bitcoin": "tprv8ZgxMBicQKsPeWwrFuNjEGTTDSY4mRLwd2KDJAPGa1AYquw38bZqNMSuB3V1Va3hqJBo9Pt8Sx7kBQer5cNMrb8SYquoWPt9Y3BZdhdtUcw",
+    "testnet": true,
+    "kind": "hd_private",
+    "payload": "000000000000000000a5221030150db1c7e05a4a08493cf665aa50e2fe169b72fc5baf49c14684f7450093dec7c440804816652db5d892513d1f3e57fddb6b1429f497f0f90185027b61",
+    "slug": "RWC8zh2hyeVQ3jDP6uLW77oB5twPjKioSdnxRGgZCuuTKHTvpjC1zu8heA8mQSnufYArUNfkP1mbKaKRQKtUw2LgTh6nSeZH7Fkbc93Jb83Y8mZd"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 83,
+    "bitcoin": "2N5YTxG9XtGXx1YyhZb7N2pwEjoZLLMHGKj",
+    "testnet": true,
+    "kind": "base58",
+    "payload": "86e43cff0267b30b2b8a2c1c1da29a6c83d16b87",
+    "slug": "VnJ4sgtX8icRnNYsW9UXR9uu4kMRSinah2"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 84,
+    "bitcoin": "2N7wpz5Gy2zEJTvq2MAuU6BCTEBLXNQ8dUw",
+    "testnet": true,
+    "kind": "base58",
+    "payload": "a13f9ceae1c901b700dd89e12b2dce6ffddbf771",
+    "slug": "VphRuW1xHSJnEkQCHjGdUWB7Z88cTQKgB4"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 93,
+    "bitcoin": "tb1qllxcutkzsukf8u8c8stkp464j0esu9xq7qju8x",
+    "testnet": true,
+    "kind": "witness",
+    "payload": "ffcd8e2ec2872c93f0f83c1760d75593f30e14c0",
+    "slug": "slug1qllxcutkzsukf8u8c8stkp464j0esu9xq547c0k"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 94,
+    "bitcoin": "tb1qu6jmqglrthscptjqj3egx54wy8xqvzn5hslgw7",
+    "testnet": true,
+    "kind": "witness",
+    "payload": "e6a5b023e35de180ae4094728352ae21cc060a74",
+    "slug": "slug1qu6jmqglrthscptjqj3egx54wy8xqvzn5a9nvxw"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 97,
+    "bitcoin": "uprv8tXDerPXZ1QsVp8y6GAMSMYxPQgWi3LSY8qS5ZH9x1YRu1kGPFjPzR73CFSbVUhdEwJbtsUgucUJ4hGQoJnNepp3RBcE6JhdomFD2KeY6G9",
+    "testnet": true,
+    "kind": "hd_private",
+    "payload": "000000000000000000a5221030150db1c7e05a4a08493cf665aa50e2fe169b72fc5baf49c14684f7450093dec7c440804816652db5d892513d1f3e57fddb6b1429f497f0f90185027b61",
+    "slug": "RWC8zh2hyeVQ3jDP6uLW77oB5twPjKioSdnxRGgZCuuTKHTvpjC1zu8heA8mQSnufYArUNfkP1mbKaKRQKtUw2LgTh6nSeZH7Fkbc93Jb83Y8mZd"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 103,
+    "bitcoin": "2NBCJ9WzGXZqpLpXGq3Hacybj3c4eHRcqgh",
+    "testnet": true,
+    "kind": "base58",
+    "payload": "c4e47cf7890eb2f16a4050aab6a8e3a8d5021fbc",
+    "slug": "Vswu4wjFn1vJ7e6Smbek1JaPNYrjPN7Pb5"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 104,
+    "bitcoin": "2N3bankFu6F3ZNU41iVJQqyS9MXqp9dvn1M",
+    "testnet": true,
+    "kind": "base58",
+    "payload": "718af0e1854dc2bc33005649f867aa0769b77c08",
+    "slug": "VkMBiAztLh839HdBf3faEJQogUduJ48KuZ"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 114,
+    "bitcoin": "tb1qeqn05w2hfq6axpdprhs4y7x65gxkkvfvyxqk4u",
+    "testnet": true,
+    "kind": "witness",
+    "payload": "c826fa39574835d305a11de15278daa20d6b312c",
+    "slug": "slug1qeqn05w2hfq6axpdprhs4y7x65gxkkvfvwnvjav"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 117,
+    "bitcoin": "vprv9DMUxX4ShgxMM7L5vcwyeSeTZNpxefKwTFMerxB3L1vJx7ZVdutxcUmBDTQBVPMYeaRQeM5FNGpqwysyX1CPT4VeHXJegDX85VJrQvaFaz3",
+    "testnet": true,
+    "kind": "hd_private",
+    "payload": "000000000000000000a5221030150db1c7e05a4a08493cf665aa50e2fe169b72fc5baf49c14684f7450093dec7c440804816652db5d892513d1f3e57fddb6b1429f497f0f90185027b61",
+    "slug": "RWC8zh2hyeVQ3jDP6uLW77oB5twPjKioSdnxRGgZCuuTKHTvpjC1zu8heA8mQSnufYArUNfkP1mbKaKRQKtUw2LgTh6nSeZH7Fkbc93Jb83Y8mZd"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 123,
+    "bitcoin": "tb1q5vepvcl0z8xj7kps4rsux722r4dvfwlhk6j532",
+    "testnet": true,
+    "kind": "witness",
+    "payload": "a3321663ef11cd2f5830a8e1c3794a1d5ac4bbf7",
+    "slug": "slug1q5vepvcl0z8xj7kps4rsux722r4dvfwlhu07se6"
+  },
+  {
+    "file": "wallet/import_test.go",
+    "upstream_line": 124,
+    "bitcoin": "tb1qlwe2kgxcsa8x4huu79yff4rze0l5mwafg5c7xd",
+    "testnet": true,
+    "kind": "witness",
+    "payload": "fbb2ab20d8874e6adf9cf14894d462cbff4dbba9",
+    "slug": "slug1qlwe2kgxcsa8x4huu79yff4rze0l5mwafzp56wa"
+  },
+  {
+    "file": "wallet/createtx_test.go",
+    "upstream_line": 262,
+    "bitcoin": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+    "kind": "witness",
+    "payload": "751e76e8199196d454941c45d1b3a323f1433bd6",
+    "slug": "slug1qw508d6qejxtdg4y5r3zarvary0c5xw7kv57xck"
+  }
+]

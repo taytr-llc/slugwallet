@@ -5,67 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcjson"
-	"github.com/btcsuite/btcd/rpcclient"
-	"github.com/lightninglabs/neutrino/pushtx"
 	"github.com/stretchr/testify/require"
+	"github.com/taytr-llc/slug/btcjson"
+	"github.com/taytr-llc/slug/rpcclient"
 )
-
-// TestBitcoindMapRPCErr checks cluster-limit reasons share the existing chain
-// limit category while legacy and unknown reasons retain their classifications.
-func TestBitcoindMapRPCErr(t *testing.T) {
-	t.Parallel()
-
-	// Arrange both Core call boundaries: acceptance returns a raw reason,
-	// while publication returns an RPC error. Controls preserve the older
-	// chain-limit spelling and fallback for unknown reasons.
-	testCases := []struct {
-		name   string
-		rpcErr error
-		want   error
-	}{
-		{
-			name:   "cluster acceptance rejection",
-			rpcErr: errors.New("too-large-cluster"),
-			want:   ErrMempoolChainTooLong,
-		},
-		{
-			name: "cluster publication rejection",
-			rpcErr: &btcjson.RPCError{
-				Code:    btcjson.ErrRPCVerifyRejected,
-				Message: "too-large-cluster",
-			},
-			want: ErrMempoolChainTooLong,
-		},
-		{
-			name:   "legacy chain rejection",
-			rpcErr: errors.New("too-long-mempool-chain"),
-			want:   ErrMempoolChainTooLong,
-		},
-		{
-			name:   "unknown rejection",
-			rpcErr: errors.New("unrecognized rejection"),
-			want:   ErrUndefined,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			// Arrange a disconnected client: mapping is pure
-			// classification and must not require a live backend.
-			client := &BitcoindClient{}
-
-			// Act through the shared acceptance/publication mapper.
-			err := client.MapRPCErr(tc.rpcErr)
-
-			// Assert callers can match the policy category through
-			// errors.Is, including the unknown fallback's wrapping.
-			require.ErrorIs(t, err, tc.want)
-		})
-	}
-}
 
 // TestBtcdMapRPCErr checks input diagnostics take precedence over their
 // nested policy causes while output and unknown errors retain their identity.
@@ -152,29 +95,6 @@ func TestBtcdMapRPCErr(t *testing.T) {
 			require.ErrorIs(t, err, tc.want)
 		})
 	}
-}
-
-// TestNeutrinoMapRPCErr checks peer input rejects retain their specificity
-// when the shared btcd table also matches the nested script-policy text.
-func TestNeutrinoMapRPCErr(t *testing.T) {
-	t.Parallel()
-
-	// Arrange the real peer-reject wrapper without a chain service: the
-	// mapper only needs the reason preserved by the broadcast path.
-	peerErr := &pushtx.BroadcastError{
-		Code: pushtx.Invalid,
-		Reason: "rejected by peer: transaction " + strings.Repeat("a", 64) +
-			" has a non-standard input: transaction input #0 has a " +
-			"non-standard script form",
-	}
-	client := &NeutrinoClient{}
-
-	// Act through the existing second consumer of the btcd error table.
-	err := client.MapRPCErr(peerErr)
-
-	// Assert generic script text cannot mask the input-specific rejection
-	// just because that generic table entry happens to be visited first.
-	require.ErrorIs(t, err, ErrNonStandardInputs)
 }
 
 // TestMatchErrStr checks that `matchErrStr` can correctly replace the dashes

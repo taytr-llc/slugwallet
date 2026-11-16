@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcwallet/internal/legacy/keystore"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slugwallet/internal/legacy/keystore"
 	"golang.org/x/term"
 )
 

@@ -8,11 +8,11 @@
 // Full documentation of the API implemented by this package is maintained in a
 // language-agnostic document:
 //
-//	https://github.com/btcsuite/btcwallet/blob/master/rpc/documentation/api.md
+//	https://github.com/taytr-llc/slugwallet/blob/master/rpc/documentation/api.md
 //
 // Any API changes must be performed according to the steps listed here:
 //
-//	https://github.com/btcsuite/btcwallet/blob/master/rpc/documentation/serverchanges.md
+//	https://github.com/taytr-llc/slugwallet/blob/master/rpc/documentation/serverchanges.md
 package rpcserver
 
 import (
@@ -21,21 +21,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/rpcclient"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/chain"
-	"github.com/btcsuite/btcwallet/internal/cfgutil"
-	"github.com/btcsuite/btcwallet/internal/zero"
-	"github.com/btcsuite/btcwallet/netparams"
-	pb "github.com/btcsuite/btcwallet/rpc/walletrpc"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/wallet"
-	"github.com/btcsuite/btcwallet/walletdb"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/rpcclient"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/chain"
+	"github.com/taytr-llc/slugwallet/internal/cfgutil"
+	"github.com/taytr-llc/slugwallet/internal/zero"
+	"github.com/taytr-llc/slugwallet/netparams"
+	pb "github.com/taytr-llc/slugwallet/rpc/walletrpc"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/wallet"
+	"github.com/taytr-llc/slugwallet/walletdb"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

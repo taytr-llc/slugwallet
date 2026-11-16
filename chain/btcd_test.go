@@ -3,9 +3,9 @@ package chain
 import (
 	"testing"
 
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/stretchr/testify/require"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/rpcclient"
 )
 
 // TestValidateConfig checks the `validate` method on the RPCClientConfig
@@ -45,7 +45,7 @@ func TestValidateConfig(t *testing.T) {
 	// Validate config.
 	cfg = &RPCClientConfig{
 		ReconnectAttempts: 1,
-		Chain:             &chaincfg.Params{},
+		Chain:             &chaincfg.MainNetParams,
 		Conn: &rpcclient.ConnConfig{
 			DisableTLS: true,
 		},

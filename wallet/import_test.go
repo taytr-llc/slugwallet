@@ -2,15 +2,19 @@ package wallet
 
 import (
 	"encoding/binary"
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcwallet/waddrmgr"
 	"github.com/stretchr/testify/require"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/walletdb"
 )
 
 func hardenedKey(key uint32) uint32 {
@@ -37,7 +41,12 @@ func deriveAcctPubKey(t *testing.T, root *hdkeychain.ExtendedKey,
 	// then convert them back with the target extended public key version.
 	pubVersionBytes := make([]byte, 4)
 	copy(pubVersionBytes, chaincfg.TestNet3Params.HDPublicKeyID[:])
+	privateVersion := chaincfg.TestNet3Params.HDPrivateKeyID
 	switch {
+	case root.IsForNet(&chaincfg.MainNetParams):
+		copy(pubVersionBytes, chaincfg.MainNetParams.HDPublicKeyID[:])
+		privateVersion = chaincfg.MainNetParams.HDPrivateKeyID
+
 	case strings.HasPrefix(root.String(), "uprv"):
 		binary.BigEndian.PutUint32(pubVersionBytes, uint32(
 			waddrmgr.HDVersionTestNetBIP0049,
@@ -50,7 +59,7 @@ func deriveAcctPubKey(t *testing.T, root *hdkeychain.ExtendedKey,
 	}
 
 	currentKey, err = currentKey.CloneWithVersion(
-		chaincfg.TestNet3Params.HDPrivateKeyID[:],
+		privateVersion[:],
 	)
 	require.NoError(t, err)
 	currentKey, err = currentKey.Neuter()
@@ -266,7 +275,7 @@ func testImportAccount(t *testing.T, w *Wallet, tc *testCase, watchOnly bool,
 	case waddrmgr.NestedWitnessPubKey:
 		witnessAddr, err := address.NewAddressWitnessPubKeyHash(
 			address.Hash160(acct3ExternalPub.SerializeCompressed()),
-			&chaincfg.TestNet3Params,
+			w.chainParams,
 		)
 		require.NoError(t, err)
 
@@ -274,14 +283,14 @@ func testImportAccount(t *testing.T, w *Wallet, tc *testCase, watchOnly bool,
 		require.NoError(t, err)
 
 		intAddr, err = address.NewAddressScriptHash(
-			witnessProg, &chaincfg.TestNet3Params,
+			witnessProg, w.chainParams,
 		)
 		require.NoError(t, err)
 
 	case waddrmgr.WitnessPubKey:
 		intAddr, err = address.NewAddressWitnessPubKeyHash(
 			address.Hash160(acct3ExternalPub.SerializeCompressed()),
-			&chaincfg.TestNet3Params,
+			w.chainParams,
 		)
 		require.NoError(t, err)
 
@@ -292,4 +301,80 @@ func testImportAccount(t *testing.T, w *Wallet, tc *testCase, watchOnly bool,
 	addrManaged, err := w.AddressInfo(intAddr)
 	require.NoError(t, err)
 	require.Equal(t, true, addrManaged.Imported())
+}
+
+// TestSLUGImportAccount preserves the upstream testnet key/script payloads,
+// using independently re-encoded SLUG fixtures. A native SLUG extended-key
+// prefix carries network identity; callers must supply the address schema.
+func TestSLUGImportAccount(t *testing.T) {
+	raw, err := os.ReadFile("../waddrmgr/testdata/slug_encoding_vectors.json")
+	require.NoError(t, err)
+	var vectors []struct {
+		Bitcoin string `json:"bitcoin"`
+		SLUG    string `json:"slug"`
+	}
+	require.NoError(t, json.Unmarshal(raw, &vectors))
+	encoded := make(map[string]string)
+	for _, vector := range vectors {
+		encoded[vector.Bitcoin] = vector.SLUG
+	}
+	convert := func(original string) string {
+		t.Helper()
+		value, ok := encoded[original]
+		require.True(t, ok, "missing independent encoding fixture")
+		return value
+	}
+
+	// The mixed BIP49+ external/internal schema is intentionally absent:
+	// one network prefix cannot encode that extra recovery metadata.
+	for _, index := range []int{0, 1, 2, 4} {
+		original := testCases[index]
+		t.Run(original.name, func(t *testing.T) {
+			loader := NewLoader(
+				&chaincfg.MainNetParams, t.TempDir(), true,
+				defaultDBTimeout, 250,
+			)
+			w, err := loader.CreateNewWatchingOnlyWallet(
+				[]byte("public-SLUG-fixture-only"), time.Unix(1, 0),
+			)
+			require.NoError(t, err)
+			t.Cleanup(func() { require.NoError(t, loader.UnloadWallet()) })
+			w.chainClient = &mockChainClient{}
+			err = walletdb.Update(w.Database(), func(tx walletdb.ReadWriteTx) error {
+				ns := tx.ReadWriteBucket(waddrmgrNamespaceKey)
+				for scope, schema := range waddrmgr.ScopeAddrMap {
+					if _, err := w.Manager.NewScopedKeyManager(ns, scope, schema); err != nil {
+						return err
+					}
+				}
+				return nil
+			})
+			require.NoError(t, err)
+			fixture := *original
+			fixture.masterPriv = convert(original.masterPriv)
+			fixture.expectedAddr = convert(original.expectedAddr)
+			fixture.expectedChangeAddr = convert(original.expectedChangeAddr)
+			testImportAccount(t, w, &fixture, true, "SLUG "+fixture.name)
+
+			root, err := hdkeychain.NewKeyFromString(fixture.masterPriv)
+			require.NoError(t, err)
+			pub := deriveAcctPubKey(t, root, fixture.expectedScope, hardenedKey(123))
+			require.Equal(t, []byte{0x53, 0x4c, 0x55, 0x47}, pub.Version())
+			_, _, _, err = w.ImportAccountDryRun("missing-schema", pub, 0, nil, 1)
+			require.Error(t, err, "SLUG encoding must not guess recovery schema")
+			for _, version := range [][4]byte{
+				{0x04, 0x88, 0xb2, 0x1e}, // Bitcoin xpub.
+				{0x04, 0x9d, 0x7c, 0xb2}, // Bitcoin ypub.
+				{0x04, 0xb2, 0x47, 0x46}, // Bitcoin zpub.
+				{0x04, 0x35, 0x87, 0xcf}, // Testnet tpub.
+			} {
+				wrongNetwork, err := pub.CloneWithVersion(version[:])
+				require.NoError(t, err)
+				_, _, _, err = w.ImportAccountDryRun(
+					"wrong-network", wrongNetwork, 0, &fixture.addrType, 1,
+				)
+				require.Error(t, err, "foreign network HD encoding accepted")
+			}
+		})
+	}
 }

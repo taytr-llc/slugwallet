@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/btcsuite/btcd/wire/v2"
+	"github.com/taytr-llc/slug/wire/v2"
 )
 
 const (

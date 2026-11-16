@@ -1,4 +1,4 @@
-PKG := github.com/btcsuite/btcwallet
+PKG := github.com/taytr-llc/slugwallet
 TOOLS_DIR := tools
 
 GOBUILD := GO111MODULE=on go build -v
@@ -22,7 +22,7 @@ endif
 DOCKER_TOOLS = docker run \
   --rm \
   -v $(shell bash -c "mkdir -p /tmp/go-build-cache; echo /tmp/go-build-cache"):/root/.cache/go-build \
-  -v $$(pwd):/build btcwallet-tools
+  -v $$(pwd):/build slugwallet-tools
 
 GREEN := "\\033[0;32m"
 NC := "\\033[0m"
@@ -40,14 +40,14 @@ all: build check
 # INSTALLATION
 # ============
 
-#? build: Compile and build btcwallet
+#? build: Compile and build slugwallet
 build:
-	@$(call print, "Compiling btcwallet.")
+	@$(call print, "Compiling slugwallet.")
 	$(GOBUILD) $(PKG)/...
 
-#? install: Install btcwallet, dropwtxmgr and sweepaccount, place them in $GOBIN
+#? install: Install slugwallet, dropwtxmgr and sweepaccount, place them in $GOBIN
 install:
-	@$(call print, "Installing btcwallet.")
+	@$(call print, "Installing slugwallet.")
 	$(GOINSTALL) $(PKG)
 	$(GOINSTALL) $(PKG)/cmd/dropwtxmgr
 	$(GOINSTALL) $(PKG)/cmd/sweepaccount
@@ -123,7 +123,7 @@ lint: lint-config-check
 #? docker-tools: Build tools docker image
 docker-tools:
 	@$(call print, "Building tools docker image.")
-	docker build -q -t btcwallet-tools -f $(TOOLS_DIR)/Dockerfile .
+	docker build -q -t slugwallet-tools -f $(TOOLS_DIR)/Dockerfile .
 
 #? rpc: Compile protobuf definitions
 rpc:
@@ -140,10 +140,10 @@ protolint:
 	@$(call print, "Linting proto files.")
 	docker run --rm --volume "$$(pwd):/workspace" --workdir /workspace yoheimuta/protolint lint rpc/
 
-#? sample-conf-check: Make sure default values in the sample-btcwallet.conf file are set correctly
+#? sample-conf-check: Make sure default values in the sample-slugwallet.conf file are set correctly
 sample-conf-check: install
-	@$(call print, "Checking that default values in the sample-btcwallet.conf file are set correctly")
-	scripts/check-sample-btcwallet-conf.sh
+	@$(call print, "Checking that default values in the sample-slugwallet.conf file are set correctly")
+	scripts/check-sample-slugwallet-conf.sh
 
 #? clean: Clean source
 clean:
@@ -184,7 +184,7 @@ tidy-module-check: tidy-module
 
 #? help: Get more info on make commands
 help: Makefile
-	@echo " Choose a command run in btcwallet:"
+	@echo " Choose a command run in slugwallet:"
 	@sed -n 's/^#?//p' $< | column -t -s ':' |  sort | sed -e 's/^/ /'
 
 .PHONY: help

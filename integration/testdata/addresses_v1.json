@@ -1,0 +1,41 @@
+{
+  "fixture_only": true,
+  "seed": "000102030405060708090a0b0c0d0e0f",
+  "bip32_master_xpub": "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8",
+  "coin_type": 0,
+  "addresses": [
+    {
+      "type": "legacy",
+      "branch": "receive",
+      "path": "m/44'/0'/0'/0/0",
+      "public_key": "0239b4b3a27cd1dd8993038d5eb6449220b350c32ae62fec0833b93db8a49031c5",
+      "hash160": "eadbac7f36c37e39361168b7aaee3cb24a25312d",
+      "address": "amTt177a4PM8uGPtNFGP9uRxwPZpuGJpaz"
+    },
+    {
+      "type": "legacy",
+      "branch": "change",
+      "path": "m/44'/0'/0'/1/0",
+      "public_key": "039757c2e17b36e6562aa0cbb2e782e0e0794bbb1f655fc053f4a936aafa449b4e",
+      "hash160": "922c2841f27c4778f97ba6c71e0a79685a6f2c40",
+      "address": "adNxH7xWtYttzFkFLiDA25PuPNX3tk2b4U"
+    },
+    {
+      "type": "bech32",
+      "branch": "receive",
+      "path": "m/84'/0'/0'/0/0",
+      "public_key": "02ce3088b423b443a7dd03ffc917961c43df41b50a5627e1af31a2fd65c57be50a",
+      "hash160": "0f0d117a87e7e06468b90afbdb72c3ef66072da6",
+      "address": "slug1qpux3z758ulsxg69eptaakukraanqwtdxe8nnxm"
+    },
+    {
+      "type": "bech32",
+      "branch": "change",
+      "path": "m/84'/0'/0'/1/0",
+      "public_key": "030dc3e99a60f7046c3758eaf12f2cf02cce10599ff3884ee163b72cf6bd9ac0e0",
+      "hash160": "c0d54cffd20e58dabdbc029429e2b744434641e4",
+      "address": "slug1qcr25el7jpevd40duq22znc4hg3p5vs0y9fr2hy"
+    }
+  ],
+  "external_sink": "aQfRR2m3DRfSpQhkuQECXXkSBs2JGf6zH6"
+}

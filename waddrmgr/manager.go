@@ -12,13 +12,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	"github.com/btcsuite/btcwallet/internal/zero"
-	"github.com/btcsuite/btcwallet/snacl"
-	"github.com/btcsuite/btcwallet/walletdb"
-	"github.com/lightninglabs/neutrino/cache/lru"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	"github.com/taytr-llc/slugwallet/internal/zero"
+	"github.com/taytr-llc/slugwallet/snacl"
+	"github.com/taytr-llc/slugwallet/walletdb"
 )
 
 const (
@@ -426,7 +425,14 @@ func (m *Manager) IsWatchOnlyAccount(ns walletdb.ReadBucket, keyScope KeyScope,
 //
 // TODO(yy): Rename this to wipe memory for priv keys.
 func (m *Manager) lock() {
+	// Deny new private derivations before waiting for any in-progress cache
+	// access. The per-scope private-key mutex lets those accesses finish
+	// before their account keys are zeroed, without nesting scope mutexes
+	// under the root mutex (imports acquire those in the reverse order).
+	m.locked.Store(true)
 	for _, manager := range m.scopedManagers {
+		manager.privateKeyMtx.Lock()
+		manager.clearPrivateKeyCache()
 		// Clear all of the account private keys.
 		for _, acctInfo := range manager.acctInfo {
 			if acctInfo.acctKeyPriv != nil {
@@ -434,6 +440,7 @@ func (m *Manager) lock() {
 			}
 			acctInfo.acctKeyPriv = nil
 		}
+		manager.privateKeyMtx.Unlock()
 	}
 
 	// Remove clear text private keys and scripts from all address entries.
@@ -461,7 +468,6 @@ func (m *Manager) lock() {
 	// which uses a separate derived key from the database even when it is
 	// locked.
 
-	m.locked.Store(true)
 }
 
 // Close cleanly shuts down the manager.  It makes a best try effort to remove
@@ -603,14 +609,12 @@ func (m *Manager) NewScopedKeyManager(ns walletdb.ReadWriteBucket,
 	// Finally, we'll register this new scoped manager with the root
 	// manager.
 	m.scopedManagers[scope] = &ScopedKeyManager{
-		scope:       scope,
-		addrSchema:  addrSchema,
-		rootManager: m,
-		addrs:       make(map[addrKey]ManagedAddress),
-		acctInfo:    make(map[uint32]*accountInfo),
-		privKeyCache: lru.NewCache[DerivationPath, *cachedKey](
-			defaultPrivKeyCacheSize,
-		),
+		scope:        scope,
+		addrSchema:   addrSchema,
+		rootManager:  m,
+		addrs:        make(map[addrKey]ManagedAddress),
+		acctInfo:     make(map[uint32]*accountInfo),
+		privKeyCache: newPrivateKeyCache(),
 	}
 	m.externalAddrSchemas[addrSchema.ExternalAddrType] = append(
 		m.externalAddrSchemas[addrSchema.ExternalAddrType], scope,
@@ -1620,13 +1624,11 @@ func loadManager(ns walletdb.ReadBucket, pubPassphrase []byte,
 		}
 
 		scopedManagers[scope] = &ScopedKeyManager{
-			scope:      scope,
-			addrSchema: *scopeSchema,
-			addrs:      make(map[addrKey]ManagedAddress),
-			acctInfo:   make(map[uint32]*accountInfo),
-			privKeyCache: lru.NewCache[DerivationPath, *cachedKey](
-				defaultPrivKeyCacheSize,
-			),
+			scope:        scope,
+			addrSchema:   *scopeSchema,
+			addrs:        make(map[addrKey]ManagedAddress),
+			acctInfo:     make(map[uint32]*accountInfo),
+			privKeyCache: newPrivateKeyCache(),
 		}
 
 		return nil

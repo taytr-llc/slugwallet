@@ -10,16 +10,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/btcsuite/btclog"
-	"github.com/btcsuite/btcwallet/chain"
-	"github.com/btcsuite/btcwallet/rpc/legacyrpc"
-	"github.com/btcsuite/btcwallet/rpc/rpcserver"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/wallet"
-	"github.com/btcsuite/btcwallet/wtxmgr"
 	"github.com/jrick/logrotate/rotator"
-	"github.com/lightninglabs/neutrino"
+	"github.com/taytr-llc/slug/rpcclient"
+	"github.com/taytr-llc/slugwallet/chain"
+	"github.com/taytr-llc/slugwallet/rpc/legacyrpc"
+	"github.com/taytr-llc/slugwallet/rpc/rpcserver"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/wallet"
+	"github.com/taytr-llc/slugwallet/wtxmgr"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -54,14 +53,13 @@ var (
 	// is written to by the Write method of the logWriter type.
 	logRotatorPipe *io.PipeWriter
 
-	log          = backendLog.Logger("BTCW")
+	log          = backendLog.Logger("SLGW")
 	walletLog    = backendLog.Logger("BTWL")
 	waddrmgrLog  = backendLog.Logger("AMGR")
 	txmgrLog     = backendLog.Logger("TMGR")
 	chainLog     = backendLog.Logger("CHIO")
 	grpcLog      = backendLog.Logger("GRPC")
 	legacyRPCLog = backendLog.Logger("RPCS")
-	btcnLog      = backendLog.Logger("BTCN")
 )
 
 // Initialize package-global logger variables.
@@ -73,19 +71,17 @@ func init() {
 	rpcclient.UseLogger(chainLog)
 	rpcserver.UseLogger(grpcLog)
 	legacyrpc.UseLogger(legacyRPCLog)
-	neutrino.UseLogger(btcnLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]btclog.Logger{
-	"BTCW": log,
+	"SLGW": log,
 	"BTWL": walletLog,
 	"AMGR": waddrmgrLog,
 	"TMGR": txmgrLog,
 	"CHIO": chainLog,
 	"GRPC": grpcLog,
 	"RPCS": legacyRPCLog,
-	"BTCN": btcnLog,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and

@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/btcsuite/btcd/address/v2"
-	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/btcutil/v2/hdkeychain"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/netparams"
-	"github.com/btcsuite/btcwallet/waddrmgr"
-	"github.com/btcsuite/btcwallet/walletdb"
+	"github.com/taytr-llc/slug/address/v2"
+	"github.com/taytr-llc/slug/btcec/v2"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/btcutil/v2/hdkeychain"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/netparams"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
+	"github.com/taytr-llc/slugwallet/walletdb"
 )
 
 const (
@@ -39,7 +39,7 @@ func keyScopeFromPubKey(pubKey *hdkeychain.ExtendedKey,
 	// force the standard BIP-0049 derivation scheme (nested witness pubkeys
 	// everywhere), while a witness address type will force the standard
 	// BIP-0084 derivation scheme.
-	case waddrmgr.HDVersionMainNetBIP0044, waddrmgr.HDVersionTestNetBIP0044,
+	case waddrmgr.HDVersionSLUG, waddrmgr.HDVersionMainNetBIP0044, waddrmgr.HDVersionTestNetBIP0044,
 		waddrmgr.HDVersionSimNetBIP0044:
 
 		if addrType == nil {
@@ -124,9 +124,7 @@ func (w *Wallet) isPubKeyForNet(pubKey *hdkeychain.ExtendedKey) bool {
 	version := waddrmgr.HDVersion(binary.BigEndian.Uint32(pubKey.Version()))
 	switch w.chainParams.Net {
 	case wire.MainNet:
-		return version == waddrmgr.HDVersionMainNetBIP0044 ||
-			version == waddrmgr.HDVersionMainNetBIP0049 ||
-			version == waddrmgr.HDVersionMainNetBIP0084
+		return version == waddrmgr.HDVersion(binary.BigEndian.Uint32(w.chainParams.HDPublicKeyID[:]))
 
 	case wire.TestNet, wire.TestNet3, wire.TestNet4,
 		netparams.SigNetWire(w.chainParams):

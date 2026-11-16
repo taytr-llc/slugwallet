@@ -10,16 +10,14 @@ import (
 	"net/http"
 	_ "net/http/pprof" // nolint:gosec
 	"os"
-	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 
-	"github.com/btcsuite/btcwallet/build"
-	"github.com/btcsuite/btcwallet/chain"
-	"github.com/btcsuite/btcwallet/rpc/legacyrpc"
-	"github.com/btcsuite/btcwallet/wallet"
-	"github.com/btcsuite/btcwallet/walletdb"
-	"github.com/lightninglabs/neutrino"
+	"github.com/taytr-llc/slugwallet/build"
+	"github.com/taytr-llc/slugwallet/chain"
+	"github.com/taytr-llc/slugwallet/rpc/legacyrpc"
+	"github.com/taytr-llc/slugwallet/wallet"
 )
 
 var (
@@ -85,9 +83,18 @@ func walletMain() error {
 
 	// Create and start chain RPC client so it's ready to connect to
 	// the wallet when loaded later.
+	connectCtx, cancelConnect := context.WithCancel(context.Background())
+	connectDone := make(chan struct{})
 	if !cfg.NoInitialLoad {
-		go rpcClientConnectLoop(legacyRPCServer, loader)
+		go func() {
+			defer close(connectDone)
+			rpcClientConnectLoop(connectCtx, legacyRPCServer, loader)
+		}()
+	} else {
+		close(connectDone)
 	}
+	stopConnect := func() { cancelConnect(); <-connectDone }
+	defer stopConnect()
 
 	loader.RunAfterLoad(func(w *wallet.Wallet) {
 		startWalletRPCServices(w, rpcs, legacyRPCServer)
@@ -133,6 +140,9 @@ func walletMain() error {
 		}()
 	}
 
+	// Stop connection attempts before unloading the wallet. A canceled dial
+	// must not reconnect or replay wallet traffic during shutdown.
+	addInterruptHandler(stopConnect)
 	<-interruptHandlersDone
 	log.Info("Shutdown complete")
 	return nil
@@ -145,58 +155,29 @@ func walletMain() error {
 // The legacy RPC is optional.  If set, the connected RPC client will be
 // associated with the server for RPC passthrough and to enable additional
 // methods.
-func rpcClientConnectLoop(legacyRPCServer *legacyrpc.Server, loader *wallet.Loader) {
-	var certs []byte
-	if !cfg.UseSPV {
-		certs = readCAFile()
-	}
+func rpcClientConnectLoop(ctx context.Context, legacyRPCServer *legacyrpc.Server, loader *wallet.Loader) {
+	certs := readCAFile()
 
 	for {
+		if ctx.Err() != nil {
+			return
+		}
 		var (
 			chainClient chain.Interface
 			err         error
 		)
 
-		if cfg.UseSPV {
-			var (
-				chainService *neutrino.ChainService
-				spvdb        walletdb.DB
-			)
-			netDir := networkDir(cfg.AppDataDir.Value, activeNet.Params)
-			spvdb, err = walletdb.Create(
-				"bdb", filepath.Join(netDir, "neutrino.db"),
-				true, cfg.DBTimeout, false,
-			)
-			if err != nil {
-				log.Errorf("Unable to create Neutrino DB: %s", err)
-				continue
+		chainClient, err = startChainRPC(ctx, certs)
+		if err != nil {
+			log.Errorf("Unable to open connection to SLUG node RPC: %v", err)
+			select {
+			case <-time.After(time.Second):
+			case <-ctx.Done():
+				return
 			}
-			defer spvdb.Close()
-			chainService, err = neutrino.NewChainService(
-				neutrino.Config{
-					DataDir:      netDir,
-					Database:     spvdb,
-					ChainParams:  *activeNet.Params,
-					ConnectPeers: cfg.ConnectPeers,
-					AddPeers:     cfg.AddPeers,
-				})
-			if err != nil {
-				log.Errorf("Couldn't create Neutrino ChainService: %s", err)
-				continue
-			}
-			chainClient = chain.NewNeutrinoClient(activeNet.Params, chainService)
-
-			err = chainClient.Start(context.Background())
-			if err != nil {
-				log.Errorf("Couldn't start Neutrino client: %s", err)
-			}
-		} else {
-			chainClient, err = startChainRPC(certs)
-			if err != nil {
-				log.Errorf("Unable to open connection to consensus RPC server: %v", err)
-				continue
-			}
+			continue
 		}
+		stopOnCancel := context.AfterFunc(ctx, chainClient.Stop)
 
 		// Rather than inlining this logic directly into the loader
 		// callback, a function variable is used to avoid running any of
@@ -221,10 +202,14 @@ func rpcClientConnectLoop(legacyRPCServer *legacyrpc.Server, loader *wallet.Load
 		})
 
 		chainClient.WaitForShutdown()
+		stopOnCancel()
 
 		mu.Lock()
 		associateRPCClient = nil
 		mu.Unlock()
+		if ctx.Err() != nil {
+			return
+		}
 
 		loadedWallet, ok := loader.LoadedWallet()
 		if ok {
@@ -268,14 +253,14 @@ func readCAFile() []byte {
 // services.  This function uses the RPC options from the global config and
 // there is no recovery in case the server is not available or if there is an
 // authentication error.  Instead, all requests to the client will simply error.
-func startChainRPC(certs []byte) (*chain.RPCClient, error) {
+func startChainRPC(ctx context.Context, certs []byte) (*chain.RPCClient, error) {
 	log.Infof("Attempting RPC client connection to %v", cfg.RPCConnect)
 	rpcc, err := chain.NewRPCClient(activeNet.Params, cfg.RPCConnect,
-		cfg.BtcdUsername, cfg.BtcdPassword, certs, cfg.DisableClientTLS, 0)
+		cfg.SlugdUsername, cfg.SlugdPassword, certs, cfg.DisableClientTLS, 1)
 	if err != nil {
 		return nil, err
 	}
 
-	err = rpcc.Start(context.Background())
+	err = rpcc.Start(ctx)
 	return rpcc, err
 }

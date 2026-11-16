@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/btcsuite/btcd/chaincfg/v2"
-	_ "github.com/btcsuite/btcwallet/walletdb/bdb"
+	"github.com/taytr-llc/slug/chaincfg/v2"
+	_ "github.com/taytr-llc/slugwallet/walletdb/bdb"
 )
 
 // TestCreateWatchingOnly checks that we can construct a watching-only

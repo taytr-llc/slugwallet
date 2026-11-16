@@ -9,23 +9,23 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/btcsuite/btcd/btcjson"
-	"github.com/btcsuite/btcd/btcutil/v2"
-	"github.com/btcsuite/btcd/chainhash/v2"
-	"github.com/btcsuite/btcd/rpcclient"
-	"github.com/btcsuite/btcd/txscript/v2"
-	"github.com/btcsuite/btcd/wire/v2"
-	"github.com/btcsuite/btcwallet/internal/cfgutil"
-	"github.com/btcsuite/btcwallet/netparams"
-	"github.com/btcsuite/btcwallet/wallet/txauthor"
-	"github.com/btcsuite/btcwallet/wallet/txrules"
-	"github.com/btcsuite/btcwallet/wallet/txsizes"
 	"github.com/jessevdk/go-flags"
+	"github.com/taytr-llc/slug/btcjson"
+	"github.com/taytr-llc/slug/btcutil/v2"
+	"github.com/taytr-llc/slug/chainhash/v2"
+	"github.com/taytr-llc/slug/rpcclient"
+	"github.com/taytr-llc/slug/txscript/v2"
+	"github.com/taytr-llc/slug/wire/v2"
+	"github.com/taytr-llc/slugwallet/internal/cfgutil"
+	"github.com/taytr-llc/slugwallet/netparams"
+	"github.com/taytr-llc/slugwallet/wallet/txauthor"
+	"github.com/taytr-llc/slugwallet/wallet/txrules"
+	"github.com/taytr-llc/slugwallet/wallet/txsizes"
 	"golang.org/x/term"
 )
 
 var (
-	walletDataDirectory = btcutil.AppDataDir("btcwallet", false)
+	walletDataDirectory = btcutil.AppDataDir("slugwallet", false)
 	newlineBytes        = []byte{'\n'}
 )
 

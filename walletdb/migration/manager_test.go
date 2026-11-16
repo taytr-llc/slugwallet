@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/btcsuite/btcwallet/walletdb"
-	"github.com/btcsuite/btcwallet/walletdb/migration"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/taytr-llc/slugwallet/walletdb"
+	"github.com/taytr-llc/slugwallet/walletdb/migration"
 )
 
 type mockMigrationManager struct {
