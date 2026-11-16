@@ -75,3 +75,22 @@ remain separate decisions.
 - The desktop uses only the independently published zero256 fixture, with a
   separate LocalWalletPilot data directory. No real entropy, normal-login
   provider, real custody or public wallet service is authorized by this slice.
+
+
+## Fixture account enrollment (set 27)
+
+- The explicit account pilot adds only the published zero256 and incrementing256
+  identities. The previous local-wallet mode remains zero256-only. Unknown or
+  mismatched identities must fail before creating/replacing wallet data.
+- `Wallet.SignAccountChallenge` accepts only the frozen enroll/recover contract
+  and a separately pinned authority ID. It checks the retained public root/gym
+  pair and uses the existing short unlock lease. No generic signer, secret RPC,
+  wallet file read by the webview or production path allocation is authorized.
+- D72 approves verified login reset recovering the same wallet without the
+  phrase, with a 24-hour hold. Existing-wallet mining and viewing stay allowed;
+  export, withdrawals, fighter transfer, recovery-authority changes and
+  marketplace purchases/listings are blocked. Session revocation, exact reset
+  replay and hold checks belong to the paired durable account authority.
+- A backup copy does not revoke hosted recovery authority. Do not describe it
+  as exclusive migration. Login verification and wallet encryption are distinct;
+  private-password rotation is tested without changing the retained identity.

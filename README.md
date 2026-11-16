@@ -2,7 +2,7 @@
 
 SLUG wallet foundation, forked from btcsuite/btcwallet **v0.18.1** at
 `43f2950d2a065a7b3d4a4a1cf17ed1e84af6bcb4`. The implementation lives on
-`slug-desktop-wallet` for set 26 (activation: `slug-phase-a-activation`); the
+`slug-account-enrollment` for set 27 (desktop RPC: `slug-desktop-wallet`); the
 fork's upstream-tracking `master` is not this release. Upstream source and license history are preserved.
 
 This fork provides a full-node wallet backend and an explicitly public-fixture
@@ -18,16 +18,17 @@ Use Go 1.27.4 and sibling checkouts:
 ```text
 slug/
   slug/        # reviewed paired chain revision, including ConnectContext
-  slugwallet/  # slug-desktop-wallet
+  slugwallet/  # slug-account-enrollment
 ```
 
 The wallet's `go.work` covers its six runtime modules and the ten SLUG modules.
 Every wallet module also has explicit relative replacements for the paired
 sources. The chain workspace is unchanged. `rpcclient.ConnectContext` from the
 paired set 23 or later chain revision is required; upstream btcd cannot substitute for it.
-The pinned paired set 25 chain revision is
-`11664083bd87d33b7a127d7950cf170561543c3f`, also pinned in
-`.github/workflows/main.yml`.
+Set 27 additionally requires the paired `gymaccount` challenge package on the
+`slug-account-enrollment` chain branch, pinned in CI to
+`6d96f19781b93b97117b00f5701f84131af54ab5`. The older set 25 pin cannot
+build these new signer APIs.
 
 ```sh
 go build -o /tmp/slugwallet .
@@ -206,3 +207,31 @@ apply; an allowlist is not a substitute for a private listener.
 The local desktop fixture uses only public address/balance/history methods over
 its owned loopback listener. Private recovery and gym signing stay in-process.
 See [set 26 notes](CHANGESET_26_NOTES.md); this does not enable real custody.
+
+
+## Fixture account enrollment and hosted reset
+
+`Wallet.SignAccountChallenge(ctx, pinnedAuthorityID, challenge)` signs only the
+versioned `enroll` or `recover` action for the retained wallet root and gym. The
+caller supplies the authority ID from trusted configuration. The method checks
+the full retained identity before and inside a short unlock lease and refuses
+locked, closed, canceled, unsupported-profile and mismatched-wallet requests.
+Only the two independently published `zero256` and `incrementing256` identity
+pairs are admitted by this foundation. There is no arbitrary digest, path or key
+export API and no new secret RPC method.
+
+The paired account authority enforces login verification, issued challenge
+expiry, generation, single-use completion and the approved 24-hour recovery
+hold. The wallet signature alone does not authorize a session or override that
+hold. Verified reset preserves the same wallet; viewing and existing-wallet
+mining remain available, while export, withdrawal, fighter transfer, recovery
+authority changes and marketplace purchases/listings are held. Old sessions are
+revoked immediately. Distinct resets restart the hold; replaying the same reset
+event does not.
+
+Login credentials are separate from wallet encryption. Existing private-password
+rotation APIs preserve the retained phrase, public root and gym; they must run
+outside a held private-operation lease. A recovery export is a copy: it does not
+revoke the hosted service's recovery authority. Exclusive migration remains
+separate work. No real provider, signup, custody deployment or production
+profile is enabled here. See [set 27 notes](CHANGESET_27_NOTES.md).

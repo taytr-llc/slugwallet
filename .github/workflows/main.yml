@@ -2,7 +2,7 @@ name: SLUG wallet desktop foundation
 
 on:
   push:
-    branches: [slug-wallet-foundation, slug-wallet-recovery, slug-phase-a-activation, slug-desktop-wallet]
+    branches: [slug-wallet-foundation, slug-wallet-recovery, slug-phase-a-activation, slug-desktop-wallet, slug-account-enrollment]
   workflow_dispatch:
 
 permissions:
@@ -14,8 +14,8 @@ concurrency:
 
 env:
   GO_VERSION: '1.27.4'
-  # Reviewed paired set25 chain revision; do not float this dependency.
-  SLUG_CHAIN_REF: 11664083bd87d33b7a127d7950cf170561543c3f
+  # Set 27 shared account authority and fixed full-block header tracking.
+  SLUG_CHAIN_REF: 6d96f19781b93b97117b00f5701f84131af54ab5
   GOFLAGS: ''
 
 defaults:
@@ -76,7 +76,7 @@ jobs:
         run: |
           go test -tags=slugtestpow -count=1 -timeout=30s . ./chain
           go test -tags=slugtestpow -count=1 -timeout=1m ./recovery
-          go test -tags=slugtestpow -count=1 -timeout=1m ./wallet -run '^TestRecovery'
+          go test -tags=slugtestpow -count=1 -timeout=1m ./wallet -run '^(TestRecovery|TestAccountChallengeCheapProfileRefusal)'
       - name: Namespace and sample configuration
         run: |
           mkdir -p "$RUNNER_TEMP/slugwallet-bin"
