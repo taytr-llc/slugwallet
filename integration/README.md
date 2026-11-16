@@ -75,14 +75,15 @@ Legacy wallet RPC supplies addresses, balances, unlock, history and both
 because the legacy RPC lacks a taproot address option. Both spends are broadcast
 to and confirmed by the normal isolated node.
 
-Segwit and Taproot are inactive on the current chain. The first native-funded
+Segwit and Taproot were inactive at the set-24 chain source pin. The first native-funded
 attempt reached maturity but the node rejected its witness spend; this is a
 separate activation issue. This gate therefore proves live legacy-funded
 recovery, plus independent derivation/ownership/high-water restoration for the
 other scopes. It does **not** claim a successful funded native-witness or
-Taproot round trip. The helper accepts an explicit funding scope for a later
-activation test, without changing any node rules. The inherited RPC selection
-and change behavior is left intact until that separate workstream.
+Taproot round trip. At that source pin, RPC selection and change behavior were
+unchanged. The set-25 gate below exercises the subsequent activation and RPC
+selection changes across all four funding scopes, without a test-only rule
+override.
 
 The same fixture also checks the original and restored gym public identity,
 automatic signing through the worker's pinned callback, identical authorization
@@ -100,3 +101,37 @@ gym signing for the bounded fixture profile. It does not establish hosted
 login/custody, universal external-wallet compatibility, exclusive migration,
 imported-key export or fighter transfer. Both node and wallet shutdown remain
 checked by the shared fixture lifecycle.
+
+## Activated four-scope recovery and witness block gate (set 25)
+
+Build a normal `slugd` from the reviewed activation-62 chain source, then run:
+
+```sh
+SLUG_WALLET_NODE=/absolute/path/to/activation-62/slugd \
+  ./integration/run-activation.sh
+```
+
+The four sequential cases fund independent receive index25 in the legacy,
+nested-witness, native-witness and Taproot scopes. Each executes the complete
+retained-export/fresh-restore lifecycle, both RPC spends and recovered-change
+consumption. Assertions check the real input type, explicit legacy change, and
+the activated RPC spend's height62 finality floor. No test flag changes consensus.
+
+Each isolated chain is observed at tips60,61,62: BIP9 status describes the next
+candidate (inactive61, active62), while buried reject status describes the
+current tip. Both are checked independently, together with the advertised fixed
+activation height. The original set-24 gate remains a single legacy-funded case.
+
+The native-witness case also starts a second normal node with a loopback-only
+listener, synchronizes it, and requests a real template through `ResolveTemplate`.
+It requires the actual wallet witness transaction and complete witness bytes,
+builds a payable job-bound candidate, checks its witness commitment, obtains a
+successful node proposal result, and performs a bounded production-Argon nonce
+scan. The exact block is submitted only to the disposable node and then observed
+canonical before the wallet confirmation is accepted. The prospect threshold
+remains an explicitly synthetic all-ff fixture policy, not a production target.
+
+The `activationintegration` tag and separate launcher keep this longer gate
+opt-in; allow up to20 minutes. Node/wallet cleanup is checked for every case,
+including the extra template peer. No real key, public peer or public block
+broadcast is used.

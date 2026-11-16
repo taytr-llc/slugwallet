@@ -1261,6 +1261,7 @@ func logFilterBlocksResp(block wtxmgr.BlockMeta,
 type (
 	createTxRequest struct {
 		coinSelectKeyScope    *waddrmgr.KeyScope
+		selectionOptions      *txCreateOptions
 		changeKeyScope        *waddrmgr.KeyScope
 		account               uint32
 		outputs               []*wire.TxOut
@@ -1312,7 +1313,7 @@ out:
 				txr.outputs, txr.coinSelectKeyScope,
 				txr.changeKeyScope, txr.account, txr.minconf,
 				txr.feeSatPerKB, txr.coinSelectionStrategy,
-				txr.dryRun, txr.selectUtxos, txr.allowUtxo,
+				txr.dryRun, txr.selectUtxos, txr.allowUtxo, txr.selectionOptions,
 			)
 
 			release()
@@ -1328,9 +1329,11 @@ out:
 // process. This can be used to do things like use a custom coin selection
 // scope, which otherwise will default to the specified coin selection scope.
 type txCreateOptions struct {
-	changeKeyScope *waddrmgr.KeyScope
-	selectUtxos    []wire.OutPoint
-	allowUtxo      func(wtxmgr.Credit) bool
+	coinSelectScopes   []waddrmgr.KeyScope
+	minimumBlockHeight uint32
+	changeKeyScope     *waddrmgr.KeyScope
+	selectUtxos        []wire.OutPoint
+	allowUtxo          func(wtxmgr.Credit) bool
 }
 
 // TxCreateOption is a set of optional arguments to modify the tx creation
@@ -1351,6 +1354,23 @@ func WithCustomChangeScope(changeScope *waddrmgr.KeyScope) TxCreateOption {
 	return func(opts *txCreateOptions) {
 		opts.changeKeyScope = changeScope
 	}
+}
+
+// WithCoinSelectionScopes restricts inputs to an owned list of scopes, in
+// addition to the requested account and any single-scope restriction. An empty
+// explicit list permits no inputs; omitting this option preserves prior behavior.
+func WithCoinSelectionScopes(scopes ...waddrmgr.KeyScope) TxCreateOption {
+	owned := append([]waddrmgr.KeyScope{}, scopes...)
+	return func(opts *txCreateOptions) {
+		opts.coinSelectScopes = append([]waddrmgr.KeyScope{}, owned...)
+	}
+}
+
+// WithMinBlockHeight makes the signed transaction non-final before height.
+// Zero leaves finality unchanged. The non-final sequence retains the BIP68
+// disable bit; this option does not enable relative timelocks or opt-in RBF.
+func WithMinBlockHeight(height uint32) TxCreateOption {
+	return func(opts *txCreateOptions) { opts.minimumBlockHeight = height }
 }
 
 // WithCustomSelectUtxos is used to specify the inputs to be used while
@@ -1374,7 +1394,7 @@ func WithUtxoFilter(allowUtxo func(utxo wtxmgr.Credit) bool) TxCreateOption {
 // at least minconf confirmations spending to any number of address/amount
 // pairs. Only unspent outputs belonging to the given key scope and account will
 // be selected, unless a key scope is not specified. In that case, inputs from all
-// accounts may be selected, no matter what key scope they belong to. This is
+// scopes may be selected if their account number matches. This is
 // done to handle the default account case, where a user wants to fund a PSBT
 // with inputs regardless of their type (NP2WKH, P2WKH, etc.). Change and an
 // appropriate transaction fee are automatically included, if necessary. All
@@ -1405,6 +1425,7 @@ func (w *Wallet) CreateSimpleTx(coinSelectKeyScope *waddrmgr.KeyScope,
 
 	req := createTxRequest{
 		coinSelectKeyScope:    coinSelectKeyScope,
+		selectionOptions:      opts,
 		changeKeyScope:        opts.changeKeyScope,
 		account:               account,
 		outputs:               outputs,
@@ -3642,6 +3663,15 @@ func (w *Wallet) SendOutputs(outputs []*wire.TxOut, keyScope *waddrmgr.KeyScope,
 	)
 }
 
+// SendOutputsWithOptions funds, signs and publishes outputs using the same
+// validation and persistence path as SendOutputs, with explicit creation options.
+// Existing SendOutputs callers retain their original selection/change behavior.
+func (w *Wallet) SendOutputsWithOptions(outputs []*wire.TxOut, keyScope *waddrmgr.KeyScope,
+	account uint32, minconf int32, satPerKb btcutil.Amount,
+	strategy CoinSelectionStrategy, label string, options ...TxCreateOption) (*wire.MsgTx, error) {
+	return w.sendOutputs(outputs, keyScope, account, minconf, satPerKb, strategy, label, options...)
+}
+
 // SendOutputsWithInput creates and sends payment transactions using the
 // provided selected utxos. It returns the transaction upon success.
 func (w *Wallet) SendOutputsWithInput(outputs []*wire.TxOut,
@@ -3651,7 +3681,7 @@ func (w *Wallet) SendOutputsWithInput(outputs []*wire.TxOut,
 	selectedUtxos []wire.OutPoint) (*wire.MsgTx, error) {
 
 	return w.sendOutputs(outputs, keyScope, account, minconf, satPerKb,
-		coinSelectionStrategy, label, selectedUtxos...)
+		coinSelectionStrategy, label, WithCustomSelectUtxos(selectedUtxos))
 }
 
 // sendOutputs creates and sends payment transactions. It returns the
@@ -3659,7 +3689,7 @@ func (w *Wallet) SendOutputsWithInput(outputs []*wire.TxOut,
 func (w *Wallet) sendOutputs(outputs []*wire.TxOut, keyScope *waddrmgr.KeyScope,
 	account uint32, minconf int32, satPerKb btcutil.Amount,
 	coinSelectionStrategy CoinSelectionStrategy, label string,
-	selectedUtxos ...wire.OutPoint) (*wire.MsgTx, error) {
+	options ...TxCreateOption) (*wire.MsgTx, error) {
 
 	// Ensure the outputs to be created adhere to the network's consensus
 	// rules.
@@ -3678,9 +3708,7 @@ func (w *Wallet) sendOutputs(outputs []*wire.TxOut, keyScope *waddrmgr.KeyScope,
 	// been confirmed.
 	createdTx, err := w.CreateSimpleTx(
 		keyScope, account, outputs, minconf, satPerKb,
-		coinSelectionStrategy, false, WithCustomSelectUtxos(
-			selectedUtxos,
-		),
+		coinSelectionStrategy, false, options...,
 	)
 	if err != nil {
 		return nil, err

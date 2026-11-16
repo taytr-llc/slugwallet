@@ -145,8 +145,17 @@ func (w *Wallet) txToOutputs(outputs []*wire.TxOut,
 	account uint32, minconf int32, feeSatPerKb btcutil.Amount,
 	strategy CoinSelectionStrategy, dryRun bool,
 	selectedUtxos []wire.OutPoint,
-	allowUtxo func(utxo wtxmgr.Credit) bool) (
+	allowUtxo func(utxo wtxmgr.Credit) bool,
+	selectionOptions ...*txCreateOptions) (
 	*txauthor.AuthoredTx, error) {
+
+	opts := defaultTxCreateOptions()
+	if len(selectionOptions) != 0 && selectionOptions[0] != nil {
+		opts = selectionOptions[0]
+	}
+	if opts.minimumBlockHeight > txscript.LockTimeThreshold {
+		return nil, errors.New("minimum block height is outside height-lock range")
+	}
 
 	chainClient, err := w.requireChainClient()
 	if err != nil {
@@ -187,7 +196,7 @@ func (w *Wallet) txToOutputs(outputs []*wire.TxOut,
 
 		eligible, err := w.findEligibleOutputs(
 			dbtx, coinSelectKeyScope, account, minconf,
-			bs, allowUtxo,
+			bs, allowUtxo, opts.coinSelectScopes...,
 		)
 		if err != nil {
 			return err
@@ -256,6 +265,13 @@ func (w *Wallet) txToOutputs(outputs []*wire.TxOut,
 		)
 		if err != nil {
 			return err
+		}
+
+		if opts.minimumBlockHeight != 0 {
+			tx.Tx.LockTime = opts.minimumBlockHeight - 1
+			for _, input := range tx.Tx.TxIn {
+				input.Sequence = wire.MaxTxInSequenceNum - 1
+			}
 		}
 
 		// Randomize change position, if change exists, before signing.
@@ -348,7 +364,7 @@ func (w *Wallet) txToOutputs(outputs []*wire.TxOut,
 func (w *Wallet) findEligibleOutputs(dbtx walletdb.ReadTx,
 	keyScope *waddrmgr.KeyScope, account uint32, minconf int32,
 	bs *waddrmgr.BlockStamp,
-	allowUtxo func(utxo wtxmgr.Credit) bool) ([]wtxmgr.Credit, error) {
+	allowUtxo func(utxo wtxmgr.Credit) bool, allowedScopes ...waddrmgr.KeyScope) ([]wtxmgr.Credit, error) {
 
 	addrmgrNs := dbtx.ReadBucket(waddrmgrNamespaceKey)
 	txmgrNs := dbtx.ReadBucket(wtxmgrNamespaceKey)
@@ -408,6 +424,18 @@ func (w *Wallet) findEligibleOutputs(dbtx walletdb.ReadTx,
 		}
 		if keyScope != nil && scopedMgr.Scope() != *keyScope {
 			continue
+		}
+		if allowedScopes != nil {
+			allowed := false
+			for _, scope := range allowedScopes {
+				if scopedMgr.Scope() == scope {
+					allowed = true
+					break
+				}
+			}
+			if !allowed {
+				continue
+			}
 		}
 		if addrAcct != account {
 			continue

@@ -227,14 +227,24 @@ func assertRecoveryProfile(t *testing.T, actual, expected recovery.Export) {
 }
 
 func TestWalletRecoveryNormalPoW(t *testing.T) {
-	// Witness/Taproot are inactive on the current chain. Set24 tests live
-	// legacy-funded recovery; no test-only consensus activation is used.
+	// The original set24 gate uses legacy funding. The separate activation
+	// gate exercises each supported funding type under the node's real rules.
 	runWalletRecoveryNormalPoW(t, 44)
+}
+
+type recoveryGateHooks struct {
+	activation        func(*testing.T, *node, int32)
+	firstConfirmation func(*testing.T, *node, *session, *int32, string, string)
+	spends            func(*testing.T, uint32, *wire.MsgTx, *wire.MsgTx)
 }
 
 // A later activation test can use the same lifecycle with another funding
 // scope and explicit RPC support; selecting a scope never changes node rules.
-func runWalletRecoveryNormalPoW(t *testing.T, fundingPurpose uint32) {
+func runWalletRecoveryNormalPoW(t *testing.T, fundingPurpose uint32, optionalHooks ...recoveryGateHooks) {
+	var hooks recoveryGateHooks
+	if len(optionalHooks) != 0 {
+		hooks = optionalHooks[0]
+	}
 	if wire.TestPoW {
 		t.Fatal("production PoW required")
 	}
@@ -276,7 +286,17 @@ func runWalletRecoveryNormalPoW(t *testing.T, fundingPurpose uint32) {
 	if err != nil || int64(account.ImmatureReward) != 10e8 || balance(t, original) != 0 {
 		t.Fatal("normal 10-SLUG reward missing or prematurely spendable", err)
 	}
-	mine(t, n, original, 99, &height)
+	if hooks.activation == nil {
+		mine(t, n, original, 99, &height)
+	} else {
+		mine(t, n, original, 59, &height)
+		hooks.activation(t, n, height)
+		mine(t, n, original, 1, &height)
+		hooks.activation(t, n, height)
+		mine(t, n, original, 1, &height)
+		hooks.activation(t, n, height)
+		mine(t, n, original, 38, &height)
+	}
 	if balance(t, original) != 10e8 {
 		t.Fatal("normal 100-confirmation maturity not reached")
 	}
@@ -284,7 +304,11 @@ func runWalletRecoveryNormalPoW(t *testing.T, fundingPurpose uint32) {
 	sink := fixtureVectors(t).ExternalSink
 	var firstSpend string
 	original.rpc.must(t, "sendtoaddress", []any{sink, 1.0}, &firstSpend)
-	mine(t, n, original, 1, &height)
+	if hooks.firstConfirmation == nil {
+		mine(t, n, original, 1, &height)
+	} else {
+		hooks.firstConfirmation(t, n, original, &height, payout, firstSpend)
+	}
 	firstHistory := history(t, original, firstSpend)
 	if firstHistory["confirmations"].(float64) < 1 {
 		t.Fatal("original recovery wallet spend was not confirmed")
@@ -385,5 +409,16 @@ func runWalletRecoveryNormalPoW(t *testing.T, fundingPurpose uint32) {
 	if !spentRecoveredChange {
 		t.Fatal("second confirmed spend did not consume the recovered first-spend change")
 	}
-	t.Logf("recovery gate passed: retained phrase after reopen, independent four-scope addresses beyond gap20, legacy-funded recovery, exact balance/history, same gym identity and automatic authorizations, fresh authority admission and immutable receipt replay, confirmed spends %s and %s; elapsed %s", firstSpend, secondSpend, time.Since(started))
+	if hooks.spends != nil {
+		firstBytes, err := hex.DecodeString(firstHistory["hex"].(string))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var firstTransaction wire.MsgTx
+		if err := firstTransaction.Deserialize(bytes.NewReader(firstBytes)); err != nil {
+			t.Fatal(err)
+		}
+		hooks.spends(t, fundingPurpose, &firstTransaction, &secondTransaction)
+	}
+	t.Logf("recovery gate passed: scope%d funded, retained phrase after reopen, independent four-scope addresses beyond gap20, exact balance/history, same gym identity and automatic authorizations, fresh authority admission and immutable receipt replay, confirmed spends %s and %s; elapsed %s", fundingPurpose, firstSpend, secondSpend, time.Since(started))
 }

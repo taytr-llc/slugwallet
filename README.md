@@ -2,7 +2,7 @@
 
 SLUG wallet foundation, forked from btcsuite/btcwallet **v0.18.1** at
 `43f2950d2a065a7b3d4a4a1cf17ed1e84af6bcb4`. The implementation lives on
-`slug-wallet-recovery` for set 24 (foundation: `slug-wallet-foundation`); the
+`slug-phase-a-activation` for set 25 (recovery: `slug-wallet-recovery`); the
 fork's upstream-tracking `master` is not this release. Upstream source and license history are preserved.
 
 This fork provides a full-node wallet backend and an explicitly public-fixture
@@ -18,15 +18,15 @@ Use Go 1.27.4 and sibling checkouts:
 ```text
 slug/
   slug/        # reviewed paired chain revision, including ConnectContext
-  slugwallet/  # slug-wallet-recovery
+  slugwallet/  # slug-phase-a-activation
 ```
 
 The wallet's `go.work` covers its six runtime modules and the ten SLUG modules.
 Every wallet module also has explicit relative replacements for the paired
 sources. The chain workspace is unchanged. `rpcclient.ConnectContext` from the
 paired set 23 or later chain revision is required; upstream btcd cannot substitute for it.
-The pinned paired set 24 chain revision is
-`dec10e165ac1be541f935502c4e8da2bfaf6cc89`, also pinned in
+The pinned paired set 25 chain revision is
+`11664083bd87d33b7a127d7950cf170561543c3f`, also pinned in
 `.github/workflows/main.yml`.
 
 ```sh
@@ -96,6 +96,40 @@ scope. The network prefix alone does not identify purpose or address schema.
 The [encoding oracle](waddrmgr/testdata/README.md) independently recomputes SLUG
 checksums; the [recovery oracle](recovery/testdata/README.md) independently derives
 the phrase, BIP32 keys, addresses, and gym identity.
+
+## Phase-A spending (set 25)
+
+The paired chain activates the approved Phase-A rules at height 62. Wallet RPC
+checks the node's explicit Segwit/Taproot activation metadata and a matching tip
+snapshot before authoring a spend. A pre-upgrade node with the same chain identity
+is refused; network magic and genesis alone do not prove upgraded software.
+Update all nodes before mining beyond the agreed activation boundary.
+
+For `sendtoaddress` and account 0 `sendfrom`/`sendmany`, eligible inputs come from
+exactly the four default scopes 44/49/84/86. Custom scopes are excluded. Account
+names remain resolved within scope 44; nonzero named accounts and the imported
+account remain restricted to that scope, never a same-numbered account elsewhere.
+All RPC change is explicit legacy P2PKH from scope 44, preserving the Phase-A
+payout/change contract and avoiding an implicit Taproot change default.
+
+Before activation, RPC selects legacy inputs and rejects witness/Taproot
+recipients. It also conservatively rejects opaque P2SH recipients, whose redeem
+script could depend on witness enforcement. After activation, every Phase-A
+RPC-authored transaction is signed with locktime 61 and sequence 0xfffffffe, making
+it non-final below height 62 even if the tip reorganizes after the readiness
+check. This does not enable relative timelocks or opt-in replacement. Existing
+wallet-library send defaults remain unchanged; explicit creation options are
+available for callers that need scope restrictions or a minimum inclusion height.
+Other networks use their node's reported deployment state, without a global
+height 62 assumption.
+
+The [set 25 notes](CHANGESET_25_NOTES.md) and [activation integration](integration/README.md)
+record normal-PoW spending and export-only restore across all four scopes, plus a
+witness-bearing block template. This remains fixture evidence, not real custody.
+
+```sh
+SLUG_WALLET_NODE=/absolute/path/to/slugd ./integration/run-activation.sh
+```
 
 ## Retained fixture recovery (set 24)
 

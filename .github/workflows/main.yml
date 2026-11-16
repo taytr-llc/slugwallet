@@ -1,8 +1,8 @@
-name: SLUG wallet recovery
+name: SLUG wallet activation
 
 on:
   push:
-    branches: [slug-wallet-foundation, slug-wallet-recovery]
+    branches: [slug-wallet-foundation, slug-wallet-recovery, slug-phase-a-activation]
   workflow_dispatch:
 
 permissions:
@@ -14,8 +14,8 @@ concurrency:
 
 env:
   GO_VERSION: '1.27.4'
-  # Reviewed paired set24 chain revision; do not float this dependency.
-  SLUG_CHAIN_REF: dec10e165ac1be541f935502c4e8da2bfaf6cc89
+  # Reviewed paired set25 chain revision; do not float this dependency.
+  SLUG_CHAIN_REF: 11664083bd87d33b7a127d7950cf170561543c3f
   GOFLAGS: ''
 
 defaults:
@@ -114,3 +114,7 @@ jobs:
         env:
           SLUG_WALLET_NODE: ${{ runner.temp }}/slugd
         run: ./integration/run-recovery.sh
+      - name: Activated four-scope recovery and witness block template
+        env:
+          SLUG_WALLET_NODE: ${{ runner.temp }}/slugd
+        run: ./integration/run-activation.sh

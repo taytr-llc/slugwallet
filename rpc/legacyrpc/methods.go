@@ -1384,16 +1384,28 @@ func makeOutputs(pairs map[string]btcutil.Amount, chainParams *chaincfg.Params) 
 // It returns the transaction hash in string format upon success
 // All errors are returned in btcjson.RPCError format
 func sendPairs(w *wallet.Wallet, amounts map[string]btcutil.Amount,
-	keyScope waddrmgr.KeyScope, account uint32, minconf int32,
+	account uint32, minconf int32,
 	feeSatPerKb btcutil.Amount) (string, error) {
 
 	outputs, err := makeOutputs(amounts, w.ChainParams())
 	if err != nil {
 		return "", err
 	}
-	tx, err := w.SendOutputs(
-		outputs, &keyScope, account, minconf, feeSatPerKb,
-		wallet.CoinSelectionLargest, "",
+	activation, err := rpcSpendActivation(w.ChainParams(), w.ChainClient())
+	if err != nil {
+		return "", err
+	}
+	options, err := rpcSpendOptions(account, outputs, activation)
+	if err != nil {
+		return "", err
+	}
+	var selectionScope *waddrmgr.KeyScope
+	if account != waddrmgr.DefaultAccountNum {
+		selectionScope = &waddrmgr.KeyScopeBIP0044
+	}
+	tx, err := w.SendOutputsWithOptions(
+		outputs, selectionScope, account, minconf, feeSatPerKb,
+		wallet.CoinSelectionLargest, "", options...,
 	)
 	if err != nil {
 		if err == txrules.ErrAmountNegative {
@@ -1462,7 +1474,7 @@ func sendFrom(icmd interface{}, w *wallet.Wallet, chainClient *chain.RPCClient) 
 		cmd.ToAddress: amt,
 	}
 
-	return sendPairs(w, pairs, waddrmgr.KeyScopeBIP0044, account, minConf,
+	return sendPairs(w, pairs, account, minConf,
 		txrules.DefaultRelayFeePerKb)
 }
 
@@ -1504,7 +1516,7 @@ func sendMany(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 		pairs[k] = amt
 	}
 
-	return sendPairs(w, pairs, waddrmgr.KeyScopeBIP0044, account, minConf, txrules.DefaultRelayFeePerKb)
+	return sendPairs(w, pairs, account, minConf, txrules.DefaultRelayFeePerKb)
 }
 
 // sendToAddress handles a sendtoaddress RPC request by creating a new
@@ -1540,7 +1552,7 @@ func sendToAddress(icmd interface{}, w *wallet.Wallet) (interface{}, error) {
 	}
 
 	// sendtoaddress always spends from the default account, this matches bitcoind
-	return sendPairs(w, pairs, waddrmgr.KeyScopeBIP0044, waddrmgr.DefaultAccountNum, 1,
+	return sendPairs(w, pairs, waddrmgr.DefaultAccountNum, 1,
 		txrules.DefaultRelayFeePerKb)
 }
 
