@@ -252,6 +252,14 @@ func (w *Wallet) runSyncLoop() {
 			return
 		}
 
+		// Unknown writes cannot be replayed by the local retry loop. Wake
+		// Manager without joining this worker from its own error path.
+		if errors.Is(err, db.ErrIndeterminateCommit) {
+			w.reportFailure(err)
+
+			return
+		}
+
 		log.Errorf("Chain sync loop exited with error: %v", err)
 
 		backoff, err = w.waitForBackoff(

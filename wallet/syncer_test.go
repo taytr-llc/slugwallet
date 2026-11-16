@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -3875,6 +3876,23 @@ func TestStoreScanHorizonsTargetedImportedNotResolvedAsDerived(t *testing.T) {
 	require.True(t, importedProps.IsWatchOnly)
 }
 
+// expectEmptyLiveWatches requires one explicit SQL startup reconstruction.
+// Callers opt into exact reads; other Store mocks retain no defaults.
+func expectEmptyLiveWatches(store *walletmock.Store, walletID uint32,
+	addresses ...db.AddressInfo) {
+
+	store.On("ListAccounts", mock.Anything, db.ListAccountsQuery{
+		WalletID:      walletID,
+		SkipBalance:   true,
+		ChainSyncOnly: true,
+	}).Return([]db.AccountInfo(nil), nil).Once()
+	expectImportedScanAddressPage(
+		store, walletID, page.Result[db.AddressInfo, uint32]{Items: addresses},
+	)
+	store.On("ListOutputsToWatch", mock.Anything, walletID).
+		Return([]db.UtxoInfo(nil), nil).Once()
+}
+
 // expectImportedScanAddressPage expects the Store scan path to page raw imports
 // using the accountless imported-address query shape.
 func expectImportedScanAddressPage(store *walletmock.Store,
@@ -5374,6 +5392,51 @@ func TestSyncerRun_InitError(t *testing.T) {
 	require.ErrorIs(t, err, errDBMock)
 	store.AssertExpectations(t)
 	mockChain.AssertExpectations(t)
+}
+
+// TestSyncerRunInitCommitUncertainty preserves an unknown native write during
+// backend initialization even when its adapter error wraps cancellation.
+func TestSyncerRunInitCommitUncertainty(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		t.Helper()
+
+		// Arrange: Keep the backend behind and queue one real observation.
+		// The runnable mailbox precedes polling, so its ambiguous Store write
+		// must end initialization before another backend check or retry.
+		client := &bwmock.Chain{}
+		store := &walletmock.Store{}
+		s := newTestSyncer(Config{Chain: client}, nil, nil, nil, store, 0)
+		record, err := wtxmgr.NewTxRecordFromMsgTx(
+			subscriptionTx([]byte{txscript.OP_TRUE}, 423), time.Now(),
+		)
+		require.NoError(t, err)
+
+		client.On("IsCurrent").Return(false).Once()
+		store.On("ApplyTxBatch", mock.Anything, mock.Anything).
+			Return(&dbruntime.AmbiguousTxCommitError{
+				Err: context.Canceled,
+			}).Once()
+
+		events := make(chan chainEvent, 1)
+		s.chainEventChan = events
+
+		events <- chainEvent{
+			notification: chain.RelevantTx{TxRecord: record},
+			matches:      liveMatches(record),
+		}
+
+		// Act: Run the actual initialization and retry owner with a live
+		// context, leaving error classification to the production path.
+		err = s.run(t.Context())
+
+		// Assert: The unknown write escapes as indeterminate, rather than
+		// successful cancellation or a retry; verify each required call once.
+		require.ErrorIs(t, err, db.ErrIndeterminateCommit)
+		client.AssertExpectations(t)
+		store.AssertExpectations(t)
+	})
 }
 
 // TestDispatchScanStrategy_AutoFallback verifies fallback to full blocks
@@ -7971,14 +8034,45 @@ func TestLiveWatchTargetedBatchCancellation(t *testing.T) {
 func TestLiveWatchTargetedCommitUncertainty(t *testing.T) {
 	t.Parallel()
 
-	// Arrange: Start with matching tips and a targeted scan's live-ready
-	// state, then make its Store write report an unknown commit outcome.
+	// Arrange: Configure the owner and real engine before either loop starts.
+	// A held ambiguous write will leave its mailbox full while Manager tries
+	// to deliver another native event, requiring cancellation before Stop.
 	w, deps := createTestWalletWithMocks(t)
-	s := newTestSyncer(w.cfg, nil, nil, nil, deps.store, w.id)
+	w.cfg.WalletSyncRetryInterval = time.Hour
+	backend := &managerBackendMock{}
+	backend.On("close").Return(nil).Once()
+	t.Cleanup(func() { backend.AssertExpectations(t) })
+	lifetimeCtx, cancel := context.WithCancelCause(
+		context.WithoutCancel(t.Context()),
+	)
+	notifications := make(chan any, 1)
+	manager := &Manager{
+		wallets:     map[string]*Wallet{w.cfg.Name: w},
+		backend:     backend,
+		lifetimeCtx: lifetimeCtx,
+		cancel:      cancel,
+		requestChan: make(chan createWalletReq),
+		chainEvents: notifications,
+	}
+	routing := newChainSyncer(deps.chain, &chainParams)
+	manager.chainSyncer = routing
+	manager.started.Store(true)
+
+	w.chainSyncer = routing
+	w.reportFailure = manager.cancel
+	s := newSyncer(
+		w.cfg, w.addrStore, w.txStore, w, deps.store, w.id,
+		routing, w.chainEventChan,
+	)
 	w.sync = s
 	w.state = newWalletState(s)
 	s.state.Store(uint32(syncStateRescanning))
-	startLoadedWalletForTest(t, w)
+	t.Cleanup(func() { _ = manager.Stop() })
+
+	entered, release := make(chan struct{}), make(chan struct{})
+	releaseWrite := sync.OnceFunc(func() { close(release) })
+	t.Cleanup(releaseWrite)
+	deps.vault.On("Lock").Return().Once()
 
 	fixture := newStoreScanBatchFixture(t)
 	scanState := NewRecoveryState(0, &chainParams, nil)
@@ -7987,26 +8081,78 @@ func TestLiveWatchTargetedCommitUncertainty(t *testing.T) {
 		Return(&dbruntime.AmbiguousTxCommitError{
 			Err: errDBMock,
 		}).Once()
+	deps.store.On("ApplyTxBatch", mock.Anything, mock.Anything).
+		Run(func(mock.Arguments) {
+			close(entered)
+			<-release
+		}).Return(&dbruntime.AmbiguousTxCommitError{
+		Err: context.Canceled,
+	}).Once()
 
-	// Equal tips isolate live readiness from the independent height check.
+	// Equal genesis tips isolate readiness and let the actual engine reach
+	// its event wait without historical scanning. Once calls forbid retry.
 	deps.store.On("GetWallet", mock.Anything, "").Return(&db.WalletInfo{
 		SyncedTo: &db.Block{},
-	}, nil).Once()
+	}, nil).Times(3)
 	deps.chain.On("GetBestBlock").
-		Return(&chainhash.Hash{}, int32(0), nil).Once()
+		Return(&chainhash.Hash{}, int32(0), nil).Twice()
 	deps.chain.On("BackEnd").Return("mock").Once()
+	deps.chain.On("IsCurrent").Return(true).Once()
+	deps.chain.On("NotifyBlocks").Return(nil).Once()
+	expectEmptyLiveWatches(deps.store, w.id)
+	deps.chain.On(
+		"WatchAddrsFromTip", mock.Anything, []address.Address(nil),
+	).Return(nil).Once()
+	deps.store.On("ListTxns", mock.Anything, db.ListTxnsQuery{
+		WalletID:    w.id,
+		UnminedOnly: true,
+	}).Return([]db.TxInfo(nil), nil).Once()
+	startLoadedWalletForTest(t, w)
 
-	// Act: Attempt the targeted write without retrying an uncertain commit.
+	// Act: First retain the scan-specific readiness proof. Then let the
+	// real run/attempt path process an actual ambiguous active observation.
 	err := s.putTargetedBatch(
 		t.Context(), scanState, []scanResult{fixture.result},
 	)
 
-	// Assert: Preserve the classified failure for the worker and keep public
-	// readiness false until initialization rereads the durable watch set.
+	// Assert: Unknown scan effects cannot restore readiness merely because
+	// the committed and observed tips match.
 	require.ErrorIs(t, err, dbruntime.ErrAmbiguousTxCommit)
 	info, err := w.Info(t.Context())
 	require.NoError(t, err)
 	require.False(t, info.Synced)
+
+	// Act: Hold the active write, fill its mailbox, and let Manager consume
+	// a later event before returning the real Store failure to syncer.run.
+	record := fixture.result.RelevantOutputs[0].Rec
+	w.chainEventChan <- chainEvent{
+		notification: chain.RelevantTx{TxRecord: record},
+		matches:      liveMatches(record),
+	}
+
+	manager.wg.Go(manager.mainLoop)
+	w.wg.Go(w.runSyncLoop)
+	<-entered
+
+	w.chainEventChan <- chainEvent{notification: chain.BlockConnected{}}
+
+	notifications <- chain.BlockConnected{}
+
+	require.Eventually(t, func() bool {
+		return len(notifications) == 0 && len(w.chainEventChan) == 1
+	}, time.Second, time.Millisecond)
+	releaseWrite()
+
+	// Assert: The real active guard must stop promptly, rather than entering
+	// its hour retry wait. Joining cannot initiate or rescue automatic cleanup.
+	require.Eventually(t, func() bool {
+		return manager.lifetimeCtx.Err() != nil
+	}, time.Second, time.Millisecond)
+	manager.wg.Wait()
+
+	_, err = w.Info(t.Context())
+	require.ErrorIs(t, err, ErrWalletStopped)
+	require.ErrorIs(t, manager.Stop(), ErrManagerStopped)
 }
 
 // newLiveWatchManager creates a SQLite wallet with mocked chain notifications

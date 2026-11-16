@@ -772,8 +772,11 @@ func (s *syncer) run(ctx context.Context) error {
 	// Initialize the chain sync state.
 	err := s.initChainSync(ctx)
 	if err != nil {
-		if errors.Is(err, context.Canceled) ||
-			errors.Is(err, ErrWalletShuttingDown) {
+		// Unknown commit effects can wrap cancellation while still requiring
+		// joined disposal; preserve them for the owning Wallet worker.
+		if !errors.Is(err, db.ErrIndeterminateCommit) &&
+			(errors.Is(err, context.Canceled) ||
+				errors.Is(err, ErrWalletShuttingDown)) {
 
 			return nil
 		}
@@ -784,8 +787,11 @@ func (s *syncer) run(ctx context.Context) error {
 	for {
 		err := s.runSyncStep(ctx)
 		if err != nil {
-			if errors.Is(err, context.Canceled) ||
-				errors.Is(err, ErrWalletShuttingDown) {
+			// A failed active write must retain uncertainty even when its
+			// underlying adapter cause looks like normal cancellation.
+			if !errors.Is(err, db.ErrIndeterminateCommit) &&
+				(errors.Is(err, context.Canceled) ||
+					errors.Is(err, ErrWalletShuttingDown)) {
 
 				return nil
 			}
