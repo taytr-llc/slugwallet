@@ -342,6 +342,186 @@ func TestManagerChainRollbackStopsOnError(t *testing.T) {
 	}
 }
 
+// TestManagerRecoveryHints releases paused writers without rewinding when
+// queued evidence is obsolete or cannot currently be read from shared storage.
+func TestManagerRecoveryHints(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		blocks  []db.Block
+		readErr error
+	}{
+		{
+			name: "obsolete evidence",
+			blocks: []db.Block{
+				{
+					Height: 8,
+					Hash:   chainhash.Hash{9},
+				},
+			},
+		},
+		{
+			name:    "Store read failure",
+			readErr: errDBMock,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
+
+				// Arrange: A manual recipient exposes the shared pause and
+				// release. Exact mocks permit one evidence read and no rewind.
+				w, deps := createTestWalletWithMocks(t)
+				w.cfg.Name = testWalletName
+				w.id = 1
+				startLoadedWalletForTest(t, w)
+				deps.vault.On("Lock").Return().Once()
+
+				query := db.ListSyncedBlocksQuery{
+					StartHeight: 8,
+					EndHeight:   8,
+				}
+				// Aggregate history belongs to the backend, not this Wallet.
+				// Its untouched Store rejects any inverted child-store read.
+				history := &walletmock.Store{}
+				t.Cleanup(func() { history.AssertExpectations(t) })
+				history.On("ListSyncedBlocks", mock.Anything, query).
+					Return(test.blocks, test.readErr).Once()
+
+				backend := &managerBackendMock{}
+				backend.On("syncedBlock", mock.Anything, uint32(8)).
+					Return((&sqlManagerBackend{store: history}).syncedBlock).
+					Once()
+				backend.On("close").Return(nil).Once()
+
+				source := &bwmock.Chain{}
+				source.On("Notifications").
+					Return((<-chan any)(nil)).Once()
+				m := newManagerLifecycleTest(
+					t, backend, source, DBBackendSQLite,
+				)
+				m.started.Store(true)
+				m.wallets[w.cfg.Name] = w
+				events := make(chan chainEvent, 1)
+				w.chainEventChan = events
+				processor := newSyncer(
+					w.cfg, w.addrStore, w.txStore, w, w.store, w.id,
+					m.chainSyncer, events, m.recoveryRequests,
+				)
+				hint := chainRecoveryRequest{
+					Block: wtxmgr.Block{Height: 8, Hash: chainhash.Hash{8}},
+				}
+
+				// Act: Coalesce two offers before the owner starts, then
+				// acknowledge its single pause so it can validate the hint.
+				processor.requestRollback(t.Context(), hint)
+				processor.requestRollback(t.Context(), hint)
+				m.wg.Go(m.mainLoop)
+
+				raw := <-events
+				req, ok := raw.notification.(prepareRollbackReq)
+				require.True(t, ok)
+				close(req.readyForRollback)
+
+				// Assert: Both no-rewind outcomes must explicitly release
+				// paused writers before any public Stop can rescue them.
+				<-req.rollbackDone
+
+				synctest.Wait()
+				require.Empty(t, events)
+
+				_, err := m.Create(CreateWalletParams{
+					Name: w.cfg.Name,
+				})
+				require.ErrorIs(t, err, ErrWalletExists)
+				require.NoError(t, m.Stop())
+			})
+		})
+	}
+}
+
+// TestManagerRecoveryFailureStops verifies a failed background fork recovery
+// cancels its paused processor and closes storage without an external Stop.
+func TestManagerRecoveryFailureStops(t *testing.T) {
+	t.Parallel()
+
+	// Arrange: Report a stored abandoned block through the worker's fork hint.
+	// An uncertain shared rewind must leave writers paused until cleanup joins
+	// the real processor, rather than returning to the owner's event select.
+	w, deps := createTestWalletWithMocks(t)
+	w.cfg.Name = testWalletName
+	w.id = 1
+	startLoadedWalletForTest(t, w)
+	deps.vault.On("Lock").Return().Once()
+
+	block := db.Block{Height: 8, Hash: chainhash.Hash{8}}
+	query := db.ListSyncedBlocksQuery{StartHeight: 8, EndHeight: 8}
+	deps.store.On("ListSyncedBlocks", mock.Anything, query).
+		Return([]db.Block{block}, nil).Once()
+
+	closed := make(chan struct{})
+	backend := &managerBackendMock{}
+	backend.On("syncedBlock", mock.Anything, block.Height).
+		Return((&sqlManagerBackend{store: deps.store}).syncedBlock).Once()
+	backend.On("rollbackToBlock", mock.Anything, block).
+		Return(dbruntime.ErrAmbiguousTxCommit).Once()
+	backend.On("close").Run(func(mock.Arguments) {
+		close(closed)
+	}).Return(nil).Once()
+
+	source := &bwmock.Chain{}
+	source.On("Notifications").Return((<-chan any)(nil)).Once()
+	m := newManagerLifecycleTest(t, backend, source, DBBackendSQLite)
+	m.started.Store(true)
+	m.wallets[w.cfg.Name] = w
+	events := make(chan chainEvent, 1)
+	w.chainEventChan = events
+	processor := newSyncer(
+		w.cfg, w.addrStore, w.txStore, w, w.store, w.id,
+		m.chainSyncer, events,
+		m.recoveryRequests,
+	)
+	processed := make(chan error, 1)
+
+	m.wg.Go(m.mainLoop)
+
+	// Act: Acknowledge the pause through the actual Wallet processor. The
+	// Wallet's owned group makes Store closure depend on its canceled exit.
+	processor.requestRollback(t.Context(), chainRecoveryRequest{
+		Block: wtxmgr.Block{Height: 8, Hash: block.Hash},
+	})
+
+	raw := <-events
+	req, ok := raw.notification.(prepareRollbackReq)
+	require.True(t, ok)
+	w.wg.Go(func() {
+		processed <- processor.processChainEvent(w.lifetimeCtx, raw)
+	})
+
+	// Assert: Observe automatic storage cleanup before invoking public Stop
+	// to join. Failed recovery must never release the abandoned write barrier.
+	select {
+	case <-closed:
+	case <-time.After(5 * time.Second):
+		t.Fatal("failed recovery did not stop Manager")
+	}
+
+	require.ErrorIs(t, <-processed, context.Canceled)
+
+	select {
+	case <-req.rollbackDone:
+		t.Fatal("failed recovery resumed writers")
+	default:
+	}
+
+	m.wg.Wait()
+	require.ErrorIs(t, m.Stop(), ErrManagerStopped)
+}
+
 // TestManagerChainRollbackWithoutWallet verifies a running pristine KVDB
 // Manager accepts disconnects before its first Wallet opens a Store.
 func TestManagerChainRollbackWithoutWallet(t *testing.T) {

@@ -671,6 +671,20 @@ func (s *syncer) rewindToBlock(ctx context.Context,
 	return nil
 }
 
+// requestRollback offers fork evidence without waiting on this worker's pause.
+// Manager owns the inbox and revalidates the retained identity before rewind.
+func (s *syncer) requestRollback(ctx context.Context,
+	event chainRecoveryRequest) {
+
+	select {
+	case s.recoveryRequests <- event:
+	case <-ctx.Done():
+	default:
+		// Another pending identity prompts recovery; retry rereads committed
+		// history and offers again if this fork still needs attention.
+	}
+}
+
 // rewindWallet rewinds this wallet's sync and transaction state for a manual
 // rescan without requiring a DB-wide block rollback.
 func (s *syncer) rewindWallet(ctx context.Context,
