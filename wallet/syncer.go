@@ -250,6 +250,9 @@ type prepareRollbackReq struct {
 // chainProcessor abstracts Wallet event processing and recovery, allowing
 // Wallet and controller tests to replace the existing worker.
 type chainProcessor interface {
+	// prepareLiveWatches establishes native subscriptions before activation.
+	prepareLiveWatches(ctx context.Context) error
+
 	// run owns synchronization attempts, retries and mailbox service.
 	run(ctx context.Context) error
 
@@ -380,21 +383,15 @@ func (s *syncer) syncState() syncState {
 // enabling block notifications. It returns an error if any of these setup
 // steps fail.
 func (s *syncer) initChainSync(ctx context.Context) error {
-	var err error
-
 	// Inform the backend about our birthday for optimization. For backends
 	// like Neutrino (SPV), this provides a starting point for the internal
 	// synchronization of block headers and compact filters. Without this
 	// hint, the backend might attempt to sync from genesis or its latest
 	// checkpoint, leading to unnecessary network I/O and delayed wallet
 	// readiness.
-	if cc, ok := s.cfg.Chain.(*chain.NeutrinoClient); ok {
-		birthday, err := s.walletBirthday(ctx)
-		if err != nil {
-			return err
-		}
-
-		cc.SetStartTime(birthday)
+	err := s.setChainStartTime(ctx)
+	if err != nil {
+		return err
 	}
 
 	// Wait for the backend to be synced to the network. We require the
@@ -411,6 +408,17 @@ func (s *syncer) initChainSync(ctx context.Context) error {
 	err = s.checkRollback(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to check for rollback: %w", err)
+	}
+
+	return s.prepareLiveWatches(ctx)
+}
+
+// prepareLiveWatches installs persisted subscriptions during Wallet setup
+// and sync initialization. It does not wait for currency or catch-up.
+func (s *syncer) prepareLiveWatches(ctx context.Context) error {
+	err := s.setChainStartTime(ctx)
+	if err != nil {
+		return err
 	}
 
 	// A retry may follow a committed scan whose registration failed.
@@ -434,6 +442,22 @@ func (s *syncer) initChainSync(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to start block "+
 			"notifications: %w", err)
+	}
+
+	return nil
+}
+
+// setChainStartTime preserves Neutrino's birthday hint both before its
+// initial backend wait and before synchronous SQL subscription installation.
+func (s *syncer) setChainStartTime(ctx context.Context) error {
+	// Neutrino uses this hint to avoid fetching filters before the birthday.
+	if cc, ok := s.cfg.Chain.(*chain.NeutrinoClient); ok {
+		birthday, err := s.walletBirthday(ctx)
+		if err != nil {
+			return err
+		}
+
+		cc.SetStartTime(birthday)
 	}
 
 	return nil

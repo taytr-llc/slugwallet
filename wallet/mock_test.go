@@ -118,6 +118,12 @@ type mockChainProcessor struct {
 // chainProcessor interface.
 var _ chainProcessor = (*mockChainProcessor)(nil)
 
+// prepareLiveWatches records required native readiness before activation.
+func (m *mockChainProcessor) prepareLiveWatches(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
 // run implements the chainProcessor interface.
 func (m *mockChainProcessor) run(ctx context.Context) error {
 	args := m.Called(ctx)
