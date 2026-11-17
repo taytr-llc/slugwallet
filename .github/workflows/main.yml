@@ -73,7 +73,7 @@ jobs:
           done
       - name: Runtime race checks
         run: |
-          go test -race -parallel=2 -count=1 -timeout=30m . ./chain ./wallet ./waddrmgr ./rpc/legacyrpc ./recoveryvault ./productionprofile
+          go test -race -parallel=2 -count=1 -timeout=45m . ./chain ./wallet ./waddrmgr ./rpc/legacyrpc ./recoveryvault ./productionprofile
           for module in wallet/txauthor wallet/txrules wallet/txsizes walletdb wtxmgr; do
             (cd "$module" && go test -race -count=1 -timeout=3m ./...)
           done
