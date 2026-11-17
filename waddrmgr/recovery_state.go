@@ -66,21 +66,37 @@ func fetchRecoveryState(ns walletdb.ReadBucket) (DerivationMode, bool, error) {
 	}
 	mode, version := b.Get(derivationModeName), b.Get(recoveryVersionName)
 	pub, priv := b.Get(recoveryPublicName), b.Get(recoveryPrivateName)
-	if managerVersion == latestMgrVersion && mode == nil && version == nil && pub == nil && priv == nil && b.Get(candidateFixtureName) == nil {
+	if managerVersion == latestMgrVersion && mode == nil && version == nil && pub == nil && priv == nil && b.Get(candidateFixtureName) == nil && b.Get(recoveryProgressName) == nil && b.NestedReadBucket(recoveryInvalidName) == nil {
 		return DerivationLegacy, false, nil
 	}
 	wantVersion := uint32(1)
-	if managerVersion == CandidateManagerVersion {
+	if managerVersion == CandidateManagerVersion || managerVersion == ResumableManagerVersion {
 		wantVersion = 2
+		if managerVersion == ResumableManagerVersion && len(b.Get(candidateFixtureName)) > 32 {
+			return 0, false, ErrRecoveryState
+		}
 		if !validCandidateFixture(string(b.Get(candidateFixtureName))) {
 			return 0, false, ErrRecoveryState
 		}
 	} else if b.Get(candidateFixtureName) != nil {
 		return 0, false, ErrRecoveryState
 	}
-	if (managerVersion != RecoveryManagerVersion && managerVersion != CandidateManagerVersion) || len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) ||
+	if (managerVersion != RecoveryManagerVersion && managerVersion != CandidateManagerVersion && managerVersion != ResumableManagerVersion) || len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) ||
 		len(version) != 4 || binary.LittleEndian.Uint32(version) != wantVersion ||
 		len(pub) <= 40 || len(pub) > maxRecoveryData+40 || len(priv) <= 40 || len(priv) > maxRecoveryData+40 {
+		return 0, false, ErrRecoveryState
+	}
+	if managerVersion == ResumableManagerVersion {
+		if err := validateRecoveryKeyFields(ns); err != nil {
+			return 0, false, err
+		}
+		if _, err := fetchRecoveryProgress(ns); err != nil {
+			return 0, false, err
+		}
+		if b.NestedReadBucket(recoveryInvalidName) == nil {
+			return 0, false, ErrRecoveryState
+		}
+	} else if b.Get(recoveryProgressName) != nil || b.NestedReadBucket(recoveryInvalidName) != nil {
 		return 0, false, ErrRecoveryState
 	}
 	return DerivationStandard, true, nil
@@ -164,6 +180,9 @@ func (m *Manager) RecoveryData(ns walletdb.ReadBucket, private bool) ([]byte, er
 	}
 	keyType, name := CKTPublic, recoveryPublicName
 	if private {
+		if m.recoveryPending.Load() {
+			return nil, ErrRecoveryInProgress
+		}
 		keyType, name = CKTPrivate, recoveryPrivateName
 	}
 	key, err := m.selectCryptoKey(keyType)
@@ -216,9 +235,20 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 	}
 	expectedScopes := legacyDefaultScopes()
 	candidate := false
+	var resumable *RecoveryState
+	branchLimit := maxRecoveryBranchIndex
+	var totalAddressCount uint32
 	if version, err := fetchManagerVersion(ns); err != nil {
 		return nil, ErrRecoveryState
-	} else if version == CandidateManagerVersion {
+	} else if version == CandidateManagerVersion || version == ResumableManagerVersion {
+		if version == ResumableManagerVersion {
+			state, err := fetchRecoveryProgress(ns)
+			if err != nil {
+				return nil, err
+			}
+			resumable = &state
+			branchLimit = RecoveryAttemptLimit
+		}
 		expectedScopes = candidateDefaultScopes()
 		candidate = true
 	}
@@ -278,10 +308,10 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 				return nil
 			}
 			foundDefault = true
-			if candidate && (data.nextExternalIndex > maxRecoveryBranchIndex || data.nextInternalIndex > maxRecoveryBranchIndex) {
+			if candidate && (data.nextExternalIndex > branchLimit || data.nextInternalIndex > branchLimit) {
 				return ErrRecoveryScanRequired
 			}
-			if len(data.pubKeyEncrypted) == 0 || len(data.privKeyEncrypted) == 0 || data.nextExternalIndex > maxRecoveryBranchIndex || data.nextInternalIndex > maxRecoveryBranchIndex {
+			if len(data.pubKeyEncrypted) == 0 || len(data.privKeyEncrypted) == 0 || data.nextExternalIndex > branchLimit || data.nextInternalIndex > branchLimit {
 				return ErrRecoveryInventory
 			}
 			state.NextExternal, state.NextInternal = data.nextExternalIndex, data.nextInternalIndex
@@ -298,12 +328,31 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 			return ErrRecoveryInventory
 		}
 		var addressCount uint32
+		externalLimit, internalLimit := state.NextExternal, state.NextInternal
+		if resumable != nil {
+			for _, b := range resumable.Branches {
+				if b.Scope != scope {
+					continue
+				}
+				if b.Branch == 0 {
+					if state.NextExternal != b.IssuedNext {
+						return ErrRecoveryState
+					}
+					externalLimit = b.DerivedNext
+				} else {
+					if state.NextInternal != b.IssuedNext {
+						return ErrRecoveryState
+					}
+					internalLimit = b.DerivedNext
+				}
+			}
+		}
 		err = addressBucket.ForEach(func(key, value []byte) error {
 			addressCount++
 			// Only exact fixed-size chain rows belong to this profile. Refuse
 			// imports, nested buckets and malformed lengths before any generic
 			// decoder can allocate based on disk-controlled data.
-			if addressCount > 2*maxRecoveryBranchIndex || len(key) != 32 || len(value) != 26 || addressType(value[0]) != adtChain {
+			if addressCount > 2*branchLimit || len(key) != 32 || len(value) != 26 || addressType(value[0]) != adtChain {
 				return ErrRecoveryInventory
 			}
 			row, err := deserializeAddressRow(value)
@@ -316,11 +365,11 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 			}
 			switch address.branch {
 			case ExternalBranch:
-				if address.index >= state.NextExternal {
+				if address.index >= externalLimit {
 					return ErrRecoveryInventory
 				}
 			case InternalBranch:
-				if address.index >= state.NextInternal {
+				if address.index >= internalLimit {
 					return ErrRecoveryInventory
 				}
 			default:
@@ -331,11 +380,23 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 		if err != nil {
 			return err
 		}
+		totalAddressCount += addressCount
+		if resumable != nil && totalAddressCount > RecoveryAttemptLimit {
+			return ErrRecoveryState
+		}
 		accounts = append(accounts, state)
 		return nil
 	})
 	if err != nil {
 		return nil, err
+	}
+	if resumable != nil {
+		if totalAddressCount != resumable.AddressCount {
+			return nil, ErrRecoveryState
+		}
+		if err := validateRecoveryInvalid(ns, *resumable); err != nil {
+			return nil, err
+		}
 	}
 	if len(accounts) != len(expectedScopes) {
 		return nil, ErrRecoveryInventory

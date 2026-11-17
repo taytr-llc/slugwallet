@@ -344,16 +344,18 @@ type Manager struct {
 	externalAddrSchemas map[AddressType][]KeyScope
 	internalAddrSchemas map[AddressType][]KeyScope
 
-	syncState       syncState
-	watchingOnly    atomic.Bool
-	birthday        time.Time
-	locked          atomic.Bool
-	closed          bool
-	derivationMode  DerivationMode
-	recoveryEnabled bool
-	recoveryVersion uint32
-	defaultScopes   map[KeyScope]ScopeAddrSchema
-	chainParams     *chaincfg.Params
+	syncState         syncState
+	watchingOnly      atomic.Bool
+	birthday          time.Time
+	locked            atomic.Bool
+	closed            bool
+	derivationMode    DerivationMode
+	recoveryEnabled   bool
+	recoveryVersion   uint32
+	resumableRecovery bool
+	recoveryPending   atomic.Bool
+	defaultScopes     map[KeyScope]ScopeAddrSchema
+	chainParams       *chaincfg.Params
 
 	// masterKeyPub is the secret key used to secure the cryptoKeyPub key
 	// and masterKeyPriv is the secret key used to secure the cryptoKeyPriv
@@ -898,6 +900,13 @@ func (m *Manager) ChainParams() *chaincfg.Params {
 // needed to brute force the passphrase.
 func (m *Manager) ChangePassphrase(ns walletdb.ReadWriteBucket, oldPassphrase,
 	newPassphrase []byte, private bool, config *ScryptOptions) error {
+	if m.resumableRecovery {
+		ownedConfig, err := recoveryScryptOptions(config)
+		if err != nil {
+			return err
+		}
+		config = &ownedConfig
+	}
 
 	// No private passphrase to change for a watching-only address manager.
 	if private && m.WatchOnly() {
@@ -1177,6 +1186,9 @@ func (m *Manager) Lock() error {
 // This function will return an error if invoked on a watching-only address
 // manager.
 func (m *Manager) Unlock(ns walletdb.ReadBucket, passphrase []byte) error {
+	if m.recoveryPending.Load() {
+		return ErrRecoveryInProgress
+	}
 	// A watching-only address manager can't be unlocked.
 	if m.WatchOnly() {
 		return managerError(ErrWatchingOnly, errWatchingOnly, nil)
@@ -1547,7 +1559,7 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	if version < latestMgrVersion {
 		str := "database upgrade required"
 		return nil, managerError(ErrUpgrade, str, nil)
-	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion {
+	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion && version != ResumableManagerVersion {
 		str := "database version is greater than latest understood version"
 		return nil, managerError(ErrUpgrade, str, nil)
 	}
@@ -1625,9 +1637,23 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	cryptoKeyPub.CopyBytes(cryptoKeyPubCT)
 	zero.Bytes(cryptoKeyPubCT)
 	defaults := legacyDefaultScopes()
-	if version == CandidateManagerVersion {
-		if err := validateStoredCandidate(ns, cryptoKeyPub, chainParams, candidateCreation); err != nil {
+	if version == CandidateManagerVersion || version == ResumableManagerVersion {
+		if version == ResumableManagerVersion {
+			state, err := fetchRecoveryProgress(ns)
+			if err != nil {
+				return nil, err
+			}
+			if !state.Ready && !candidateCreation {
+				return nil, ErrRecoveryInProgress
+			}
+		}
+		if err := validateStoredCandidate(ns, cryptoKeyPub, chainParams, candidateCreation && version == CandidateManagerVersion); err != nil {
 			return nil, err
+		}
+		if version == ResumableManagerVersion {
+			if err := validateResumableInvalidChildren(ns, cryptoKeyPub); err != nil {
+				return nil, err
+			}
 		}
 		defaults = candidateDefaultScopes()
 	}
@@ -1678,9 +1704,14 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 
 	mgr.derivationMode, mgr.recoveryEnabled = mode, hasRecovery
 	mgr.defaultScopes = defaults
+	if version == ResumableManagerVersion {
+		state, _ := fetchRecoveryProgress(ns)
+		mgr.resumableRecovery = true
+		mgr.recoveryPending.Store(!state.Ready)
+	}
 	if hasRecovery {
 		mgr.recoveryVersion = 1
-		if version == CandidateManagerVersion {
+		if version == CandidateManagerVersion || version == ResumableManagerVersion {
 			mgr.recoveryVersion = 2
 		}
 	}

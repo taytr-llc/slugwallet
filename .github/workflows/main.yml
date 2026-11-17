@@ -2,7 +2,7 @@ name: SLUG wallet desktop foundation
 
 on:
   push:
-    branches: [slug-wallet-foundation, slug-wallet-recovery, slug-phase-a-activation, slug-desktop-wallet, slug-account-enrollment, slug-recovery-vault, slug-production-profile]
+    branches: [slug-wallet-foundation, slug-wallet-recovery, slug-phase-a-activation, slug-desktop-wallet, slug-account-enrollment, slug-recovery-vault, slug-production-profile, slug-resumable-recovery]
   workflow_dispatch:
 
 permissions:
@@ -14,8 +14,8 @@ concurrency:
 
 env:
   GO_VERSION: '1.27.4'
-  # Set 30 retains the validated shared account/provisioning authority.
-  SLUG_CHAIN_REF: 9c7640e0f82bc0d213c8e6a749a99b7b9eaccbbd
+  # Set32 uses the validated provider coordinator and unchanged Phase-A chain.
+  SLUG_CHAIN_REF: 55c480fba51f4de919e0ada0d4bbae3b29e9ba0a
   GOFLAGS: ''
 
 defaults:
@@ -26,7 +26,7 @@ defaults:
 jobs:
   modules:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
         with:
@@ -56,6 +56,7 @@ jobs:
           python3 integration/testdata/reference_addresses.py --check
           python3 recovery/testdata/reference_recovery.py --check
           python3 productionprofile/testdata/reference_profile.py --check
+          python3 productionprofile/testdata/reference_recovery_indices.py --check
           python3 recoveryvault/testdata/reference_vault.py --check
           python3 integration/testdata/reference_recovery_highwater.py --check
       - name: Format and dependency identity
@@ -69,11 +70,11 @@ jobs:
       - name: Six runtime module builds, tests, and vet
         run: |
           for module in . wallet/txauthor wallet/txrules wallet/txsizes walletdb wtxmgr; do
-            (cd "$module" && go build ./... && go test -parallel=2 -count=1 -timeout=5m ./... && go vet ./...)
+            (cd "$module" && go build ./... && go test -parallel=2 -count=1 -timeout=10m ./... && go vet ./...)
           done
       - name: Runtime race checks
         run: |
-          go test -race -parallel=2 -count=1 -timeout=45m . ./chain ./wallet ./waddrmgr ./rpc/legacyrpc ./recoveryvault ./productionprofile
+          go test -race -parallel=2 -count=1 -timeout=60m . ./chain ./wallet ./waddrmgr ./rpc/legacyrpc ./recoveryvault ./productionprofile
           for module in wallet/txauthor wallet/txrules wallet/txsizes walletdb wtxmgr; do
             (cd "$module" && go test -race -count=1 -timeout=3m ./...)
           done
@@ -127,3 +128,12 @@ jobs:
         env:
           SLUG_WALLET_NODE: ${{ runner.temp }}/slugd
         run: ./integration/run-candidate.sh
+      - name: Resumable high-index file-only recovery and spend
+        env:
+          SLUG_WALLET_NODE: ${{ runner.temp }}/slugd
+        run: sh ./integration/run-resumable.sh
+      - name: Maximum supported recovery watch inventory
+        env:
+          SLUG_WALLET_NODE: ${{ runner.temp }}/slugd
+          SLUG_RECOVERY_BENCH: '1'
+        run: go test -tags=integration -run '^TestRecoveryMaximumWatchNormalNode$' -count=1 -timeout=5m -v ./wallet

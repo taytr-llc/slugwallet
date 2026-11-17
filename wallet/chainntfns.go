@@ -155,7 +155,9 @@ func (w *Wallet) handleChainNotifications() {
 			case *chain.RescanFinished:
 				err = w.catchUpHashes(chainClient, n.Height)
 				notificationName = "rescan finished"
-				w.SetChainSynced(true)
+				if !w.Manager.ResumableRecovery() || (err == nil && !w.recoverySyncFailed.Load()) {
+					w.SetChainSynced(true)
+				}
 				select {
 				case w.rescanNotifications <- n:
 				case <-w.quitChan():
@@ -178,6 +180,10 @@ func (w *Wallet) handleChainNotifications() {
 					continue
 				}
 
+				if w.Manager.ResumableRecovery() {
+					w.recoverySyncFailed.Store(true)
+					w.SetChainSynced(false)
+				}
 				log.Errorf("Unable to process chain backend "+
 					"%v notification: %v", notificationName,
 					err)
@@ -692,6 +698,19 @@ func (w *Wallet) addRelevantTx(dbtx walletdb.ReadWriteTx, rec *wtxmgr.TxRecord,
 			)
 			if err != nil {
 				return err
+			}
+			if w.Manager.ResumableRecovery() {
+				key, ok := ma.(waddrmgr.ManagedPubKeyAddress)
+				if !ok {
+					return waddrmgr.ErrRecoveryInventory
+				}
+				scope, path, ok := key.DerivationInfo()
+				if !ok {
+					return waddrmgr.ErrRecoveryInventory
+				}
+				if _, err := w.Manager.ObserveRecoveryAddress(addrmgrNs, scope, path.Branch, path.Index); err != nil {
+					return err
+				}
 			}
 			err = w.Manager.MarkUsed(addrmgrNs, addr)
 			if err != nil {

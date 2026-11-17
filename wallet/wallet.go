@@ -132,6 +132,7 @@ type Wallet struct {
 
 	chainClient        chain.Interface
 	chainClientLock    sync.Mutex
+	recoverySyncFailed atomic.Bool
 	chainClientSynced  bool
 	chainClientSyncMtx sync.Mutex
 
@@ -366,6 +367,9 @@ func (w *Wallet) activeData(
 	var addrs []address.Address
 	err := w.Manager.ForEachRelevantActiveAddress(
 		addrmgrNs, func(addr address.Address) error {
+			if w.Manager.ResumableRecovery() && len(addrs) >= int(waddrmgr.RecoveryAttemptLimit) {
+				return ErrRecoveryCapacity
+			}
 			addrs = append(addrs, addr)
 			return nil
 		},
@@ -383,7 +387,12 @@ func (w *Wallet) activeData(
 		return nil, nil, err
 	}
 
-	unspent, err := w.TxStore.OutputsToWatch(txmgrNs)
+	var unspent []wtxmgr.Credit
+	if w.Manager.ResumableRecovery() {
+		unspent, err = w.TxStore.OutputsToWatchBounded(txmgrNs, MaxRecoveryOwnedOutputs)
+	} else {
+		unspent, err = w.TxStore.OutputsToWatch(txmgrNs)
+	}
 	return addrs, unspent, err
 }
 
@@ -392,6 +401,9 @@ func (w *Wallet) activeData(
 // finished. The birthday block can be passed in, if set, to ensure we can
 // properly detect if it gets rolled back.
 func (w *Wallet) syncWithChain(birthdayStamp *waddrmgr.BlockStamp) error {
+	if w.Manager.ResumableRecovery() {
+		w.SetChainSynced(false)
+	}
 	chainClient, err := w.requireChainClient()
 	if err != nil {
 		return err
@@ -4572,6 +4584,15 @@ func OpenWithRetry(db walletdb.DB, pubPass []byte, cbs *waddrmgr.OpenCallbacks,
 		addrMgr, err = waddrmgr.Open(addrMgrBucket, pubPass, params)
 		if err != nil {
 			return err
+		}
+		if addrMgr.ResumableRecovery() {
+			if err := candidateRecoveryComplete(tx, addrMgr); err != nil {
+				addrMgr.Close()
+				return err
+			}
+			// Schema11 has already completed its bounded, persisted scan.
+			// Do not rebuild the inherited recovery horizon on every reconnect.
+			recoveryWindow = 0
 		}
 		if addrMgr.RecoveryEnabled() {
 			var err error

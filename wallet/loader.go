@@ -73,19 +73,21 @@ func WithWalletSyncRetryInterval(interval time.Duration) LoaderOption {
 //
 // Loader is safe for concurrent access.
 type Loader struct {
-	cfg            *loaderConfig
-	callbacks      []func(*Wallet)
-	chainParams    *chaincfg.Params
-	dbDirPath      string
-	noFreelistSync bool
-	timeout        time.Duration
-	recoveryWindow uint32
-	wallet         *Wallet
-	localDB        bool
-	walletExists   func() (bool, error)
-	walletCreated  func(db walletdb.ReadWriteTx) error
-	db             walletdb.DB
-	mu             sync.Mutex
+	cfg                *loaderConfig
+	callbacks          []func(*Wallet)
+	chainParams        *chaincfg.Params
+	dbDirPath          string
+	noFreelistSync     bool
+	timeout            time.Duration
+	recoveryWindow     uint32
+	wallet             *Wallet
+	recoverySession    bool
+	recoveryCheckpoint func(string)
+	localDB            bool
+	walletExists       func() (bool, error)
+	walletCreated      func(db walletdb.ReadWriteTx) error
+	db                 walletdb.DB
+	mu                 sync.Mutex
 }
 
 // NewLoader constructs a Loader with an optional recovery window. If the
@@ -240,7 +242,7 @@ func (l *Loader) createNewWallet(pubPassphrase, privPassphrase []byte,
 	defer l.mu.Unlock()
 	l.mu.Lock()
 
-	if l.wallet != nil {
+	if l.wallet != nil || l.recoverySession {
 		return nil, ErrLoaded
 	}
 
@@ -325,7 +327,7 @@ func (l *Loader) OpenExistingWallet(pubPassphrase []byte,
 	defer l.mu.Unlock()
 	l.mu.Lock()
 
-	if l.wallet != nil {
+	if l.wallet != nil || l.recoverySession {
 		return nil, ErrLoaded
 	}
 

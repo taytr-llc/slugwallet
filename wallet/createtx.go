@@ -149,6 +149,10 @@ func (w *Wallet) txToOutputs(outputs []*wire.TxOut,
 	selectionOptions ...*txCreateOptions) (
 	*txauthor.AuthoredTx, error) {
 
+	if w.Manager.ResumableRecovery() && !w.ChainSynced() {
+		return nil, ErrNotSynced
+	}
+
 	opts := defaultTxCreateOptions()
 	if len(selectionOptions) != 0 && selectionOptions[0] != nil {
 		opts = selectionOptions[0]

@@ -118,3 +118,21 @@ the paired LAUNCH_READINESS.md tracks that gate. Engineering work continues.
   later addresses or is a complete current production-wallet backup. Keep the
   two public fixture allowlists and existing desktop defaults until subsequent
   work explicitly changes them. See `RECOVERY_VAULT.md`.
+
+## Resumable candidate recovery (set 32)
+
+- Explicit schema 11 has an exclusive pending session, bounded steps and the
+  unchanged candidate profile2 export. Never silently migrate schemas 8/9/10.
+  Pending state cannot become an ordinary wallet or sign/spend. Real issuance
+  stays closed behind the existing production-profile gate.
+- Preserve imported and issued cursors across interruption and reorg; unused
+  lookahead is separate. Reserve 20 future attempts per branch within the
+  aggregate 65,536-attempt quota, including after ready-wallet allocation.
+- Bind progress to an exact canonical hash, commit ledger/index/progress
+  together, audit pending storage on reopen and poison uncertain write outcomes.
+  The full-node source rechecks identity on every physical connection and owns
+  cancellation through socket close. No claimant-selected genesis or cheap PoW.
+- Normal startup/watch costs remain O(total supported inventory), with explicit
+  notification, owned-output and serialized request limits. Capacity failures
+  keep schema 11 unsynced and unavailable for spending; do not omit a watch.
+  See the paired chain `RESUMABLE_RECOVERY.md` for measured limitations.

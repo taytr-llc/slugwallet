@@ -195,7 +195,18 @@ func validateStoredCandidate(ns walletdb.ReadBucket, pubKey EncryptorDecryptor, 
 	if _, err := RecoveryAccounts(ns); err != nil {
 		return err
 	}
-	for _, account := range manifest.Accounts {
+	var progress *RecoveryState
+	if version, _ := fetchManagerVersion(ns); version == ResumableManagerVersion {
+		state, err := fetchRecoveryProgress(ns)
+		if err != nil {
+			return err
+		}
+		progress = &state
+	}
+	for accountIndex, account := range manifest.Accounts {
+		if progress != nil && (progress.Branches[2*accountIndex].ImportedNext != account.NextExternal || progress.Branches[2*accountIndex+1].ImportedNext != account.NextInternal) {
+			return ErrRecoveryState
+		}
 		scope := KeyScope{Purpose: account.Purpose, Coin: account.Coin}
 		row, err := fetchAccountInfo(ns, &scope, account.Account)
 		if err != nil {

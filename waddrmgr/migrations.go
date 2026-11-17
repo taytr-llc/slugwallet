@@ -101,7 +101,7 @@ func (m *MigrationManager) SetVersion(ns walletdb.ReadWriteBucket,
 // NOTE: This method is part of the migration.Manager interface.
 func (m *MigrationManager) Versions() []migration.Version {
 	// Schema9 is opt-in at creation, never a migration for legacy wallets.
-	if version, err := fetchManagerVersion(m.ns); err == nil && (version == RecoveryManagerVersion || version == CandidateManagerVersion) {
+	if version, err := fetchManagerVersion(m.ns); err == nil && (version == RecoveryManagerVersion || version == CandidateManagerVersion || version == ResumableManagerVersion) {
 		result := append([]migration.Version(nil), versions...)
 		return append(result, migration.Version{Number: version})
 	}

@@ -889,15 +889,30 @@ func (s *Store) rollback(ns walletdb.ReadWriteBucket, height int32) error {
 //     populated. Otherwise, only OutPoint and PkScript are populated.
 func (s *Store) fetchCredits(ns walletdb.ReadBucket, includeLocked bool,
 	includeSpentByUnmined bool,
-	populateFullDetails bool) ([]Credit, error) {
+	populateFullDetails bool, bounds ...int) ([]Credit, error) {
 
+	limit := 0
+	if len(bounds) != 0 {
+		limit = bounds[0]
+	}
+	if ns == nil {
+		return nil, storeError(ErrData, "missing transaction namespace", nil)
+	}
+	if limit > 0 && (ns.NestedReadBucket(bucketUnspent) == nil || ns.NestedReadBucket(bucketUnminedCredits) == nil || ns.NestedReadBucket(bucketUnmined) == nil) {
+		return nil, storeError(ErrData, "missing watch bucket", nil)
+	}
 	var credits []Credit
+	var cachedMined, cachedUnmined *TxRecord
+	var cachedBlock Block
 	now := s.clock.Now() // Cache current time for lock checks
 
 	// Iterate over mined unspent credits (bucketUnspent).
 	unspentBucket := ns.NestedReadBucket(bucketUnspent)
 	if unspentBucket != nil {
 		err := unspentBucket.ForEach(func(k, v []byte) error {
+			if limit > 0 && (len(k) != 36 || len(v) != 36) {
+				return storeError(ErrData, "invalid unspent row", nil)
+			}
 			var op wire.OutPoint
 			err := readCanonicalOutPoint(k, &op)
 			if err != nil {
@@ -919,6 +934,10 @@ func (s *Store) fetchCredits(ns walletdb.ReadBucket, includeLocked bool,
 				}
 			}
 
+			if limit > 0 && len(credits) >= limit {
+				return storeError(ErrInput, "watched output limit exceeded", nil)
+			}
+
 			// Fetch the transaction record to get PkScript and
 			// potentially other details.
 			var block Block
@@ -930,13 +949,22 @@ func (s *Store) fetchCredits(ns walletdb.ReadBucket, includeLocked bool,
 			// TODO(jrick): reading the entire transaction should
 			// be avoidable. Creating the credit only requires the
 			// output amount and pkScript.
-			rec, err := fetchTxRecord(ns, &op.Hash, &block)
+			rec := cachedMined
+			if rec == nil || rec.Hash != op.Hash || cachedBlock != block {
+				rec, err = fetchTxRecord(ns, &op.Hash, &block)
+				if err == nil {
+					cachedMined, cachedBlock = rec, block
+				}
+			}
 			if err != nil {
 				// Wrap the error for context.
 				return fmt.Errorf("unable to retrieve tx %v "+
 					"for mined credit: %w", op.Hash, err)
 			}
 
+			if uint64(op.Index) >= uint64(len(rec.MsgTx.TxOut)) {
+				return storeError(ErrData, "credit output index out of range", nil)
+			}
 			txOut := rec.MsgTx.TxOut[op.Index]
 			cred := Credit{
 				OutPoint: op,
@@ -985,6 +1013,9 @@ func (s *Store) fetchCredits(ns walletdb.ReadBucket, includeLocked bool,
 	unminedCreditsBucket := ns.NestedReadBucket(bucketUnminedCredits)
 	if unminedCreditsBucket != nil {
 		err := unminedCreditsBucket.ForEach(func(k, v []byte) error {
+			if limit > 0 && (len(k) != 36 || v == nil) {
+				return storeError(ErrData, "invalid unmined credit row", nil)
+			}
 			var op wire.OutPoint
 			if err := readCanonicalOutPoint(k, &op); err != nil {
 				return err
@@ -1005,6 +1036,10 @@ func (s *Store) fetchCredits(ns walletdb.ReadBucket, includeLocked bool,
 				}
 			}
 
+			if limit > 0 && len(credits) >= limit {
+				return storeError(ErrInput, "watched output limit exceeded", nil)
+			}
+
 			// Fetch the transaction record to get PkScript and
 			// potentially other details.
 			recVal := existsRawUnmined(ns, op.Hash[:])
@@ -1012,6 +1047,9 @@ func (s *Store) fetchCredits(ns walletdb.ReadBucket, includeLocked bool,
 			// existsRawUnmined should always return a value for a
 			// key in bucketUnminedCredits, but check defensively.
 			if recVal == nil {
+				if limit > 0 {
+					return storeError(ErrData, "missing watched transaction", nil)
+				}
 				log.Warnf("Unmined credit %v points to "+
 					"non-existent unmined tx record %v", op,
 					op.Hash)
@@ -1020,8 +1058,15 @@ func (s *Store) fetchCredits(ns walletdb.ReadBucket, includeLocked bool,
 				return nil
 			}
 
-			var rec TxRecord
-			err := readRawTxRecord(&op.Hash, recVal, &rec)
+			rec := cachedUnmined
+			var err error
+			if rec == nil || rec.Hash != op.Hash {
+				rec = new(TxRecord)
+				err = readRawTxRecord(&op.Hash, recVal, rec)
+				if err == nil {
+					cachedUnmined = rec
+				}
+			}
 			if err != nil {
 				// Wrap the error for context.
 				return fmt.Errorf("unable to retrieve raw tx "+
@@ -1029,6 +1074,9 @@ func (s *Store) fetchCredits(ns walletdb.ReadBucket, includeLocked bool,
 					err)
 			}
 
+			if uint64(op.Index) >= uint64(len(rec.MsgTx.TxOut)) {
+				return storeError(ErrData, "credit output index out of range", nil)
+			}
 			txOut := rec.MsgTx.TxOut[op.Index]
 			cred := Credit{
 				OutPoint: op,
@@ -1075,6 +1123,229 @@ func (s *Store) OutputsToWatch(ns walletdb.ReadBucket) ([]Credit, error) {
 	// including locked ones and those spent by other unmined txs,
 	// but only requires minimal details (OutPoint, PkScript).
 	return s.fetchCredits(ns, true, true, false)
+}
+
+// OutputsToWatchBounded refuses an oversized watch set before materializing
+// more than limit credits. It never returns a truncated successful result.
+func (s *Store) OutputsToWatchBounded(ns walletdb.ReadBucket, limit int) ([]Credit, error) {
+	if limit < 1 || limit > 65536 {
+		return nil, storeError(ErrInput, "invalid watched output limit", nil)
+	}
+	return s.fetchCredits(ns, true, true, false, limit)
+}
+
+// UnspentOutpointsBounded reads only canonical mined outpoint metadata. It
+// avoids decoding the same transaction once for every one of its outputs.
+func (s *Store) UnspentOutpointsBounded(ns walletdb.ReadBucket, limit int) (map[wire.OutPoint]Block, error) {
+	if ns == nil || limit < 1 || limit > 65536 {
+		return nil, storeError(ErrInput, "invalid unspent metadata request", nil)
+	}
+	b := ns.NestedReadBucket(bucketUnspent)
+	if b == nil {
+		return nil, storeError(ErrData, "missing unspent bucket", nil)
+	}
+	result := make(map[wire.OutPoint]Block)
+	err := b.ForEach(func(k, v []byte) error {
+		if len(k) != 36 || len(v) != 36 {
+			return storeError(ErrData, "invalid unspent metadata row", nil)
+		}
+		if len(result) >= limit {
+			return storeError(ErrInput, "unspent metadata limit exceeded", nil)
+		}
+		var op wire.OutPoint
+		var block Block
+		if err := readCanonicalOutPoint(k, &op); err != nil {
+			return err
+		}
+		if err := readUnspentBlock(v, &block); err != nil {
+			return err
+		}
+		if block.Height < 0 {
+			return storeError(ErrData, "negative mined block height", nil)
+		}
+		result[op] = block
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// MinedBalance returns the stored total of mined unspent credits, including
+// immature coinbases. It is a metadata assertion, not a spendable balance.
+func (s *Store) MinedBalance(ns walletdb.ReadBucket) (btcutil.Amount, error) {
+	if ns == nil {
+		return 0, storeError(ErrData, "missing transaction namespace", nil)
+	}
+	amount, err := fetchMinedBalance(ns)
+	if err != nil {
+		return 0, err
+	}
+	if amount < 0 {
+		return 0, storeError(ErrData, "negative mined balance", nil)
+	}
+	return amount, nil
+}
+
+// RecoveryStoreSummary describes the bounded raw ledger of a pending recovery.
+// The scanner compares these totals with its independently rebuilt indexes.
+type RecoveryStoreSummary struct {
+	Transactions, Credits, Debits uint32
+	TransactionBytes              uint64
+}
+
+// ValidateRecoveryStore checks the required namespaces and absence of local
+// mempool/lock/label state before auditing an incomplete reconstruction. It is
+// deliberately separate from ordinary historical-wallet Open semantics.
+func (s *Store) ValidateRecoveryStore(ns walletdb.ReadBucket) (RecoveryStoreSummary, error) {
+	var summary RecoveryStoreSummary
+	if ns == nil {
+		return RecoveryStoreSummary{}, storeError(ErrData, "missing recovery transaction namespace", nil)
+	}
+	for _, name := range [][]byte{bucketBlocks, bucketTxRecords, bucketCredits, bucketDebits, bucketUnspent, bucketUnmined, bucketUnminedCredits, bucketUnminedInputs, bucketLockedOutputs} {
+		if ns.NestedReadBucket(name) == nil {
+			return RecoveryStoreSummary{}, storeError(ErrData, "missing recovery transaction bucket", nil)
+		}
+	}
+	for _, name := range [][]byte{bucketUnmined, bucketUnminedCredits, bucketUnminedInputs, bucketLockedOutputs, bucketTxLabels} {
+		b := ns.NestedReadBucket(name)
+		if b == nil {
+			continue
+		}
+		key, _ := b.ReadCursor().First()
+		if key != nil {
+			return RecoveryStoreSummary{}, storeError(ErrData, "unexpected local transaction state during recovery", nil)
+		}
+	}
+	// These are pending-reconstruction ceilings, not limits on ordinary
+	// historical wallets. Validate raw rows before TxDetails or block-record
+	// decoding can allocate from corrupted counts or transaction payloads.
+	const maxRows = 16384
+	const maxTransactionBytes = 32 << 20
+	const maxTransactionSize = wire.MaxBlockPayload
+	var transactionBytes, blockReferences uint64
+	for _, name := range [][]byte{bucketTxRecords, bucketCredits, bucketDebits, bucketBlocks, bucketUnspent} {
+		rows := 0
+		err := ns.NestedReadBucket(name).ForEach(func(k, v []byte) error {
+			rows++
+			valid := v != nil && rows <= maxRows
+			switch string(name) {
+			case string(bucketTxRecords):
+				valid = valid && len(k) == 68 && len(v) > 8 && len(v) <= 8+maxTransactionSize
+				if valid {
+					transactionBytes += uint64(len(v) - 8)
+					valid = transactionBytes <= maxTransactionBytes
+				}
+			case string(bucketCredits):
+				valid = valid && len(k) == 72 && (len(v) == 9 || len(v) == 81)
+			case string(bucketDebits):
+				valid = valid && len(k) == 72 && len(v) == 80
+			case string(bucketBlocks):
+				valid = valid && len(k) == 4 && len(v) >= 44
+				if valid {
+					count := uint64(byteOrder.Uint32(v[40:44]))
+					blockReferences += count
+					valid = count > 0 && blockReferences <= maxRows && uint64(len(v)) == 44+32*count
+				}
+			case string(bucketUnspent):
+				valid = valid && len(k) == 36 && len(v) == 36
+			}
+			if !valid {
+				return storeError(ErrData, "invalid or oversized recovery transaction row", nil)
+			}
+			return nil
+		})
+		if err != nil {
+			return RecoveryStoreSummary{}, err
+		}
+		switch string(name) {
+		case string(bucketTxRecords):
+			summary.Transactions = uint32(rows)
+		case string(bucketCredits):
+			summary.Credits = uint32(rows)
+		case string(bucketDebits):
+			summary.Debits = uint32(rows)
+		}
+	}
+	summary.TransactionBytes = transactionBytes
+	if err := validateRecoveryGraph(ns, summary.Transactions); err != nil {
+		return RecoveryStoreSummary{}, err
+	}
+	if _, err := s.MinedBalance(ns); err != nil {
+		return RecoveryStoreSummary{}, err
+	}
+	return summary, nil
+}
+
+// validateRecoveryGraph runs only after raw row lengths and counts are bounded.
+// Every transaction incidence occurs once in its exact block, and credit/debit
+// links are reciprocal so ordinary rollback cannot act on unrelated records.
+func validateRecoveryGraph(ns walletdb.ReadBucket, transactionCount uint32) error {
+	invalid := func() error { return storeError(ErrData, "invalid recovery ledger graph", nil) }
+	transactions := ns.NestedReadBucket(bucketTxRecords)
+	seen := make(map[string]struct{}, transactionCount)
+	err := ns.NestedReadBucket(bucketBlocks).ForEach(func(k, v []byte) error {
+		blockTime := byteOrder.Uint64(v[32:40])
+		if blockTime == 0 || blockTime > uint64(^uint32(0)) {
+			return invalid()
+		}
+		for offset := 44; offset < len(v); offset += 32 {
+			var key [68]byte
+			copy(key[:32], v[offset:offset+32])
+			copy(key[32:36], k)
+			copy(key[36:], v[:32])
+			txValue := transactions.Get(key[:])
+			if txValue == nil || byteOrder.Uint64(txValue[:8]) != blockTime {
+				return invalid()
+			}
+			if _, duplicate := seen[string(key[:])]; duplicate {
+				return invalid()
+			}
+			seen[string(key[:])] = struct{}{}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if uint32(len(seen)) != transactionCount {
+		return invalid()
+	}
+	credits := ns.NestedReadBucket(bucketCredits)
+	debits := ns.NestedReadBucket(bucketDebits)
+	err = credits.ForEach(func(k, v []byte) error {
+		if transactions.Get(k[:68]) == nil || v[8]&^byte(3) != 0 {
+			return invalid()
+		}
+		if v[8]&1 == 0 {
+			if len(v) != 9 {
+				return invalid()
+			}
+			return nil
+		}
+		if len(v) != 81 {
+			return invalid()
+		}
+		debit := debits.Get(v[9:])
+		if len(debit) != 80 || !bytes.Equal(debit[8:], k) || !bytes.Equal(debit[:8], v[:8]) {
+			return invalid()
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return debits.ForEach(func(k, v []byte) error {
+		if transactions.Get(k[:68]) == nil {
+			return invalid()
+		}
+		credit := credits.Get(v[8:])
+		if len(credit) != 81 || credit[8]&1 == 0 || !bytes.Equal(credit[9:], k) || !bytes.Equal(credit[:8], v[:8]) {
+			return invalid()
+		}
+		return nil
+	})
 }
 
 // UnspentOutputs returns all unspent received transaction outputs.

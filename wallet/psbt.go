@@ -49,6 +49,10 @@ func (w *Wallet) FundPsbt(packet *psbt.Packet, keyScope *waddrmgr.KeyScope,
 	coinSelectionStrategy CoinSelectionStrategy,
 	optFuncs ...TxCreateOption) (int32, error) {
 
+	if w.Manager.ResumableRecovery() && !w.ChainSynced() {
+		return 0, ErrNotSynced
+	}
+
 	// Make sure the packet is well formed. We only require there to be at
 	// least one input or output.
 	err := psbt.VerifyInputOutputLen(packet, false, false)
@@ -416,6 +420,10 @@ func createOutputInfo(txOut *wire.TxOut,
 // successfully.
 func (w *Wallet) FinalizePsbt(keyScope *waddrmgr.KeyScope, account uint32,
 	packet *psbt.Packet) error {
+
+	if w.Manager.ResumableRecovery() && !w.ChainSynced() {
+		return ErrNotSynced
+	}
 
 	// Let's check that this is actually something we can and want to sign.
 	// We need at least one input and one output. In addition each

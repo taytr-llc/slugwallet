@@ -1093,6 +1093,22 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 		branchNum = InternalBranch
 		nextIndex = acctInfo.nextInternalIndex
 	}
+	if s.rootManager.resumableRecovery {
+		// Discovery can advance used lookahead between transactions.
+		// The committed row, not an OnCommit cache, owns issuance.
+		row, err := fetchAccountInfo(ns, &s.scope, account)
+		if err != nil {
+			return nil, ErrRecoveryState
+		}
+		data, ok := row.(*dbDefaultAccountRow)
+		if !ok {
+			return nil, ErrRecoveryState
+		}
+		nextIndex = data.nextExternalIndex
+		if internal {
+			nextIndex = data.nextInternalIndex
+		}
+	}
 
 	// Choose the appropriate type of address to derive since it's possible
 	// for a watch-only account to have a different schema from the
@@ -1109,11 +1125,23 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 		return nil, managerError(ErrTooManyAddresses, str, nil)
 	}
 
-	if s.rootManager.recoveryEnabled && (nextIndex > maxRecoveryBranchIndex || numAddresses > maxRecoveryBranchIndex-nextIndex) {
+	if s.rootManager.recoveryEnabled && !s.rootManager.resumableRecovery && (nextIndex > maxRecoveryBranchIndex || numAddresses > maxRecoveryBranchIndex-nextIndex) {
 		if s.rootManager.recoveryVersion == 2 {
 			return nil, ErrRecoveryScanRequired
 		}
 		return nil, managerError(ErrTooManyAddresses, "recovery profile branch limit reached", nil)
+	}
+
+	branchLimit := maxRecoveryBranchIndex
+	if s.rootManager.resumableRecovery {
+		var err error
+		branchLimit, err = s.rootManager.recoveryAllocationLimit(ns, s.scope, branchNum)
+		if err != nil {
+			return nil, err
+		}
+		if nextIndex > branchLimit || numAddresses > branchLimit-nextIndex {
+			return nil, ErrRecoveryQuota
+		}
 	}
 
 	// Derive the appropriate branch key and ensure it is zeroed when done.
@@ -1133,7 +1161,10 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 		// invalid, so use a loop to derive the next valid child.
 		var nextKey *hdkeychain.ExtendedKey
 		for {
-			if s.rootManager.recoveryEnabled && nextIndex >= maxRecoveryBranchIndex {
+			if s.rootManager.recoveryEnabled && nextIndex >= branchLimit {
+				if s.rootManager.resumableRecovery {
+					return nil, ErrRecoveryQuota
+				}
 				if s.rootManager.recoveryVersion == 2 {
 					return nil, ErrRecoveryScanRequired
 				}
@@ -1145,6 +1176,11 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 				// When this particular child is invalid, skip to the
 				// next index.
 				if err == hdkeychain.ErrInvalidChild {
+					if s.rootManager.resumableRecovery {
+						if err := putRecoveryInvalid(ns, s.scope, branchNum, nextIndex); err != nil {
+							return nil, err
+						}
+					}
 					nextIndex++
 					continue
 				}
@@ -1193,6 +1229,18 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 			index:       nextIndex - 1,
 		}
 		addressInfo = append(addressInfo, &info)
+	}
+
+	if s.rootManager.resumableRecovery {
+		var newRows uint32
+		for _, info := range addressInfo {
+			if !existsAddress(ns, &s.scope, info.managedAddr.Address().ScriptAddress()) {
+				newRows++
+			}
+		}
+		if err := s.rootManager.recordRecoveryAllocation(ns, s.scope, branchNum, nextIndex, newRows); err != nil {
+			return nil, err
+		}
 	}
 
 	// Now that all addresses have been successfully generated, update the
@@ -1306,6 +1354,10 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 // This function MUST be called with the manager lock held for writes.
 func (s *ScopedKeyManager) extendAddresses(ns walletdb.ReadWriteBucket,
 	account uint32, lastIndex uint32, internal bool) error {
+
+	if s.rootManager.resumableRecovery {
+		return ErrRecoveryProtected
+	}
 
 	// The next address can only be generated for accounts that have
 	// already been created.
@@ -2562,6 +2614,13 @@ func (s *ScopedKeyManager) ForEachActiveAddress(ns walletdb.ReadBucket,
 	defer s.mtx.Unlock()
 
 	addrFn := func(rowInterface interface{}) error {
+		if s.rootManager.resumableRecovery {
+			addr, err := s.recoveryPublicAddress(ns, rowInterface)
+			if err != nil {
+				return err
+			}
+			return fn(addr)
+		}
 		managedAddr, err := s.rowInterfaceToManaged(ns, rowInterface)
 		if err != nil {
 			return err
