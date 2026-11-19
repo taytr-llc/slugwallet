@@ -1,0 +1,368 @@
+{
+  "fixture_only": true,
+  "cases": [
+    {
+      "name": "zero256",
+      "entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+      "seed": "408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840",
+      "export": {
+        "version": 1,
+        "mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+        "manifest": {
+          "version": 1,
+          "profile": "slug-phase-a-fixture-bip39-v1",
+          "network": 1397511495,
+          "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+          "derivation": "bip32-standard-v1",
+          "scan_from_height": 0,
+          "root_public_key": "JgduaQiYjRcnjcD9t1MfTP1qo8eWaAWPQtS9nChXwtAeyTsoEGVZ8SjVqa5qxxvvKqX8tqC77wMSjaMHXNY8JSYEASdzX6PT31ktXqKPJvkhyy31",
+          "gym_path": "m/1397511495'/1'/0'",
+          "gym_public_key": "03ec7488667fd544b4a1de8fb0ae03730c9a2dc346c652cbaa59a077dbeddca519",
+          "gym_id": "a227587d837507dbcb5f9d781967339d816070fb7bd574931c690ba6937b88e5",
+          "accounts": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2pkh",
+              "internal_type": "p2pkh",
+              "next_external": 0,
+              "next_internal": 0
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2sh-p2wpkh",
+              "internal_type": "p2wpkh",
+              "next_external": 0,
+              "next_internal": 0
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2wpkh",
+              "internal_type": "p2wpkh",
+              "next_external": 26,
+              "next_internal": 27
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2tr",
+              "internal_type": "p2tr",
+              "next_external": 0,
+              "next_internal": 0
+            }
+          ]
+        }
+      },
+      "addresses": [
+        {
+          "path": "m/44'/0'/0'/0/0",
+          "public_key": "0342d943b8dba93a4ce29b858479c67f1e4f1110eecbe1f83dc01b455eb8b123b3",
+          "address": "aiEhKC3LRX8PPG5haqRFUcFvj3pXpBts2P",
+          "script_pub_key": "76a914c774f7875f704f56898371b6424b6e6f6328d7fa88ac"
+        },
+        {
+          "path": "m/44'/0'/0'/1/0",
+          "public_key": "024f7f02f1338817bc5b448e83f56c6f67419945743cc7ec69cc1c7f2b5bcd9792",
+          "address": "ahs7NRM7Go5wv5W57ZLNC98sZu1ob4rMxm",
+          "script_pub_key": "76a914c35fe57bca7e84441fab38bc3ef8eadab1a2d72488ac"
+        },
+        {
+          "path": "m/49'/0'/0'/0/0",
+          "public_key": "02f99859e117f22b7d4320cbc355999666b5fd96968234038ebf87e57ff247d44c",
+          "address": "VmTdheAgdW1wTbaasEZf9pPgp2uVkWbAFs",
+          "script_pub_key": "a9147dbb4230790bb41a63529d86d4c371e88c7d59f887"
+        },
+        {
+          "path": "m/49'/0'/0'/1/0",
+          "public_key": "034a0a09c90073de75f37bcd690c11ef6649c72193f497c9be4d0436747e3a5f82",
+          "address": "slug1qga5ryxcskj4x3eaapg9dw75h7cl9uzrehur97z",
+          "script_pub_key": "00144768321b10b4aa68e7bd0a0ad77a97f63e5e0879"
+        },
+        {
+          "path": "m/84'/0'/0'/0/0",
+          "public_key": "03c5db199831f23a3a1575518c8e9e948bfd495481aac442dec64b447ee76bd6fa",
+          "address": "slug1qzmtrqsfuaf6l6kkcsseumq26ukaphfj9s9ptme",
+          "script_pub_key": "001416d630413cea75fd5ad88433cd815ae5ba1ba645"
+        },
+        {
+          "path": "m/84'/0'/0'/1/0",
+          "public_key": "02138f643e36e664e9cf9683947cbde1717d0ebaae1f58e971c7add17503fdf300",
+          "address": "slug1qes80p0st92xjem9aw48v57fk35f44kjzmecdxc",
+          "script_pub_key": "0014cc0ef0be0b2a8d2cecbd754eca79368d135ada42"
+        },
+        {
+          "path": "m/84'/0'/0'/0/25",
+          "public_key": "030bbdf664d7eef84f68bd546e53bc812402e627f9bff4ae4e04c84271639f19e6",
+          "address": "slug1qh0xcgq8v2ju0kufkvd35q5qgyfj048x79ynnvg",
+          "script_pub_key": "0014bbcd8400ec54b8fb713663634050082264fa9cde"
+        },
+        {
+          "path": "m/84'/0'/0'/1/26",
+          "public_key": "031083e23d0c76b5d361e059fb18e203ff1dad56610c8c71d36d26211823395768",
+          "address": "slug1qfnduvvvh3nkdveqertzucy46yspr2cgns7jcyn",
+          "script_pub_key": "00144cdbc631978cecd664191ac5cc12ba2402356113"
+        },
+        {
+          "path": "m/86'/0'/0'/0/0",
+          "public_key": "02001291984ed14a7efb6a84ce236f654e8d4c4b8794162d6ec9de44f8e4119dd5",
+          "address": "slug1p68a8a3vuv2cxzs7e2gjc5v3qy3zdnfaxwftyqe9k9nquvm6r4w2smxg8r4",
+          "script_pub_key": "5120d1fa7ec59c62b06143d952258a32202444d9a7a672564064b62cc1c66f43ab95"
+        },
+        {
+          "path": "m/86'/0'/0'/1/0",
+          "public_key": "03103a80152e8910249ca7948207124072acc85ce81d4f52bfef3a21ddb9414a7f",
+          "address": "slug1pgf0v3a655f4xyyhslq8gjly9qpt9zn2wfyd5na0vsfsukk844x4swrxtnc",
+          "script_pub_key": "5120425ec8f754a26a6212f0f80e897c850056514d4e491b49f5ec8261cb58f5a9ab"
+        }
+      ]
+    },
+    {
+      "name": "incrementing256",
+      "entropy": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "seed": "0a6d060f6242aece4b074e48e7d8166f792a9b2bb7b295fa5ac289eda7647290c3d80e7436d6e9e34e72769c06f6582192d0b57ae4a97e9e24c8972a770a57d9",
+      "export": {
+        "version": 1,
+        "mnemonic": "abandon amount liar amount expire adjust cage candy arch gather drum bullet absurd math era live bid rhythm alien crouch range attend journey unaware",
+        "manifest": {
+          "version": 1,
+          "profile": "slug-phase-a-fixture-bip39-v1",
+          "network": 1397511495,
+          "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+          "derivation": "bip32-standard-v1",
+          "scan_from_height": 0,
+          "root_public_key": "JgduaQiYjRcnjcD9syNDf4x3txTZkg8HpvTKZtposTTw7bTLpRzvd7ibV3buRixMEqAwVAyreX36pAw5DxLXwG5gW6EGNWeRcJfJitkx2kCJ54pC",
+          "gym_path": "m/1397511495'/1'/0'",
+          "gym_public_key": "033de5e2e3d5ad06f616572fcb3d61f089ce1105ef486debf308027b3b663d6d92",
+          "gym_id": "28452fc8a478d28f284dfe671cfc57e7cabeca08ea953aef371f5674d3f4c510",
+          "accounts": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2pkh",
+              "internal_type": "p2pkh",
+              "next_external": 0,
+              "next_internal": 0
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2sh-p2wpkh",
+              "internal_type": "p2wpkh",
+              "next_external": 0,
+              "next_internal": 0
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2wpkh",
+              "internal_type": "p2wpkh",
+              "next_external": 26,
+              "next_internal": 27
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2tr",
+              "internal_type": "p2tr",
+              "next_external": 0,
+              "next_internal": 0
+            }
+          ]
+        }
+      },
+      "addresses": [
+        {
+          "path": "m/44'/0'/0'/0/0",
+          "public_key": "0270cacf459f70240e79e1d1194453223bae8e4262adc4858731b7b2c5b57e1e0e",
+          "address": "ai7VACBHDPxvYZai2Y4d5LqSD5F14WMiQZ",
+          "script_pub_key": "76a914c617e898f42c963d631ced3958ffacbeb7107e2788ac"
+        },
+        {
+          "path": "m/44'/0'/0'/1/0",
+          "public_key": "02ad74ca96104da4f03f56427f6f02fd53827d7fca146b4b6746d6fcce62d7cbb3",
+          "address": "aeXBX39MeWvML2Hgg8vzTRcgtfucRNgCxB",
+          "script_pub_key": "76a9149eb2a9b2f386fb7d3f60ba78863295261f64dace88ac"
+        },
+        {
+          "path": "m/49'/0'/0'/0/0",
+          "public_key": "02d4a760e2bde75a847437f8ecec3865834657e0e60c63578356db8a5239caec7a",
+          "address": "Vvjf6ixep54q29dozFwyGaqxGHCoWqDpLX",
+          "script_pub_key": "a914e37c3684fc08963947e07d02d6ed2b38fb1bf07387"
+        },
+        {
+          "path": "m/49'/0'/0'/1/0",
+          "public_key": "033bb083ef60c0318392fedcf731bf0de75dd61d405b03751aedf08c93294e5f50",
+          "address": "slug1qv27g28uu0ggmmtcqgdtlv63rkjh5qr6n2qhdjc",
+          "script_pub_key": "001462bc851f9c7a11bdaf004357f66a23b4af400f53"
+        },
+        {
+          "path": "m/84'/0'/0'/0/0",
+          "public_key": "025e5c348b732544743dd1657ecc258749c02d839dd07ae4e367134aafaf99bc63",
+          "address": "slug1qslk39wvggqa0vl8nd6jckaz54dw3vk45c8educ",
+          "script_pub_key": "001487ed12b988403af67cf36ea58b7454ab5d165ab4"
+        },
+        {
+          "path": "m/84'/0'/0'/1/0",
+          "public_key": "0343f1b864636e6fc5fb5aa78388730a4afeeca65a6fb75073f16ddedd7a263ccd",
+          "address": "slug1qhnsq2ks2dh5cl4ftm64zygtm9a9ytnad4nky3h",
+          "script_pub_key": "0014bce0055a0a6de98fd52bdeaa22217b2f4a45cfad"
+        },
+        {
+          "path": "m/84'/0'/0'/0/25",
+          "public_key": "020d3dcc1e8e719ac7731cf702032acbd881b31a14ff1656405eb7f1740198f137",
+          "address": "slug1qzc4qejpyr8gz6q7tqrwp2h70a5x4y74km6g5l0",
+          "script_pub_key": "0014162a0cc82419d02d03cb00dc155fcfed0d527ab6"
+        },
+        {
+          "path": "m/84'/0'/0'/1/26",
+          "public_key": "03fe9fd5275523892946196fb21a10267b96cff9fabf538224a5d480075f85ef86",
+          "address": "slug1qzn65frlw0fmz26uxu458wew89x3ty0lq0zqcmd",
+          "script_pub_key": "001414f5448fee7a76256b86e5687765c729a2b23fe0"
+        },
+        {
+          "path": "m/86'/0'/0'/0/0",
+          "public_key": "038334eabaa2d5a44c0263fe9fa84189e577d5dcbb656e6070756477cc48514acf",
+          "address": "slug1p9utz6ct3stasashyme398ck99tewn3yf344e66wuq07c65vh97hsx0sde2",
+          "script_pub_key": "51202f162d617182fb0ec2e4de6253e2c52af2e9c4898d6b9d69dc03fd8d51972faf"
+        },
+        {
+          "path": "m/86'/0'/0'/1/0",
+          "public_key": "0215bf3cca3d06751affad8f2c9c55d2367a22bb7742ac9facdf04d5d9e4321e58",
+          "address": "slug1p5hzxu2a2g2dkjxqgsxyc8vqphev38gska9uhztqa3yef5ddda0ls48qnyw",
+          "script_pub_key": "5120a5c46e2baa429b691808818983b001be5913a216e979712c1d89329a35adebff"
+        }
+      ]
+    },
+    {
+      "name": "official-leading-zero-account",
+      "entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+      "seed": "17e4b5661796eeff8904550f8572289317ece7c1cc1316469f8f4c986c1ffd7b9f4c3aeac3e1713ffc21fa33707d09d57a2ece358d72111ef7c7658e7b33f2d5",
+      "export": {
+        "version": 1,
+        "mnemonic": "hamster diagram private dutch cause delay private meat slide toddler razor book happy fancy gospel tennis maple dilemma loan word shrug inflict delay length",
+        "manifest": {
+          "version": 1,
+          "profile": "slug-phase-a-fixture-bip39-v1",
+          "network": 1397511495,
+          "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+          "derivation": "bip32-standard-v1",
+          "scan_from_height": 0,
+          "root_public_key": "JgduaQiYjRcnjcD9sy97zcNZRiXagRmzNRMUeekjhW3oy7hyVX13EHacpz3uPzCXzaorijR4t6S7y3RrJXC6EHeA1vhTD3cbWqaf4545V4gXPbLF",
+          "gym_path": "m/1397511495'/1'/0'",
+          "gym_public_key": "037f736e23d732401ed0c563471c7dbc8487e858d99f7efc621fd9e2489994f618",
+          "gym_id": "ec23192ea6ccca6aefff61cd76e2b4f625e30d5b02a8b291180bf8f9eb8333dd",
+          "accounts": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2pkh",
+              "internal_type": "p2pkh",
+              "next_external": 0,
+              "next_internal": 0
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2sh-p2wpkh",
+              "internal_type": "p2wpkh",
+              "next_external": 0,
+              "next_internal": 0
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2wpkh",
+              "internal_type": "p2wpkh",
+              "next_external": 26,
+              "next_internal": 27
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "account": 0,
+              "external_type": "p2tr",
+              "internal_type": "p2tr",
+              "next_external": 0,
+              "next_internal": 0
+            }
+          ]
+        }
+      },
+      "addresses": [
+        {
+          "path": "m/44'/0'/0'/0/0",
+          "public_key": "03182d17a5e7dc2ca69d684810d513fde9b2f97be302d927ca9d7d6098f269ab44",
+          "address": "aXFudpAuXD1iC7umQYLGA9v2JrRuVHW3mP",
+          "script_pub_key": "76a9144f0648ccb4a18f32156a84752e228e272ecb481288ac"
+        },
+        {
+          "path": "m/44'/0'/0'/1/0",
+          "public_key": "036233a44e1b2eeceff1f7585ef2e80830774563439e3d103247b71b3054df5ec4",
+          "address": "ahXjYQrS61gzdkfCNkXJcvAHwiBsR3hmGE",
+          "script_pub_key": "76a914bfb5c5b39fc083f06fb9429180c2d5eac53271d488ac"
+        },
+        {
+          "path": "m/49'/0'/0'/0/0",
+          "public_key": "02601044dfc3dcf51c66566beb492452f6b52a60c4dcbe73ab6b154d2915c8e8fb",
+          "address": "Vi5d5urQhWUSYRkAsKvu6n5pnpdXbDGEHT",
+          "script_pub_key": "a91458a9373f30542bf15020c6e2f06f7c99ae252ab087"
+        },
+        {
+          "path": "m/49'/0'/0'/1/0",
+          "public_key": "030196d08914d7661900b354f98c476fe0969608fa04dbd842d0f319d1641fd075",
+          "address": "slug1qyse4g2luvsjneaya87swn3h5v4xkar30wnhl4j",
+          "script_pub_key": "00142433542bfc64253cf49d3fa0e9c6f4654d6e8e2f"
+        },
+        {
+          "path": "m/84'/0'/0'/0/0",
+          "public_key": "033c82426e79a02318e797eec2021a10a8d7a8edfcd889adc82df78b303380bcc5",
+          "address": "slug1qsyypdkm39xs2c5cu5r4w5r285p98rfmaqk7uzh",
+          "script_pub_key": "0014810816db7129a0ac531ca0eaea0d47a04a71a77d"
+        },
+        {
+          "path": "m/84'/0'/0'/1/0",
+          "public_key": "03544871ea184ecf99afc2a3f4ce62e4dc00ab00eb85316163a47af8b104c87410",
+          "address": "slug1qgjhww2y4hwc76kscxpyvpnqra09caepw2ve7m2",
+          "script_pub_key": "001444aee72895bbb1ed5a183048c0cc03ebcb8ee42e"
+        },
+        {
+          "path": "m/84'/0'/0'/0/25",
+          "public_key": "03bf934a1d4c70e3a59ed161ecadd91814df9f1c41df98a165b1d1b9d221fa0625",
+          "address": "slug1qdzqwtfmmq0nfky0m460nng95e8xvsuswupzazy",
+          "script_pub_key": "00146880e5a77b03e69b11fbae9f39a0b4c9ccc8720e"
+        },
+        {
+          "path": "m/84'/0'/0'/1/26",
+          "public_key": "03e2e23e5e5e6c2aa19914369539e79d0cd973d4756b21e5950d74ef8387b57065",
+          "address": "slug1qqk86vsgvfwgwvh4j6mvzh4wyeg9cv4c7tykj00",
+          "script_pub_key": "0014058fa6410c4b90e65eb2d6d82bd5c4ca0b86571e"
+        },
+        {
+          "path": "m/86'/0'/0'/0/0",
+          "public_key": "02151474b2dec4a92e4efd9124085c34c0046e1255fa5af9a33f5780f56139ebbb",
+          "address": "slug1p0t9x77xxf9fhau6sr50h5qxy2wz454npdf5rcc3qm9n57czmd8rspq6f3z",
+          "script_pub_key": "51207aca6f78c649537ef3501d1f7a00c453855a56616a683c6220d9674f605b69c7"
+        },
+        {
+          "path": "m/86'/0'/0'/1/0",
+          "public_key": "02a4c664f095ba06dfe441c78b5bc1698e3f63a921a1b7d73d79a793e1803229ed",
+          "address": "slug1p59mdsrs6lcv6ldnmy669ua9806k70jdjuy5nf5ja5tcgsgftka7qyhyp4l",
+          "script_pub_key": "5120a176d80e1afe19afb67b26b45e74a77eade7c9b2e12934d25da2f088212bb77c"
+        }
+      ]
+    }
+  ]
+}

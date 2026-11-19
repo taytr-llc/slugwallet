@@ -67,6 +67,9 @@ func (w *Wallet) FundPsbt(packet *psbt.Packet, keyScope *waddrmgr.KeyScope,
 
 	txOut := packet.UnsignedTx.TxOut
 	txIn := packet.UnsignedTx.TxIn
+	if err := w.candidateWithdrawalCheckInputs(txIn); err != nil {
+		return 0, err
+	}
 
 	// Make sure none of the outputs are dust.
 	for _, output := range txOut {
@@ -438,6 +441,9 @@ func (w *Wallet) FinalizePsbt(keyScope *waddrmgr.KeyScope, account uint32,
 	// ones to sign. If there is any input without witness data that we
 	// cannot sign because it's not our UTXO, this will be a hard failure.
 	tx := packet.UnsignedTx
+	if err := w.candidateWithdrawalCheckInputs(tx.TxIn); err != nil {
+		return err
+	}
 	sigHashes := txscript.NewTxSigHashes(tx, PsbtPrevOutputFetcher(packet))
 	for idx, txIn := range tx.TxIn {
 		in := packet.Inputs[idx]

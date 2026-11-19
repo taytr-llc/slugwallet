@@ -409,6 +409,9 @@ func (w *Wallet) findEligibleOutputs(dbtx walletdb.ReadTx,
 	addrmgrNs := dbtx.ReadBucket(waddrmgrNamespaceKey)
 	txmgrNs := dbtx.ReadBucket(wtxmgrNamespaceKey)
 
+	if err := candidateWithdrawalAuditSelection(dbtx, w); err != nil {
+		return nil, err
+	}
 	unspent, err := w.TxStore.UnspentOutputs(txmgrNs)
 	if err != nil {
 		return nil, err
@@ -422,6 +425,13 @@ func (w *Wallet) findEligibleOutputs(dbtx walletdb.ReadTx,
 	eligible := make([]wtxmgr.Credit, 0, len(unspent))
 	for i := range unspent {
 		output := &unspent[i]
+		reserved, err := candidateWithdrawalReserved(dbtx, output.OutPoint)
+		if err != nil {
+			return nil, err
+		}
+		if reserved {
+			continue
+		}
 
 		// Restrict the selected utxos if a filter function is provided.
 		if allowUtxo != nil &&

@@ -143,6 +143,10 @@ type Wallet struct {
 	// commit callbacks that update the address manager's in-memory state.
 	newAddrMtx sync.Mutex
 
+	// One explicit candidate-withdrawal handle borrows this wallet. It is
+	// closed and joined before the owning runtime unloads wallet storage.
+	candidateWithdrawalMu sync.Mutex
+
 	lockedOutpoints    map[wire.OutPoint]struct{}
 	lockedOutpointsMtx sync.Mutex
 
@@ -3787,6 +3791,10 @@ func (w *Wallet) SignTransaction(tx *wire.MsgTx, hashType txscript.SigHashType,
 	err := walletdb.View(w.db, func(dbtx walletdb.ReadTx) error {
 		addrmgrNs := dbtx.ReadBucket(waddrmgrNamespaceKey)
 		txmgrNs := dbtx.ReadBucket(wtxmgrNamespaceKey)
+
+		if err := candidateWithdrawalCheckInputsTx(dbtx, w, tx.TxIn); err != nil {
+			return err
+		}
 
 		inputFetcher := txscript.NewMultiPrevOutFetcher(nil)
 		for i, txIn := range tx.TxIn {

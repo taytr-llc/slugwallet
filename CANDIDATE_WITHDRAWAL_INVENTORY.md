@@ -1,0 +1,7 @@
+# Candidate withdrawal wallet inventory addendum
+
+This additive read-only API preserves the frozen wallet and setup contracts and all existing draft/transaction bytes.
+
+Add `func (s *CandidateWithdrawals) OperationIDs(ctx context.Context) ([]string, error)`. It enters the existing fail-fast handle/lifetime gate and fully audits the original profile, exact binding, metadata, every operation and both reservation indexes from one wallet DB snapshot. On success it returns a caller-owned, non-nil slice containing every retained operation ID, at most128, sorted lexicographically by its64-lowerhex string. This includes prepared, abandoned and retained records. It returns no payload on any error or final cancellation/wallet-stop check. It never allocates an address, changes reservations, signs, or writes storage.
+
+The concrete app adapter uses the inventory to prove converse correspondence: every wallet operation must have its exact app-journal row. An app intent may match the original prepared wallet draft after a lost preparation acknowledgment; an app abandoned row without a draft must not have a wallet operation. Missing app rows, mismatched IDs/bindings/drafts, or extra wallet state fail closed before new selection. The method is a structural inventory, never independent authorization or permission to synthesize a missing app row. It is not exposed through generic RPC or the webview.

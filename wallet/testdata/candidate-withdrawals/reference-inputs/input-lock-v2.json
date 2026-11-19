@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "status": "public inputs frozen before Set68 implementation or expected-output generation",
+  "chain_base": "6e97a13446d6000ca39065e2f233053b6b866413",
+  "wallet_base": "1bedbf995ebc612ce6f8432c41955ef8a6600661",
+  "files": {
+    "public/original-set61-payout.json": {
+      "origin": "/Users/taytrrip/slug/slug/poolsettle/testdata/payout-history/inputs/original-state-public.json",
+      "sha256": "d1808376a6f54b8d5816f33c390f3314e91f38013db83583683657370a0749da",
+      "bytes": 11877
+    },
+    "public/fixture-recovery-v1.json": {
+      "origin": "/Users/taytrrip/slug/slugwallet/recovery/testdata/recovery_v1.json",
+      "sha256": "d5141f4a8ee4378d77d483b09f6ecd809f8b328f82e79a69ff83164e73bc799a",
+      "bytes": 16064
+    },
+    "inherited/recovery/reference.py": {
+      "origin": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/reference.py",
+      "sha256": "60e1527ce408213fd89bc2cf6b4d2d8ecaedbd3c811ef4d40b6f888bb608202f",
+      "bytes": 15839
+    },
+    "inherited/recovery/sources/english.txt": {
+      "origin": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources/english.txt",
+      "sha256": "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda",
+      "bytes": 13116
+    },
+    "inherited/txauthor/author.go": {
+      "origin": "/Users/taytrrip/slug/slugwallet/wallet/txauthor/author.go",
+      "sha256": "b165b0d8a7ba161d43af505c19ae43166be39cd4d7941d50251edfe4f6ee4202",
+      "bytes": 15630
+    },
+    "inherited/txsizes/size.go": {
+      "origin": "/Users/taytrrip/slug/slugwallet/wallet/txsizes/size.go",
+      "sha256": "bab57f6b85ffd520d56b349ccc49632d97e0382b7f520b44a5d3076f96733ee9",
+      "bytes": 9338
+    },
+    "inherited/txrules/rules.go": {
+      "origin": "/Users/taytrrip/slug/slugwallet/wallet/txrules/rules.go",
+      "sha256": "d874ff945c0e8b84d001055dfd66fe505e014a3a61aacae8c89ac7497cd12dae",
+      "bytes": 2152
+    },
+    "inherited/txsort/txsort.go": {
+      "origin": "/Users/taytrrip/slug/slug/btcutil/txsort/txsort.go",
+      "sha256": "c56e074d76b77fb068e987e300241f59d92449efe6c36487fcfd6ca720d44458",
+      "bytes": 3369
+    },
+    "inherited/psbt/sort.go": {
+      "origin": "/Users/taytrrip/slug/slug/psbt/sort.go",
+      "sha256": "707e7ef8b5f9fd8add61bea1a1b02e8908cf8914a86a081f393792427454ed17",
+      "bytes": 3502
+    },
+    "inherited/mempool/policy.go": {
+      "origin": "/Users/taytrrip/slug/slug/mempool/policy.go",
+      "sha256": "8624bd5770d488a6b83ae3870edd41ae79ec6be512713a880265bad754513601",
+      "bytes": 17792
+    },
+    "inherited/ecdsa/reference_authorizations.py": {
+      "origin": "/Users/taytrrip/slug/slug/gymauth/testdata/reference_authorizations.py",
+      "sha256": "0490d6e7931cf0edb30e632a2fa213c8660e88afe916d3ed09421e34954b84d9",
+      "bytes": 9946
+    },
+    "inherited/bip143/crypto.py": {
+      "origin": "/Users/taytrrip/slug/slug/gymseed/testdata/reference/crypto.py",
+      "sha256": "ea87b9021e14712b1ac7130daa73cd12fb8acf2fd8995ca5ce9e32d0d770fd1c",
+      "bytes": 10124
+    }
+  },
+  "limits": "Only previously published fixture JSON and inherited source files copied. No wallet/account directory opened. This is an input lock, not a frozen withdrawal contract or generated expectation.",
+  "previous_input_lock_sha256": "fbaf81c65c7b003ac7511f83e4bb88abebb9ecae746d2c6bbb7134342a3d777e",
+  "change": "Adds inherited independent ECDSA/RFC6979 and BIP143 reference math before new producer execution; prior lock retained."
+}
