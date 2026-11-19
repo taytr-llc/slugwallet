@@ -82,6 +82,8 @@ type Loader struct {
 	recoveryWindow     uint32
 	wallet             *Wallet
 	recoverySession    bool
+	phaseARecovery     bool
+	phaseACleanup      *PhaseARecoveryCleanupError
 	recoveryCheckpoint func(string)
 	localDB            bool
 	walletExists       func() (bool, error)
@@ -242,6 +244,9 @@ func (l *Loader) createNewWallet(pubPassphrase, privPassphrase []byte,
 	defer l.mu.Unlock()
 	l.mu.Lock()
 
+	if l.phaseACleanup != nil {
+		return nil, l.phaseACleanup
+	}
 	if l.wallet != nil || l.recoverySession {
 		return nil, ErrLoaded
 	}
@@ -327,6 +332,9 @@ func (l *Loader) OpenExistingWallet(pubPassphrase []byte,
 	defer l.mu.Unlock()
 	l.mu.Lock()
 
+	if l.phaseACleanup != nil {
+		return nil, l.phaseACleanup
+	}
 	if l.wallet != nil || l.recoverySession {
 		return nil, ErrLoaded
 	}
@@ -349,6 +357,10 @@ func (l *Loader) OpenExistingWallet(pubPassphrase []byte,
 		}
 	}
 
+	if e := l.checkPhaseASchema(l.db); e != nil {
+		return nil, l.closePhaseAFailure(l.db, nil, e)
+	}
+
 	var cbs *waddrmgr.OpenCallbacks
 	if canConsolePrompt {
 		cbs = &waddrmgr.OpenCallbacks{
@@ -366,6 +378,9 @@ func (l *Loader) OpenExistingWallet(pubPassphrase []byte,
 		l.cfg.walletSyncRetryInterval,
 	)
 	if err != nil {
+		if l.phaseARecovery {
+			return nil, l.closePhaseAFailure(l.db, nil, err)
+		}
 		// If opening the wallet fails (e.g. because of wrong
 		// passphrase), we must close the backing database to
 		// allow future calls to walletdb.Open().
@@ -401,6 +416,9 @@ func (l *Loader) WalletExists() (bool, error) {
 func (l *Loader) LoadedWallet() (*Wallet, bool) {
 	l.mu.Lock()
 	w := l.wallet
+	if l.phaseACleanup != nil {
+		w = nil
+	}
 	l.mu.Unlock()
 	return w, w != nil
 }
@@ -413,15 +431,24 @@ func (l *Loader) UnloadWallet() error {
 	defer l.mu.Unlock()
 	l.mu.Lock()
 
+	if l.phaseACleanup != nil {
+		return l.phaseACleanup
+	}
 	if l.wallet == nil {
 		return ErrNotLoaded
 	}
 
 	l.wallet.Stop()
 	l.wallet.WaitForShutdown()
+	if l.phaseARecovery {
+		l.wallet.Manager.Close()
+	}
 	if l.localDB {
 		err := l.db.Close()
 		if err != nil {
+			if l.phaseARecovery {
+				return l.retainPhaseACleanup(l.db, l.wallet.Manager, nil, err)
+			}
 			return err
 		}
 	}

@@ -371,7 +371,7 @@ func (w *Wallet) activeData(
 	var addrs []address.Address
 	err := w.Manager.ForEachRelevantActiveAddress(
 		addrmgrNs, func(addr address.Address) error {
-			if w.Manager.ResumableRecovery() && len(addrs) >= int(waddrmgr.RecoveryAttemptLimit) {
+			if w.Manager.ResumableRecovery() && len(addrs) >= int(w.Manager.RecoveryInventoryLimit()) {
 				return ErrRecoveryCapacity
 			}
 			addrs = append(addrs, addr)
@@ -4596,6 +4596,9 @@ func OpenWithRetry(db walletdb.DB, pubPass []byte, cbs *waddrmgr.OpenCallbacks,
 		if addrMgr.ResumableRecovery() {
 			if err := candidateRecoveryComplete(tx, addrMgr); err != nil {
 				addrMgr.Close()
+				if addrMgr.RecoveryVersion() == 1 {
+					addrMgr = nil
+				}
 				return err
 			}
 			// Schema11 has already completed its bounded, persisted scan.
@@ -4611,17 +4614,27 @@ func OpenWithRetry(db walletdb.DB, pubPass []byte, cbs *waddrmgr.OpenCallbacks,
 			}
 			if err != nil {
 				addrMgr.Close()
+				if addrMgr.RecoveryVersion() == 1 {
+					addrMgr = nil
+				}
 				return err
 			}
 		}
 		txMgr, err = wtxmgr.Open(txMgrBucket, params)
 		if err != nil {
+			if addrMgr.ResumableRecovery() && addrMgr.RecoveryVersion() == 1 {
+				addrMgr.Close()
+				addrMgr = nil
+			}
 			return err
 		}
 
 		return nil
 	})
 	if err != nil {
+		if addrMgr != nil && addrMgr.ResumableRecovery() && addrMgr.RecoveryVersion() == 1 {
+			addrMgr.Close()
+		}
 		return nil, err
 	}
 

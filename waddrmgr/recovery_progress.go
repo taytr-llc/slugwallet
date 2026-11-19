@@ -16,6 +16,7 @@ import (
 	"github.com/taytr-llc/slug/chaincfg/v2"
 	"github.com/taytr-llc/slug/txscript/v2"
 	"github.com/taytr-llc/slugwallet/productionprofile"
+	"github.com/taytr-llc/slugwallet/recovery"
 	"github.com/taytr-llc/slugwallet/walletdb"
 )
 
@@ -60,9 +61,12 @@ type RecoveryAddress struct {
 }
 
 func recoveryBranchCharge(b RecoveryBranch) uint64 {
+	return recoveryBranchChargeFor(b, candidateRecoveryPolicy())
+}
+func recoveryBranchChargeFor(b RecoveryBranch, p recoveryPolicy) uint64 {
 	reserve := uint64(b.IssuedNext) + uint64(RecoveryLookahead)
-	if reserve > uint64(productionprofile.MaxNextIndex) {
-		reserve = uint64(productionprofile.MaxNextIndex)
+	if reserve > uint64(p.indexLimit) {
+		reserve = uint64(p.indexLimit)
 	}
 	if reserve < uint64(b.TargetNext) {
 		reserve = uint64(b.TargetNext)
@@ -71,22 +75,31 @@ func recoveryBranchCharge(b RecoveryBranch) uint64 {
 }
 
 func validRecoveryProgress(s RecoveryState) bool {
+	return validRecoveryProgressFor(s, candidateRecoveryPolicy())
+}
+func validRecoveryProgressFor(s RecoveryState, p recoveryPolicy) bool {
 	if s.Version != 1 || len(s.Branches) != 8 {
 		return false
 	}
 	var target, derived uint64
 	for i, b := range s.Branches {
-		if b.Scope != (KeyScope{Purpose: []uint32{44, 49, 84, 86}[i/2], Coin: productionprofile.CandidateCoinType}) || b.Branch != uint32(i%2) || b.ImportedNext > b.IssuedNext || b.IssuedNext > b.TargetNext || b.DerivedNext > b.TargetNext || b.TargetNext > productionprofile.MaxNextIndex || (s.Ready && b.DerivedNext != b.TargetNext) {
+		if b.Scope != (KeyScope{Purpose: []uint32{44, 49, 84, 86}[i/2], Coin: p.coin}) || b.Branch != uint32(i%2) || b.ImportedNext > b.IssuedNext || b.IssuedNext > b.TargetNext || b.DerivedNext > b.TargetNext || b.TargetNext > p.indexLimit || (s.Ready && b.DerivedNext != b.TargetNext) {
 			return false
 		}
-		target += recoveryBranchCharge(b)
+		if p.schema == PhaseAManagerVersion && !s.Ready && uint64(b.TargetNext) != recoveryBranchChargeFor(RecoveryBranch{IssuedNext: b.IssuedNext}, p) {
+			return false
+		}
+		target += recoveryBranchChargeFor(b, p)
 		derived += uint64(b.DerivedNext)
 	}
-	return target <= uint64(RecoveryAttemptLimit) && uint64(s.AddressCount) <= derived
+	return target <= uint64(p.attemptLimit) && uint64(s.AddressCount) <= derived
 }
 
 func encodeRecoveryProgress(s RecoveryState) ([]byte, error) {
-	if !validRecoveryProgress(s) {
+	return encodeRecoveryProgressFor(s, candidateRecoveryPolicy())
+}
+func encodeRecoveryProgressFor(s RecoveryState, p recoveryPolicy) ([]byte, error) {
+	if !validRecoveryProgressFor(s, p) {
 		return nil, ErrRecoveryState
 	}
 	b := make([]byte, 12+8*28)
@@ -109,7 +122,11 @@ func fetchRecoveryProgress(ns walletdb.ReadBucket) (RecoveryState, error) {
 	if ns == nil || ns.NestedReadBucket(mainBucketName) == nil {
 		return s, ErrRecoveryState
 	}
-	b := ns.NestedReadBucket(mainBucketName).Get(recoveryProgressName)
+	policy, err := recoveryPolicyFor(ns)
+	if err != nil {
+		return s, err
+	}
+	b := ns.NestedReadBucket(mainBucketName).Get(policy.progress)
 	if len(b) != 12+8*28 || binary.LittleEndian.Uint32(b[4:]) > 1 {
 		return s, ErrRecoveryState
 	}
@@ -125,18 +142,22 @@ func fetchRecoveryProgress(ns walletdb.ReadBucket) (RecoveryState, error) {
 		}
 		s.Branches[i] = RecoveryBranch{KeyScope{Purpose: v[0], Coin: v[1]}, v[2], v[3], v[4], v[5], v[6]}
 	}
-	if !validRecoveryProgress(s) {
+	if !validRecoveryProgressFor(s, policy) {
 		return RecoveryState{}, ErrRecoveryState
 	}
 	return s, nil
 }
 
 func putRecoveryProgress(ns walletdb.ReadWriteBucket, s RecoveryState) error {
-	b, err := encodeRecoveryProgress(s)
+	policy, err := recoveryPolicyFor(ns)
 	if err != nil {
 		return err
 	}
-	return ns.NestedReadWriteBucket(mainBucketName).Put(recoveryProgressName, b)
+	b, err := encodeRecoveryProgressFor(s, policy)
+	if err != nil {
+		return err
+	}
+	return ns.NestedReadWriteBucket(mainBucketName).Put(policy.progress, b)
 }
 
 // CandidateRecoveryPlan validates the entire supported work quota before a
@@ -364,7 +385,11 @@ func (m *Manager) DeriveRecoveryChunk(ctx context.Context, ns walletdb.ReadWrite
 }
 
 func putRecoveryInvalid(ns walletdb.ReadWriteBucket, scope KeyScope, branch, index uint32) error {
-	b := ns.NestedReadWriteBucket(mainBucketName).NestedReadWriteBucket(recoveryInvalidName)
+	policy, err := recoveryPolicyFor(ns)
+	if err != nil {
+		return err
+	}
+	b := ns.NestedReadWriteBucket(mainBucketName).NestedReadWriteBucket(policy.invalid)
 	if b == nil {
 		return ErrRecoveryState
 	}
@@ -376,7 +401,11 @@ func putRecoveryInvalid(ns walletdb.ReadWriteBucket, scope KeyScope, branch, ind
 }
 
 func validateRecoveryInvalid(ns walletdb.ReadBucket, state RecoveryState) error {
-	b := ns.NestedReadBucket(mainBucketName).NestedReadBucket(recoveryInvalidName)
+	policy, err := recoveryPolicyFor(ns)
+	if err != nil {
+		return err
+	}
+	b := ns.NestedReadBucket(mainBucketName).NestedReadBucket(policy.invalid)
 	if b == nil {
 		return ErrRecoveryState
 	}
@@ -384,8 +413,8 @@ func validateRecoveryInvalid(ns walletdb.ReadBucket, state RecoveryState) error 
 	for _, branch := range state.Branches {
 		derived += branch.DerivedNext
 	}
-	err := b.ForEach(func(k, v []byte) error {
-		if len(k) != 16 || len(v) != 1 || v[0] != 1 || count >= RecoveryAttemptLimit {
+	err = b.ForEach(func(k, v []byte) error {
+		if len(k) != 16 || len(v) != 1 || v[0] != 1 || count >= policy.attemptLimit {
 			return ErrRecoveryState
 		}
 		scope := KeyScope{Purpose: binary.LittleEndian.Uint32(k), Coin: binary.LittleEndian.Uint32(k[4:])}
@@ -462,14 +491,14 @@ func (m *Manager) ObserveRecoveryAddress(ns walletdb.ReadWriteBucket, scope KeyS
 		}
 		b.IssuedNext = index + 1
 		target := uint64(b.IssuedNext) + uint64(RecoveryLookahead)
-		if target > uint64(productionprofile.MaxNextIndex) {
-			target = uint64(productionprofile.MaxNextIndex)
+		if target > uint64(m.recoveryPolicy().indexLimit) {
+			target = uint64(m.recoveryPolicy().indexLimit)
 		}
 		expanded := !s.Ready && target > uint64(b.TargetNext)
 		if expanded {
 			b.TargetNext = uint32(target)
 		}
-		if !validRecoveryProgress(s) {
+		if !validRecoveryProgressFor(s, m.recoveryPolicy()) {
 			return false, ErrRecoveryQuota
 		}
 		base := i - i%2
@@ -523,15 +552,18 @@ func (m *Manager) recoveryAllocationLimit(ns walletdb.ReadBucket, scope KeyScope
 	if !s.Ready {
 		return 0, ErrRecoveryInProgress
 	}
+	if m.recoveryVersion == 1 {
+		return recovery.MaxBranchIndex, nil
+	}
 	var total uint64
 	for _, b := range s.Branches {
-		total += recoveryBranchCharge(b)
+		total += recoveryBranchChargeFor(b, m.recoveryPolicy())
 	}
 	for _, b := range s.Branches {
 		if b.Scope == scope && b.Branch == branch {
 			// Preserve enough quota that every issued highwater can be
 			// restored with the same fixed lookahead policy.
-			return uint32(recoveryBranchCharge(b) + (uint64(RecoveryAttemptLimit) - total) - uint64(RecoveryLookahead)), nil
+			return uint32(recoveryBranchChargeFor(b, m.recoveryPolicy()) + (uint64(RecoveryAttemptLimit) - total) - uint64(RecoveryLookahead)), nil
 		}
 	}
 	return 0, ErrRecoveryState
@@ -559,7 +591,7 @@ func (m *Manager) recordRecoveryAllocation(ns walletdb.ReadWriteBucket, scope Ke
 			b.DerivedNext = next
 		}
 		s.AddressCount += newRows
-		if !validRecoveryProgress(s) {
+		if !validRecoveryProgressFor(s, m.recoveryPolicy()) {
 			return ErrRecoveryQuota
 		}
 		return putRecoveryProgress(ns, s)

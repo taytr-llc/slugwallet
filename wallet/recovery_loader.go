@@ -87,6 +87,9 @@ func (l *Loader) BeginCandidateRecovery(ctx context.Context, pubPass, privPass [
 	copy(private[36:], digest[:])
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if l.phaseACleanup != nil {
+		return nil, l.phaseACleanup
+	}
 	if l.wallet != nil || l.recoverySession {
 		return nil, ErrLoaded
 	}
@@ -160,6 +163,9 @@ func (l *Loader) OpenCandidateRecovery(ctx context.Context, pubPass []byte) (*Re
 	defer clear(pubPass)
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if l.phaseACleanup != nil {
+		return nil, l.phaseACleanup
+	}
 	if l.wallet != nil || l.recoverySession {
 		return nil, ErrLoaded
 	}

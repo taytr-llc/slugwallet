@@ -15,7 +15,10 @@ import (
 // uint64 request ID before any registration or rescan is dispatched. The
 // authenticated node's unlimited WebSocket read setting is not our budget.
 func validateRecoveryWatch(batch *rescanBatch) error {
-	if len(batch.addrs) > int(waddrmgr.RecoveryAttemptLimit) || len(batch.outpoints) > MaxRecoveryOwnedOutputs {
+	return validateRecoveryWatchLimit(batch, waddrmgr.RecoveryAttemptLimit)
+}
+func validateRecoveryWatchLimit(batch *rescanBatch, limit uint32) error {
+	if len(batch.addrs) > int(limit) || len(batch.outpoints) > MaxRecoveryOwnedOutputs {
 		return ErrRecoveryCapacity
 	}
 	addresses := make([]string, 0, len(batch.addrs))
@@ -38,8 +41,14 @@ func validateRecoveryWatch(batch *rescanBatch) error {
 }
 
 func (w *Wallet) rescanCandidate(chainClient chain.Interface, batch *rescanBatch) error {
+	if w.Manager == nil || !w.Manager.ResumableRecovery() {
+		return ErrRecoveryProfile
+	}
+	return w.rescanRecoveryLimit(chainClient, batch, w.Manager.RecoveryInventoryLimit())
+}
+func (w *Wallet) rescanRecoveryLimit(chainClient chain.Interface, batch *rescanBatch, limit uint32) error {
 	w.SetChainSynced(false)
-	if err := validateRecoveryWatch(batch); err != nil {
+	if err := validateRecoveryWatchLimit(batch, limit); err != nil {
 		return err
 	}
 	for start := 0; start < len(batch.addrs); start += int(waddrmgr.RecoveryChunkSize) {

@@ -136,3 +136,20 @@ the paired LAUNCH_READINESS.md tracks that gate. Engineering work continues.
   notification, owned-output and serialized request limits. Capacity failures
   keep schema 11 unsynced and unavailable for spending; do not omit a watch.
   See the paired chain `RESUMABLE_RECOVERY.md` for measured limitations.
+
+## Bounded Phase A scratch recovery (set 69)
+
+- Explicit schema12 is a disposable verifier for the unchanged version1 Phase A
+  fixture file. It preserves coin0/mixed49, clipped20 lookahead,4096 per branch,
+ 32768 total raw attempts,128-child or one-block steps. No schema9 migration or
+  schema11/profile2 reinterpretation; the approved production profile stays gated.
+- Resume requires the original imported manifest from the selected file. Current
+  live issued cursors are not a replacement import identity. Ready schema12
+  retains version1 export/gym identity and cannot use CandidateWithdrawals.
+- First schema12 database-close failure is sticky and retains the cleanup owner
+  and Loader reservation. Never retry-to-success, remove uncertain scratch, or
+  claim a stopped failed wallet is available. Preserve old schema11 cleanup APIs.
+- This restores wallet history into scratch, not the installed app's durable
+  withdrawal journal/reservations or hosted recovery authority. Library resume
+  does not imply UI task resume after app restart. See CHANGESET_69_NOTES.md;
+  qualification is in progress until its final evidence section is completed.

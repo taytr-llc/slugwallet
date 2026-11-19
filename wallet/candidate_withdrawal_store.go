@@ -16,6 +16,7 @@ import (
 	"github.com/taytr-llc/slug/gymaccount"
 	"github.com/taytr-llc/slug/wire/v2"
 	"github.com/taytr-llc/slugwallet/recovery"
+	"github.com/taytr-llc/slugwallet/waddrmgr"
 	"github.com/taytr-llc/slugwallet/walletdb"
 )
 
@@ -158,6 +159,10 @@ func (w *Wallet) openCandidateWithdrawals(ctx context.Context, bindingID string,
 func withdrawalProfile(tx walletdb.ReadTx, w *Wallet) (withdrawalIdentity, error) {
 	var empty withdrawalIdentity
 	if wire.TestPoW || w == nil || w.Manager == nil || w.Manager.WatchOnly() {
+		return empty, ErrWithdrawalProfile
+	}
+	version, e := new(waddrmgr.MigrationManager).CurrentVersion(tx.ReadBucket(waddrmgrNamespaceKey))
+	if e != nil || version != 9 {
 		return empty, ErrWithdrawalProfile
 	}
 	m, e := readRecoveryPublic(tx.ReadBucket(waddrmgrNamespaceKey), w.Manager, w.chainParams)

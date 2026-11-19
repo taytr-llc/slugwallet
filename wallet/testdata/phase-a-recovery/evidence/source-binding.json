@@ -1,0 +1,94 @@
+{
+  "CASE_PLAN.md": {
+    "sha256": "a0256096554625894a9167f35046484734ec99cf4102de67661f2d58b92b4069",
+    "bytes": 6616
+  },
+  "address_model.py": {
+    "sha256": "d4343afb1603211d52c62cbec5e373e129807858631f1a2e83f4b43b97c2557b",
+    "bytes": 5448
+  },
+  "contract-review.json": {
+    "sha256": "40b3635edd6ad5e6ba06ff99cf68f466ba1ccc648bbcec330a9ecb9fed9c9958",
+    "bytes": 735
+  },
+  "frozen/PHASE_A_BACKUP_RECOVERY.md": {
+    "sha256": "ea502f20fa91a313e62ba9dc1f577fd1e49456747fa1283726371d5b6583237e",
+    "bytes": 21287
+  },
+  "generate.py": {
+    "sha256": "9e440191446bc57a4376530ccffd0da7d407e66c8a76086d8acb4f7316d99d58",
+    "bytes": 2703
+  },
+  "input-lock-v1.json": {
+    "sha256": "0b8007ed401a1be08e7495a636149cf7b468da09a6030a59b1a089cd4f7673f9",
+    "bytes": 5796
+  },
+  "inputs/inherited/recovery/README.md": {
+    "sha256": "f3577b29c090a8486ed3b56b86a136e697fa421456c8fc6a62ffa88f634a84d2",
+    "bytes": 3537
+  },
+  "inputs/inherited/recovery/oracle/reference.py": {
+    "sha256": "60e1527ce408213fd89bc2cf6b4d2d8ecaedbd3c811ef4d40b6f888bb608202f",
+    "bytes": 15839
+  },
+  "inputs/inherited/recovery/oracle/reference_vectors.json": {
+    "sha256": "28612cb0e83d6997fdd78333f57d827eb6162981433581490bcd8ad8ae3070d9",
+    "bytes": 10107
+  },
+  "inputs/inherited/recovery/oracle/sources.json": {
+    "sha256": "d770189379de4fb2368909eeca246071f79bbf887afa06387c84c90551dd89b9",
+    "bytes": 2896
+  },
+  "inputs/inherited/recovery/oracle/sources/bip-0032.mediawiki": {
+    "sha256": "e5e00a8289db2f681052cf24a745320afc225e66b25d1e489a7c884d2fc7f11f",
+    "bytes": 28032
+  },
+  "inputs/inherited/recovery/oracle/sources/bip-0039.mediawiki": {
+    "sha256": "afcbcbed36fe9eb734bd607398a8c124683ded2a75c3830e1b16c47b043a9134",
+    "bytes": 6842
+  },
+  "inputs/inherited/recovery/oracle/sources/bip-0084.mediawiki": {
+    "sha256": "1900feec6cafca65b8c09906ca0658d2d742b4c9b44cb15678996985b6bfe627",
+    "bytes": 4648
+  },
+  "inputs/inherited/recovery/oracle/sources/bip-0086.mediawiki": {
+    "sha256": "d8d01dee331da07c2562615bc1f064c1868ec3fce61184973da76d1196c7f5b0",
+    "bytes": 5896
+  },
+  "inputs/inherited/recovery/oracle/sources/english.txt": {
+    "sha256": "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda",
+    "bytes": 13116
+  },
+  "inputs/inherited/recovery/oracle/sources/mnemonic-LICENSE": {
+    "sha256": "d5e3c7c62a84e80073201e2f6e5130e9e6804fa05f8ac4f8b26a13c7d3969697",
+    "bytes": 1084
+  },
+  "inputs/inherited/recovery/oracle/sources/mnemonic-vectors.json": {
+    "sha256": "fa3b937b7cff9c9b8ecd3aa011faeb8d6dd67993174b72326e83f4de8fdb30f8",
+    "bytes": 152400
+  },
+  "inputs/inherited/recovery/recovery_v1.json": {
+    "sha256": "d5141f4a8ee4378d77d483b09f6ecd809f8b328f82e79a69ff83164e73bc799a",
+    "bytes": 16064
+  },
+  "inputs/inherited/recovery/reference_recovery.py": {
+    "sha256": "7fa363566bb3ae003f646a89accc029045b083b643f4fb921121ed00eeb8d6c8",
+    "bytes": 4326
+  },
+  "inputs/proposal/recovery-contract-proposal.initial.md": {
+    "sha256": "ad75950890bb4f5ce680e24c8eb788ec87d70e33c927657bbe46ee28873b6114",
+    "bytes": 17472
+  },
+  "inputs/public/fixture-recovery-v1.json": {
+    "sha256": "d5141f4a8ee4378d77d483b09f6ecd809f8b328f82e79a69ff83164e73bc799a",
+    "bytes": 16064
+  },
+  "producer-lock.json": {
+    "sha256": "0a0762cf3d51a3e35505494a6afa995e2292fce742c4a92cb1478aa0712abc29",
+    "bytes": 1145
+  },
+  "progress_model.py": {
+    "sha256": "45c4717403a1ab27e346c97a7a0b4b6a3ecbd0eacb2546d91c886ecf4481ba6f",
+    "bytes": 6148
+  }
+}

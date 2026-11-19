@@ -66,7 +66,7 @@ func fetchRecoveryState(ns walletdb.ReadBucket) (DerivationMode, bool, error) {
 	}
 	mode, version := b.Get(derivationModeName), b.Get(recoveryVersionName)
 	pub, priv := b.Get(recoveryPublicName), b.Get(recoveryPrivateName)
-	if managerVersion == latestMgrVersion && mode == nil && version == nil && pub == nil && priv == nil && b.Get(candidateFixtureName) == nil && b.Get(recoveryProgressName) == nil && b.NestedReadBucket(recoveryInvalidName) == nil {
+	if managerVersion == latestMgrVersion && mode == nil && version == nil && pub == nil && priv == nil && b.Get(candidateFixtureName) == nil && b.Get(recoveryProgressName) == nil && b.NestedReadBucket(recoveryInvalidName) == nil && b.Get(phaseAProgressName) == nil && b.NestedReadBucket(phaseAInvalidName) == nil {
 		return DerivationLegacy, false, nil
 	}
 	wantVersion := uint32(1)
@@ -81,22 +81,33 @@ func fetchRecoveryState(ns walletdb.ReadBucket) (DerivationMode, bool, error) {
 	} else if b.Get(candidateFixtureName) != nil {
 		return 0, false, ErrRecoveryState
 	}
-	if (managerVersion != RecoveryManagerVersion && managerVersion != CandidateManagerVersion && managerVersion != ResumableManagerVersion) || len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) ||
+	if (managerVersion != RecoveryManagerVersion && managerVersion != CandidateManagerVersion && managerVersion != ResumableManagerVersion && managerVersion != PhaseAManagerVersion) || len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) ||
 		len(version) != 4 || binary.LittleEndian.Uint32(version) != wantVersion ||
 		len(pub) <= 40 || len(pub) > maxRecoveryData+40 || len(priv) <= 40 || len(priv) > maxRecoveryData+40 {
 		return 0, false, ErrRecoveryState
 	}
-	if managerVersion == ResumableManagerVersion {
+	if managerVersion == ResumableManagerVersion || managerVersion == PhaseAManagerVersion {
 		if err := validateRecoveryKeyFields(ns); err != nil {
 			return 0, false, err
 		}
 		if _, err := fetchRecoveryProgress(ns); err != nil {
 			return 0, false, err
 		}
-		if b.NestedReadBucket(recoveryInvalidName) == nil {
+		policy, err := recoveryPolicyFor(ns)
+		if err != nil {
+			return 0, false, err
+		}
+		if b.NestedReadBucket(policy.invalid) == nil {
 			return 0, false, ErrRecoveryState
 		}
-	} else if b.Get(recoveryProgressName) != nil || b.NestedReadBucket(recoveryInvalidName) != nil {
+	} else if b.Get(recoveryProgressName) != nil || b.NestedReadBucket(recoveryInvalidName) != nil || b.Get(phaseAProgressName) != nil || b.NestedReadBucket(phaseAInvalidName) != nil {
+		return 0, false, ErrRecoveryState
+	}
+	if managerVersion == PhaseAManagerVersion {
+		if recoveryNamePresent(b, recoveryProgressName) || recoveryNamePresent(b, recoveryInvalidName) {
+			return 0, false, ErrRecoveryState
+		}
+	} else if recoveryNamePresent(b, phaseAProgressName) || recoveryNamePresent(b, phaseAInvalidName) {
 		return 0, false, ErrRecoveryState
 	}
 	return DerivationStandard, true, nil
@@ -237,20 +248,30 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 	candidate := false
 	var resumable *RecoveryState
 	branchLimit := maxRecoveryBranchIndex
+	attemptLimit := RecoveryAttemptLimit
 	var totalAddressCount uint32
-	if version, err := fetchManagerVersion(ns); err != nil {
+	version, err := fetchManagerVersion(ns)
+	if err != nil {
 		return nil, ErrRecoveryState
-	} else if version == CandidateManagerVersion || version == ResumableManagerVersion {
-		if version == ResumableManagerVersion {
-			state, err := fetchRecoveryProgress(ns)
-			if err != nil {
-				return nil, err
-			}
-			resumable = &state
-			branchLimit = RecoveryAttemptLimit
-		}
+	}
+	if version == CandidateManagerVersion || version == ResumableManagerVersion {
 		expectedScopes = candidateDefaultScopes()
 		candidate = true
+	}
+	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
+		state, e := fetchRecoveryProgress(ns)
+		if e != nil {
+			return nil, e
+		}
+		resumable = &state
+		policy, e := recoveryPolicyFor(ns)
+		if e != nil {
+			return nil, e
+		}
+		attemptLimit = policy.attemptLimit
+		if version == ResumableManagerVersion {
+			branchLimit = RecoveryAttemptLimit
+		}
 	}
 	var accounts []RecoveryAccount
 	scopeBucket := ns.NestedReadBucket(scopeBucketName)
@@ -381,7 +402,7 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 			return err
 		}
 		totalAddressCount += addressCount
-		if resumable != nil && totalAddressCount > RecoveryAttemptLimit {
+		if resumable != nil && totalAddressCount > attemptLimit {
 			return ErrRecoveryState
 		}
 		accounts = append(accounts, state)
@@ -402,4 +423,8 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 		return nil, ErrRecoveryInventory
 	}
 	return accounts, nil
+}
+
+func recoveryNamePresent(b walletdb.ReadBucket, name []byte) bool {
+	return b.Get(name) != nil || b.NestedReadBucket(name) != nil
 }

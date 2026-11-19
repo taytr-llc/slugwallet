@@ -1559,7 +1559,7 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	if version < latestMgrVersion {
 		str := "database upgrade required"
 		return nil, managerError(ErrUpgrade, str, nil)
-	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion && version != ResumableManagerVersion {
+	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion && version != ResumableManagerVersion && version != PhaseAManagerVersion {
 		str := "database version is greater than latest understood version"
 		return nil, managerError(ErrUpgrade, str, nil)
 	}
@@ -1618,6 +1618,17 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	// Derive the master public key using the serialized params and provided
 	// passphrase.
 	var masterKeyPub snacl.SecretKey
+	var phaseACrypto *cryptoKey
+	phaseAOpened := false
+	defer func() {
+		if version == PhaseAManagerVersion && !phaseAOpened {
+			masterKeyPriv.Zero()
+			masterKeyPub.Zero()
+			if phaseACrypto != nil {
+				phaseACrypto.Zero()
+			}
+		}
+	}()
 	if err := masterKeyPub.Unmarshal(masterKeyPubParams); err != nil {
 		str := "failed to unmarshal master public key"
 		return nil, managerError(ErrCrypto, str, err)
@@ -1629,6 +1640,7 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 
 	// Use the master public key to decrypt the crypto public key.
 	cryptoKeyPub := &cryptoKey{snacl.CryptoKey{}}
+	phaseACrypto = cryptoKeyPub
 	cryptoKeyPubCT, err := masterKeyPub.Decrypt(cryptoKeyPubEnc)
 	if err != nil {
 		str := "failed to decrypt crypto public key"
@@ -1637,25 +1649,29 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	cryptoKeyPub.CopyBytes(cryptoKeyPubCT)
 	zero.Bytes(cryptoKeyPubCT)
 	defaults := legacyDefaultScopes()
-	if version == CandidateManagerVersion || version == ResumableManagerVersion {
-		if version == ResumableManagerVersion {
-			state, err := fetchRecoveryProgress(ns)
-			if err != nil {
-				return nil, err
-			}
-			if !state.Ready && !candidateCreation {
-				return nil, ErrRecoveryInProgress
-			}
+	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
+		state, e := fetchRecoveryProgress(ns)
+		if e != nil {
+			return nil, e
 		}
+		if !state.Ready && !candidateCreation {
+			return nil, ErrRecoveryInProgress
+		}
+	}
+	if version == CandidateManagerVersion || version == ResumableManagerVersion {
 		if err := validateStoredCandidate(ns, cryptoKeyPub, chainParams, candidateCreation && version == CandidateManagerVersion); err != nil {
 			return nil, err
 		}
-		if version == ResumableManagerVersion {
-			if err := validateResumableInvalidChildren(ns, cryptoKeyPub); err != nil {
-				return nil, err
-			}
-		}
 		defaults = candidateDefaultScopes()
+	} else if version == PhaseAManagerVersion {
+		if err := validateStoredPhaseA(ns, cryptoKeyPub, chainParams); err != nil {
+			return nil, err
+		}
+	}
+	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
+		if err := validateResumableInvalidChildren(ns, cryptoKeyPub); err != nil {
+			return nil, err
+		}
 	}
 
 	// Create the sync state struct.
@@ -1704,7 +1720,7 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 
 	mgr.derivationMode, mgr.recoveryEnabled = mode, hasRecovery
 	mgr.defaultScopes = defaults
-	if version == ResumableManagerVersion {
+	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
 		state, _ := fetchRecoveryProgress(ns)
 		mgr.resumableRecovery = true
 		mgr.recoveryPending.Store(!state.Ready)
@@ -1719,6 +1735,7 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 		scopedManager.rootManager = mgr
 	}
 
+	phaseAOpened = true
 	return mgr, nil
 }
 

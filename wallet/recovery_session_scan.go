@@ -17,7 +17,6 @@ import (
 	"github.com/taytr-llc/slug/chainhash/v2"
 	"github.com/taytr-llc/slug/txscript/v2"
 	"github.com/taytr-llc/slug/wire/v2"
-	"github.com/taytr-llc/slugwallet/productionprofile"
 	"github.com/taytr-llc/slugwallet/waddrmgr"
 	"github.com/taytr-llc/slugwallet/walletdb"
 	"github.com/taytr-llc/slugwallet/wtxmgr"
@@ -45,7 +44,7 @@ func (s *RecoverySession) Step(ctx context.Context, source RecoveryBlockSource) 
 	var m waddrmgr.RecoveryState
 	err = walletdb.View(s.db, func(tx walletdb.ReadTx) error {
 		var e error
-		d, e = readRecoveryScan(tx.ReadBucket(recoveryScanBucket))
+		d, e = readRecoveryScan(tx.ReadBucket(s.scanBucket))
 		if e != nil {
 			return e
 		}
@@ -72,7 +71,7 @@ func (s *RecoverySession) Step(ctx context.Context, source RecoveryBlockSource) 
 			if e != nil {
 				return e
 			}
-			b := tx.ReadWriteBucket(recoveryScanBucket)
+			b := tx.ReadWriteBucket(s.scanBucket)
 			scripts := b.NestedReadWriteBucket(recoveryScripts)
 			for _, row := range rows {
 				h := sha256.Sum256(row.PkScript)
@@ -102,7 +101,7 @@ func (s *RecoverySession) Step(ctx context.Context, source RecoveryBlockSource) 
 				// Newly indexed lookahead may have been paid before the address that
 				// caused expansion. Replay all bounded history with the enlarged index.
 				if d.Height >= 0 {
-					if e = resetPendingRecovery(tx, &d); e != nil {
+					if e = resetPendingRecoveryBucket(tx, &d, s.scanBucket); e != nil {
 						return e
 					}
 					replayed = true
@@ -157,7 +156,7 @@ func (s *RecoverySession) Step(ctx context.Context, source RecoveryBlockSource) 
 			if e := op.Err(); e != nil {
 				return e
 			}
-			return resetPendingRecovery(tx, &d)
+			return resetPendingRecoveryBucket(tx, &d, s.scanBucket)
 		})
 		return result(err)
 	}
@@ -199,7 +198,7 @@ func (s *RecoverySession) Step(ctx context.Context, source RecoveryBlockSource) 
 				return e
 			}
 			d.Phase = "complete"
-			return putRecoveryScan(tx.ReadWriteBucket(recoveryScanBucket), d)
+			return putRecoveryScan(tx.ReadWriteBucket(s.scanBucket), d)
 		})
 		return result(err)
 	}
@@ -274,7 +273,7 @@ func (s *RecoverySession) Step(ctx context.Context, source RecoveryBlockSource) 
 		if expanded {
 			d.Phase = "deriving"
 		}
-		if e = putRecoveryScan(tx.ReadWriteBucket(recoveryScanBucket), d); e != nil {
+		if e = putRecoveryScan(tx.ReadWriteBucket(s.scanBucket), d); e != nil {
 			return e
 		}
 		return op.Err()
@@ -350,7 +349,7 @@ func ownRecoveryBlock(block *wire.MsgBlock) (*wire.MsgBlock, error) {
 }
 
 func (s *RecoverySession) scanRecoveryTransactions(ctx context.Context, tx walletdb.ReadWriteTx, block *wire.MsgBlock, hash chainhash.Hash, height int32, d *recoveryScanState) (bool, error) {
-	b := tx.ReadWriteBucket(recoveryScanBucket)
+	b := tx.ReadWriteBucket(s.scanBucket)
 	scripts := b.NestedReadWriteBucket(recoveryScripts)
 	outputs := b.NestedReadWriteBucket(recoveryOutputs)
 	transactions := b.NestedReadWriteBucket(recoveryTransactions)
@@ -375,7 +374,7 @@ func (s *RecoverySession) scanRecoveryTransactions(ctx context.Context, tx walle
 			if raw == nil {
 				continue
 			}
-			row, err := decodeRecoveryScript(raw)
+			row, err := decodeRecoveryScriptLimit(raw, s.manager.RecoveryIndexLimit())
 			if err != nil {
 				return false, err
 			}
@@ -430,7 +429,11 @@ func (s *RecoverySession) scanRecoveryTransactions(ctx context.Context, tx walle
 			if err = s.manager.MarkUsed(ns, addresses[0]); err != nil {
 				return false, err
 			}
-			grew, err := s.manager.ObserveRecoveryAddress(ns, waddrmgr.KeyScope{Purpose: row.Purpose, Coin: productionprofile.CandidateCoinType}, row.Branch, row.Index)
+			scope, err := s.manager.PaymentScope(row.Purpose)
+			if err != nil {
+				return false, err
+			}
+			grew, err := s.manager.ObserveRecoveryAddress(ns, scope, row.Branch, row.Index)
 			if err != nil {
 				return false, err
 			}

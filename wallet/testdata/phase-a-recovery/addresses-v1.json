@@ -1,0 +1,1423 @@
+{
+  "version": 1,
+  "scope": "Frozen Phase-A v1 coin0 public-fixture sparse address derivation only",
+  "input_lock_sha256": "0b8007ed401a1be08e7495a636149cf7b468da09a6030a59b1a089cd4f7673f9",
+  "original_v1_corpus_reproduced": true,
+  "standard_checks": [
+    "pinned old BIP39 vectors",
+    "pinned old BIP32 vectors",
+    "pinned old BIP86 vectors"
+  ],
+  "raw_index_limit": 4095,
+  "indices": [
+    0,
+    1,
+    19,
+    20,
+    127,
+    128,
+    4076,
+    4077,
+    4094,
+    4095
+  ],
+  "address_count": 160,
+  "cases": [
+    {
+      "name": "zero256",
+      "manifest": {
+        "version": 1,
+        "profile": "slug-phase-a-fixture-bip39-v1",
+        "network": 1397511495,
+        "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+        "derivation": "bip32-standard-v1",
+        "scan_from_height": 0,
+        "root_public_key": "JgduaQiYjRcnjcD9t1MfTP1qo8eWaAWPQtS9nChXwtAeyTsoEGVZ8SjVqa5qxxvvKqX8tqC77wMSjaMHXNY8JSYEASdzX6PT31ktXqKPJvkhyy31",
+        "gym_path": "m/1397511495'/1'/0'",
+        "gym_public_key": "03ec7488667fd544b4a1de8fb0ae03730c9a2dc346c652cbaa59a077dbeddca519",
+        "gym_id": "a227587d837507dbcb5f9d781967339d816070fb7bd574931c690ba6937b88e5",
+        "accounts": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "account": 0,
+            "external_type": "p2pkh",
+            "internal_type": "p2pkh",
+            "next_external": 0,
+            "next_internal": 0
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "account": 0,
+            "external_type": "p2sh-p2wpkh",
+            "internal_type": "p2wpkh",
+            "next_external": 0,
+            "next_internal": 0
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "account": 0,
+            "external_type": "p2wpkh",
+            "internal_type": "p2wpkh",
+            "next_external": 26,
+            "next_internal": 27
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "account": 0,
+            "external_type": "p2tr",
+            "internal_type": "p2tr",
+            "next_external": 0,
+            "next_internal": 0
+          }
+        ]
+      },
+      "branches": [
+        {
+          "purpose": 44,
+          "coin": 0,
+          "account": 0,
+          "branch": 0,
+          "script_type": "p2pkh",
+          "branch_public_key": "JgduaQrxuWqwSQ9v9vqRqXTEwE7WZjDV26CkMHVPVdFNzuEUjNr74Q4rgAL8vhVrHoJjM43fgmxxYrPPQmbsR3aMaubaN9MMXMU1Nv4tebKNsYHG",
+          "addresses": [
+            {
+              "path": "m/44'/0'/0'/0/0",
+              "index": 0,
+              "public_key": "0342d943b8dba93a4ce29b858479c67f1e4f1110eecbe1f83dc01b455eb8b123b3",
+              "address": "aiEhKC3LRX8PPG5haqRFUcFvj3pXpBts2P",
+              "script_pub_key": "76a914c774f7875f704f56898371b6424b6e6f6328d7fa88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/1",
+              "index": 1,
+              "public_key": "03208ff7044ba71c9604c42b9083344d6347a53a23f537f8880d052e681038d7da",
+              "address": "admN5bKVdqAYUgFmQp16j3bs3auvchcMgE",
+              "script_pub_key": "76a91496692d3b69f11c9d44ed56d0be7c8dc7c4c4eda988ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/19",
+              "index": 19,
+              "public_key": "03a7b31cd43ca605477cf4f3e4f414e43fc2a11ba1de378c166afbe3e237150ad2",
+              "address": "aWgxKLsmHhpVHtgi8DVgtF3DkeFeegDBeV",
+              "script_pub_key": "76a91448cacbcb65a995c5fdf5868913a55c314bacd41988ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/20",
+              "index": 20,
+              "public_key": "031ed63f60f394edcac5138520d8b5514f233bbdbf6f97343cc314b38e26d765a2",
+              "address": "aimWBLJo94CNJXhXzVcJQazRtFHzockYPh",
+              "script_pub_key": "76a914cd4890f9019b1408e00d3da30b2b38b29c66fca388ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/127",
+              "index": 127,
+              "public_key": "03df91e6272f2c6e02cf6922626a570e89b07ccee22f5583f8ff527873a9da5cbd",
+              "address": "aStCRZwGc2xD7j1WAa8rpvC8NXDsqEMn5y",
+              "script_pub_key": "76a9141f0aa50c99e82aa51431b308f9b4ae131c74662c88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/128",
+              "index": 128,
+              "public_key": "0305818ea9afbe018780ffdfbc2d72f0ff36043f6cb8a1e0c4132fe273bce1af83",
+              "address": "aSuo4qRfbwWW9n7toYkwxBmLxAbzSgkSdH",
+              "script_pub_key": "76a9141f57fa93cbce49462474b74f8cd283f177a7980e88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/4076",
+              "index": 4076,
+              "public_key": "02b4acb65407549ad83f56ca8c2a3c69aa253b0d7faab32b26ca5705c815791f80",
+              "address": "aZaEk61hG3tEhR2sNunwAtsj9VZPUknopv",
+              "script_pub_key": "76a914686df9541de87aa826e39a1bd8597ab7427bcfad88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/4077",
+              "index": 4077,
+              "public_key": "03c0c207cc8aa169a22bde5b046df5f510991dbf5067f2c62721deb9350e8a0806",
+              "address": "ab745whgxL3oGvEJYe262UytAH8hmVxCov",
+              "script_pub_key": "76a914793a1915aa09fefaf5ad78d9f5185f8e97b0a28988ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/4094",
+              "index": 4094,
+              "public_key": "02cb202870eba2e1f7fcb95c7fd283ef4393683576b570dfa2c673384b5e0050a0",
+              "address": "aQEHCG65RZto7uvFhiptrD8vHfPfwLpmJB",
+              "script_pub_key": "76a91401ee91a154734a6828d89d33f3fba8cd8faef13388ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/4095",
+              "index": 4095,
+              "public_key": "027180b12fd2b3af92c123652764b58f9f7c2b79376970b5bbecacf27a1e1a366f",
+              "address": "af8vQpbVTn78SCXiQRh5Jmt65turYqhsuF",
+              "script_pub_key": "76a914a57506d412b7e87c01ae0ce61e00f692eb7c429288ac"
+            }
+          ]
+        },
+        {
+          "purpose": 44,
+          "coin": 0,
+          "account": 0,
+          "branch": 1,
+          "script_type": "p2pkh",
+          "branch_public_key": "JgduaQrxuWqwSQ9vA1AkWHz8HNDPodWLaTvtw23mP7SxLryHcgax8WJkAGcQY6f7kpoba6nEX4dJZ1FEAP4qSMLoTX6bGu9vtxXCrVYqGoUjgmpe",
+          "addresses": [
+            {
+              "path": "m/44'/0'/0'/1/0",
+              "index": 0,
+              "public_key": "024f7f02f1338817bc5b448e83f56c6f67419945743cc7ec69cc1c7f2b5bcd9792",
+              "address": "ahs7NRM7Go5wv5W57ZLNC98sZu1ob4rMxm",
+              "script_pub_key": "76a914c35fe57bca7e84441fab38bc3ef8eadab1a2d72488ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/1",
+              "index": 1,
+              "public_key": "02a31f3dd56eb0cb37c70cc9ffd46754eefc29dea96a2ccbd4676554e15aa389e0",
+              "address": "aaW5f52EEWDCD6FQHeKQSM1pVmXG6eT5uF",
+              "script_pub_key": "76a914729cd9d11b97a2403af841d9a06db9291d1be00588ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/19",
+              "index": 19,
+              "public_key": "027537855d95905a67e0553d7efb6f728399794bb9b295c86526f9f28acd38bcc0",
+              "address": "ajGFDgUUkpfgGhb447dXWQFtnbtgVQRJta",
+              "script_pub_key": "76a914d2b824409f7ce98a2b097a5f315f28bdc7f1672e88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/20",
+              "index": 20,
+              "public_key": "03ae2b449faa19273b4207b618613685c3d85c4eb5af798b7c9ec1529d40a9ff64",
+              "address": "ahuLyTajT99aXQDffW6vhBJG2TJNpoX7cS",
+              "script_pub_key": "76a914c3cc15a0d025704b16f04e3fa2a40f8f963df62488ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/127",
+              "index": 127,
+              "public_key": "020fe855f26c67596a8349b8810957a51e78aafb527038506433d6d0ac9aa1b53b",
+              "address": "aTZKbi1fWpqtqfkkoHD8RCQMSCFmwqnZVW",
+              "script_pub_key": "76a9142670db4168522fac3d786c237a08da016cbe6e7788ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/128",
+              "index": 128,
+              "public_key": "02794f5bc9c9b20333bc5d90c7e111fc783a0daed056ef8b2423cd8b58d9b9f6e9",
+              "address": "aoLTr9eFiAcUMidVxoU4XSMSxn82gNbMPG",
+              "script_pub_key": "76a914ff64d9be0d9fe6d522f934afd9ec1d0e5c6e694f88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/4076",
+              "index": 4076,
+              "public_key": "0219ea3982bcf53587f3b82b1df3b1118fca99cfe37e2ad70d291cc4fce7c5316f",
+              "address": "aWRATjLibrqLNwggU6vdnv3yrobNAHa43p",
+              "script_pub_key": "76a91445ce474b4d91d0d02d1e69571b693d229f96ef1488ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/4077",
+              "index": 4077,
+              "public_key": "023bc227c5331dfceb692afa594dcd0774a854860faf86ffc27abc9201f75b2eef",
+              "address": "aeTWtBFXjLR8jhfypffZhCSQZ3DGLXFm5K",
+              "script_pub_key": "76a9149e0129e7bfec72adbcf42356e7d2a9d249af128588ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/4094",
+              "index": 4094,
+              "public_key": "02d6e370672fa5155af38f73dade005a1a12dc06d3d311d5c037e061da92dc86b8",
+              "address": "aSDDguNy1yebautqWvDGLDy536c5khh5KB",
+              "script_pub_key": "76a91417ab7a495f54de8cc14548e5a6e5dd0d7af2edc688ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/4095",
+              "index": 4095,
+              "public_key": "02c1052da69c2e6f24fdd08352899c46294c4676596f7bcd47228202a5b75269a3",
+              "address": "aWyG7fwmSmdfTeTzu2ubbxbMQHAuoFHpYc",
+              "script_pub_key": "76a9144be04f22fcb6eab762ad0ba78d364a0e226b51cc88ac"
+            }
+          ]
+        },
+        {
+          "purpose": 49,
+          "coin": 0,
+          "account": 0,
+          "branch": 0,
+          "script_type": "p2sh-p2wpkh",
+          "branch_public_key": "JgduaQrQQXLerS6ZsTBEuJHxyQ5jj4iuGGyGRJsD5UcT5QHABLhTQkSCczxoKhwN3wPBdEBem9tLXQvsCQ73iZ5qbSrpkdBw27H74rKeGbRV5Tkk",
+          "addresses": [
+            {
+              "path": "m/49'/0'/0'/0/0",
+              "index": 0,
+              "public_key": "02f99859e117f22b7d4320cbc355999666b5fd96968234038ebf87e57ff247d44c",
+              "address": "VmTdheAgdW1wTbaasEZf9pPgp2uVkWbAFs",
+              "script_pub_key": "a9147dbb4230790bb41a63529d86d4c371e88c7d59f887"
+            },
+            {
+              "path": "m/49'/0'/0'/0/1",
+              "index": 1,
+              "public_key": "0206569430e78ecb3be82c56e8b8efca49015d203ad5cc9c0833e71f58c82420b8",
+              "address": "VehCa3dytnL3uG6gMfu2QZYFYQu6w7whgX",
+              "script_pub_key": "a9143383392802f786dc829e2bb369d9da5328557c7287"
+            },
+            {
+              "path": "m/49'/0'/0'/0/19",
+              "index": 19,
+              "public_key": "0222e6e1dcce5118cbcf3be7156b0299391cff4dce47e9a16394f6dea16d764532",
+              "address": "VvT3fXhzDmXczWrVupxq4TrhqY4d1BM2E9",
+              "script_pub_key": "a914e057fa7b8a8cc5886995f292a1177dd0b5c81b7087"
+            },
+            {
+              "path": "m/49'/0'/0'/0/20",
+              "index": 20,
+              "public_key": "02c79e8ccdb9f1cf6550938ad74ac86814f0ff542db627e80c96fc2c5c4ea9009e",
+              "address": "Vi4KHdnQ6RLkYEhUXdmAf5uARXDxWNEoNx",
+              "script_pub_key": "a9145869f16376092b0dd5ff3572e0b070b0e01d43ef87"
+            },
+            {
+              "path": "m/49'/0'/0'/0/127",
+              "index": 127,
+              "public_key": "03f5c9402bcd9fb2d13a906e8fbd7a51f5d58dd4148c05b6e7f7fa3128feb462b2",
+              "address": "VsWyMZySjkoaHsUK4XMQA9KnKqmyPgrTVR",
+              "script_pub_key": "a914c02daadb755dfb4aed4396173b8076b3455d7efd87"
+            },
+            {
+              "path": "m/49'/0'/0'/0/128",
+              "index": 128,
+              "public_key": "03159189cd72e26a236ff185f86ce924c229c7ec7b8f24f6542c18cca92fdb7699",
+              "address": "VjjKEePMf48NYuM7wi357LqKdojJUUQJYK",
+              "script_pub_key": "a9146ac23f895f6a68ecb053be735f69f5152335ba7e87"
+            },
+            {
+              "path": "m/49'/0'/0'/0/4076",
+              "index": 4076,
+              "public_key": "03a8e26bde5ee2124c90f7679e171b59b43a6ec6e9851442a31ca6e2d0aae35377",
+              "address": "VuaxEv7gZvUMJKVr7gnUUzxPMG6xGPKWQB",
+              "script_pub_key": "a914d6dea6fe6795782ff071e9e2f8e8421c71eb97fd87"
+            },
+            {
+              "path": "m/49'/0'/0'/0/4077",
+              "index": 4077,
+              "public_key": "024c71c04847116c9885836260e878204c547440e2255b6f7680f5abb6cb3b4d55",
+              "address": "Vp37zZJkLmfPQZCDc5qUVeVwtXBDxwdDKN",
+              "script_pub_key": "a9149a00da81fbb234992fc05d633e12c0c24c9c2a3c87"
+            },
+            {
+              "path": "m/49'/0'/0'/0/4094",
+              "index": 4094,
+              "public_key": "03cf958d0c661cca562f5eb4043637febe54618c7093cbd0777c0da4a68d57565e",
+              "address": "Vpqjb1sm5fVtwn5WCie5Cu7vpY8a2ssExN",
+              "script_pub_key": "a914a2d1b343a1badbd80af52c8ccc9455b0fd94202887"
+            },
+            {
+              "path": "m/49'/0'/0'/0/4095",
+              "index": 4095,
+              "public_key": "026c36c6612fc6091affc2cf6cafcc958fbf40a02e5d392a4074d0c512c741d192",
+              "address": "VbawmPMtxMGBa3W2aFgYk52CLp1XYFqCJJ",
+              "script_pub_key": "a914116bfdf2c34e6b82fc7e264d1cf76913032e8d5387"
+            }
+          ]
+        },
+        {
+          "purpose": 49,
+          "coin": 0,
+          "account": 0,
+          "branch": 1,
+          "script_type": "p2wpkh",
+          "branch_public_key": "JgduaQrQQXLerS6ZsVnzEMv3zRGf3ZsgiEpeFcLi8uiaLYtUWiJCHJzcs3GcxVM6Ab3mfK4goA6PgEZLmhMFupKpYpGf6jayMdVE1Zh7FhkU7Sop",
+          "addresses": [
+            {
+              "path": "m/49'/0'/0'/1/0",
+              "index": 0,
+              "public_key": "034a0a09c90073de75f37bcd690c11ef6649c72193f497c9be4d0436747e3a5f82",
+              "address": "slug1qga5ryxcskj4x3eaapg9dw75h7cl9uzrehur97z",
+              "script_pub_key": "00144768321b10b4aa68e7bd0a0ad77a97f63e5e0879"
+            },
+            {
+              "path": "m/49'/0'/0'/1/1",
+              "index": 1,
+              "public_key": "02f25b24f65415830584264c7a7818d4afd73924a96cd167bd246547991e5304f1",
+              "address": "slug1qvym75drqa3hqfcvk4uuplg2rmhtmmkemzh8yey",
+              "script_pub_key": "00146137ea3460ec6e04e196af381fa143ddd7bddb3b"
+            },
+            {
+              "path": "m/49'/0'/0'/1/19",
+              "index": 19,
+              "public_key": "031850b8dbb0ea82e93afd8fc914b0b1fc3a12bee15d269946494824f582ce62b8",
+              "address": "slug1q7ugfecxkxxjglz29p56uw2nhv3dgf3fdawg2r4",
+              "script_pub_key": "0014f7109ce0d631a48f89450d35c72a77645a84c52d"
+            },
+            {
+              "path": "m/49'/0'/0'/1/20",
+              "index": 20,
+              "public_key": "0360e773a6e28bce212efcadd77ebbfc47fad623d69af6d19a3d228735bb6f5489",
+              "address": "slug1q3cchsfftte76aqgl847xn5ms8gkn2279laj6h9",
+              "script_pub_key": "00148e3178252b5e7dae811f3d7c69d3703a2d352bc5"
+            },
+            {
+              "path": "m/49'/0'/0'/1/127",
+              "index": 127,
+              "public_key": "023a32d7e29405cb0c07fc3d16c04f403ba7b66a6431ce35b5f9793c43ff04d32f",
+              "address": "slug1qnlz8vxpyyaecxk84ruy32x6tre3gdt9cuvccf9",
+              "script_pub_key": "00149fc476182427738358f51f09151b4b1e6286acb8"
+            },
+            {
+              "path": "m/49'/0'/0'/1/128",
+              "index": 128,
+              "public_key": "03e92852d6791472cd8f29a94e12504699623a2c581103146732db643bdd3c13e1",
+              "address": "slug1q9w36q0e6pa0hx926g03mas4fvhneeg7s8n22we",
+              "script_pub_key": "00142ba3a03f3a0f5f73155a43e3bec2a965e79ca3d0"
+            },
+            {
+              "path": "m/49'/0'/0'/1/4076",
+              "index": 4076,
+              "public_key": "03e88b05fc8c03ff9ec6c950f584303a6c9afc52f6a5454928a46c16b9af4b7d3b",
+              "address": "slug1qx6l5luhc9v8cdmjptmxamk7ytgnkw3r9f3ycd8",
+              "script_pub_key": "001436bf4ff2f82b0f86ee415ecddddbc45a27674465"
+            },
+            {
+              "path": "m/49'/0'/0'/1/4077",
+              "index": 4077,
+              "public_key": "02270f0176572a93708983780bdccdc0f72028f6b9939ff3c401bd36cd600fc5e0",
+              "address": "slug1qr85sk0esgaup8k792tj0t90kuca68pf4ntw845",
+              "script_pub_key": "001419e90b3f30477813dbc552e4f595f6e63ba38535"
+            },
+            {
+              "path": "m/49'/0'/0'/1/4094",
+              "index": 4094,
+              "public_key": "02f4155b58980139b76c25cc4ff3770a5234e8a05d006bb04ac877fbe70118cf32",
+              "address": "slug1qlc4chfnpeu4544qy2cvqpq7r02j46tzn5uyqs3",
+              "script_pub_key": "0014fe2b8ba661cf2b4ad40456180083c37aa55d2c53"
+            },
+            {
+              "path": "m/49'/0'/0'/1/4095",
+              "index": 4095,
+              "public_key": "028bb78ec2ccdc36c5a9883c848cee0f565262ffff6ea2e1eddc1045d15c0ac668",
+              "address": "slug1qghr2meh52hw3mhmrulv473xcjw4vrs54s0jtf5",
+              "script_pub_key": "001445c6ade6f455dd1ddf63e7d95f44d893aac1c295"
+            }
+          ]
+        },
+        {
+          "purpose": 84,
+          "coin": 0,
+          "account": 0,
+          "branch": 0,
+          "script_type": "p2wpkh",
+          "branch_public_key": "JgduaQrPxzDBx87AGcEki8k36tKsEyEWE6cRSg89Y3FmESVgwnex8x2pNJc7eDT5yQDQNkWheEi7SsGcLxgdaAwB6uhBttHNRwxQyMBgGofNrJxy",
+          "addresses": [
+            {
+              "path": "m/84'/0'/0'/0/0",
+              "index": 0,
+              "public_key": "03c5db199831f23a3a1575518c8e9e948bfd495481aac442dec64b447ee76bd6fa",
+              "address": "slug1qzmtrqsfuaf6l6kkcsseumq26ukaphfj9s9ptme",
+              "script_pub_key": "001416d630413cea75fd5ad88433cd815ae5ba1ba645"
+            },
+            {
+              "path": "m/84'/0'/0'/0/1",
+              "index": 1,
+              "public_key": "036e77119c26d0f05ee01a0a80bb56bda05bc7a047b4368f66ebb4e53d2c19437a",
+              "address": "slug1qyn0ml52dy0udru3nafudt6af7x2kv7ngyr7pu4",
+              "script_pub_key": "001424dfbfd14d23f8d1f233ea78d5eba9f195667a68"
+            },
+            {
+              "path": "m/84'/0'/0'/0/19",
+              "index": 19,
+              "public_key": "02ef7c70ee308c333b0ca8a7e98e8e41e4e059277bbfec2d62ddd53702595f23eb",
+              "address": "slug1qcleseuutw4pfjm4dx444csl743nv6lcueveeq4",
+              "script_pub_key": "0014c7f30cf38b7542996ead356b5c43feac66cd7f1c"
+            },
+            {
+              "path": "m/84'/0'/0'/0/20",
+              "index": 20,
+              "public_key": "02dd3dbf7895688b1232bd83b5efbc95d5ded52104e6d93b8e4db5705d07ad6cad",
+              "address": "slug1q06jxurgvj5sq0fl3z00zwsel6rfm4ld805eqyl",
+              "script_pub_key": "00147ea46e0d0c952007a7f113de27433fd0d3bafda7"
+            },
+            {
+              "path": "m/84'/0'/0'/0/127",
+              "index": 127,
+              "public_key": "035274f06c885656f186ad789d653c0931599484fa9c347899c56fe71733c2dfbf",
+              "address": "slug1qpccz7pmtjyvval2qgmt4a88k54gnnd68m7ehwg",
+              "script_pub_key": "00140e302f076b9118cefd4046d75e9cf6a55139b747"
+            },
+            {
+              "path": "m/84'/0'/0'/0/128",
+              "index": 128,
+              "public_key": "02d6487e0da7a2b6a5c1f30d426f7e0256698e81e735d76d9f8aa4188f54979b06",
+              "address": "slug1qusw8krre4cz5f7j529umg40nhttaalcmutlzg5",
+              "script_pub_key": "0014e41c7b0c79ae0544fa545179b455f3bad7deff1b"
+            },
+            {
+              "path": "m/84'/0'/0'/0/4076",
+              "index": 4076,
+              "public_key": "032a0c3fc635464836d4b40c7e48f7891ecf83718754823bcceec933c5220354be",
+              "address": "slug1q52hu5wav442u7374zmpkskla7wzn5f7dydf6ad",
+              "script_pub_key": "0014a2afca3bacad55cf47d516c3685bfdf3853a27cd"
+            },
+            {
+              "path": "m/84'/0'/0'/0/4077",
+              "index": 4077,
+              "public_key": "02286d67c3eafbbf384feb8c5bf621c881cbc6365554d24d79a3043fa148da29f3",
+              "address": "slug1qrsuum2h5h7ye0l2m6py0lkje3m80c9tu6vztxn",
+              "script_pub_key": "00141c39cdaaf4bf8997fd5bd048ffda598ecefc157c"
+            },
+            {
+              "path": "m/84'/0'/0'/0/4094",
+              "index": 4094,
+              "public_key": "0332b97a386920436e3c9cb7066cf4e30341cb5300f966e245cf56a6de819fa481",
+              "address": "slug1qzf02ahctw6tq8ulmln6yev2yzvh49p7wcepv9q",
+              "script_pub_key": "0014125eaedf0b769603f3fbfcf44cb144132f5287ce"
+            },
+            {
+              "path": "m/84'/0'/0'/0/4095",
+              "index": 4095,
+              "public_key": "02a7c1d4771880d02b6a557b30d370b74d855561cd150357d989c1ffad1c5dba89",
+              "address": "slug1qg4qsw0vs9x5av94m97hznvvq9f4fmyrf20hswe",
+              "script_pub_key": "00144541073d9029a9d616bb2fae29b1802a6a9d9069"
+            }
+          ]
+        },
+        {
+          "purpose": 84,
+          "coin": 0,
+          "account": 0,
+          "branch": 1,
+          "script_type": "p2wpkh",
+          "branch_public_key": "JgduaQrPxzDBx87AGfkG1VneBrgmZRZPyDdwwS457MnohJL3FDS6n9SxBfHDVARfgbLcbm8xDLsdn3Q21S4YiUh22twjaaKDRudAMGuq2cXwmAtJ",
+          "addresses": [
+            {
+              "path": "m/84'/0'/0'/1/0",
+              "index": 0,
+              "public_key": "02138f643e36e664e9cf9683947cbde1717d0ebaae1f58e971c7add17503fdf300",
+              "address": "slug1qes80p0st92xjem9aw48v57fk35f44kjzmecdxc",
+              "script_pub_key": "0014cc0ef0be0b2a8d2cecbd754eca79368d135ada42"
+            },
+            {
+              "path": "m/84'/0'/0'/1/1",
+              "index": 1,
+              "public_key": "03b4d79a57c13e674de74eefcba66b5e62cb97b5f7472fff9b15ecffd549425b1f",
+              "address": "slug1qtysyxmeqdcsxc07md96p70s5n7ladl2ac6up43",
+              "script_pub_key": "00145920436f206e206c3fdb69741f3e149fbfd6fd5d"
+            },
+            {
+              "path": "m/84'/0'/0'/1/19",
+              "index": 19,
+              "public_key": "03382e29c592f0b47897ad6fa7777140ff20b79ed076675dbd64a1a55aa4fc81e8",
+              "address": "slug1qq9fduvrqha6458t6a9tldq8s9p4huxvdd0gmqx",
+              "script_pub_key": "00140152de3060bf755a1d7ae957f680f0286b7e198d"
+            },
+            {
+              "path": "m/84'/0'/0'/1/20",
+              "index": 20,
+              "public_key": "0282acb9fc33317efdf3fe092087a3bc116f64003d66b6cfac448973e03a52d385",
+              "address": "slug1qnkd40zk78kfawkcfewmmw7ykmzvmlxun4wvn4j",
+              "script_pub_key": "00149d9b578ade3d93d75b09cbb7b77896d899bf9b93"
+            },
+            {
+              "path": "m/84'/0'/0'/1/127",
+              "index": 127,
+              "public_key": "033404cb606326bc7027a7b155b6c8e132f33e3b4a8b7f985d29e03d720e1db72a",
+              "address": "slug1qrgc6q88tutruy7l78p2jj4vqllumlfvhh3q0hc",
+              "script_pub_key": "00141a31a01cebe2c7c27bfe3855295580fff9bfa597"
+            },
+            {
+              "path": "m/84'/0'/0'/1/128",
+              "index": 128,
+              "public_key": "023999abf670cdc38d723eee3e44fb77bbf44f6a686eccbb8e3034c05f292a64d4",
+              "address": "slug1qur7ng4jwmsqlfvcgntw4ggwr28turk9t4vu79c",
+              "script_pub_key": "0014e0fd34564edc01f4b3089add5421c351d7c1d8ab"
+            },
+            {
+              "path": "m/84'/0'/0'/1/4076",
+              "index": 4076,
+              "public_key": "02f0006cebade5f3cff05f1a9d7ed345cf3f8118e901f4b50f2e288a1f91e8df98",
+              "address": "slug1q88dck427ry6uxx8gvx0j86lyus8hewjj4tqd2u",
+              "script_pub_key": "001439db8b555e1935c318e8619f23ebe4e40f7cba52"
+            },
+            {
+              "path": "m/84'/0'/0'/1/4077",
+              "index": 4077,
+              "public_key": "03c0c75a0ce40663f3f678c1d74b19760fc8a5eb8f1e85544107aed3f71626439a",
+              "address": "slug1q0vregqupgdc5crkwnlwl99k9nmznt7fsh9ksed",
+              "script_pub_key": "00147b0794038143714c0ece9fddf296c59ec535f930"
+            },
+            {
+              "path": "m/84'/0'/0'/1/4094",
+              "index": 4094,
+              "public_key": "03591d09c093bdfa26c035aac8a3e178e10bfbc256fe39895b9eec9b29949a6cb2",
+              "address": "slug1qwkq40zt2tg03e906gup3smj9nwthudcdpmtjdd",
+              "script_pub_key": "0014758157896a5a1f1c95fa4703186e459b977e370d"
+            },
+            {
+              "path": "m/84'/0'/0'/1/4095",
+              "index": 4095,
+              "public_key": "02640edb88f9919513d84d317230ad9f5b8ee879d64d2a44398cb40e98a50c54a6",
+              "address": "slug1qdym27q2ne5ghqv7md2vnug8g6ufk6qhzhk4adr",
+              "script_pub_key": "00146936af0153cd117033db6a993e20e8d7136d02e2"
+            }
+          ]
+        },
+        {
+          "purpose": 86,
+          "coin": 0,
+          "account": 0,
+          "branch": 0,
+          "script_type": "p2tr",
+          "branch_public_key": "JgduaQs7DPEtoaDU2mq3z1MwzktvTCDcC1R6HMjzyeuRtX1J16AS7p9Ych1P23gMsFo494WKV7PC4ZevdBdmEQhVjdcTLUnzv66BMFPHyYJjfNrX",
+          "addresses": [
+            {
+              "path": "m/86'/0'/0'/0/0",
+              "index": 0,
+              "public_key": "02001291984ed14a7efb6a84ce236f654e8d4c4b8794162d6ec9de44f8e4119dd5",
+              "address": "slug1p68a8a3vuv2cxzs7e2gjc5v3qy3zdnfaxwftyqe9k9nquvm6r4w2smxg8r4",
+              "script_pub_key": "5120d1fa7ec59c62b06143d952258a32202444d9a7a672564064b62cc1c66f43ab95"
+            },
+            {
+              "path": "m/86'/0'/0'/0/1",
+              "index": 1,
+              "public_key": "0317305a52507311a3641317d6e77626fb029f4997101c08761f0d9105a547825e",
+              "address": "slug1p0qhnlyxpg7wc5wz62ksn9d4vc7jmjqgshyx8ddndmjxzefyuwmeqlfvtpe",
+              "script_pub_key": "5120782f3f90c1479d8a385a55a132b6acc7a5b90110b90c76b66ddc8c2ca49c76f2"
+            },
+            {
+              "path": "m/86'/0'/0'/0/19",
+              "index": 19,
+              "public_key": "02691215dc1994732f41a63eca389c6365f70416c5e90f6c49f00969e7c872c393",
+              "address": "slug1pw2wg6snfxaw52q8dpn7nrj5ftrz5n0vm0pghn4v9qujxgt856jusevu2x0",
+              "script_pub_key": "5120729c8d4269375d4500ed0cfd31ca8958c549bd9b785179d5850724642cf4d4b9"
+            },
+            {
+              "path": "m/86'/0'/0'/0/20",
+              "index": 20,
+              "public_key": "0264cdd1c57cc332e2b3b80cc207c0ee456ddd14a7793cf9348c941e9d6fc23dea",
+              "address": "slug1prrdllmt0z0hj0g79kvvv96x3dj4nln8nlwamjwfnhgk4hdvv3ctqydlxlu",
+              "script_pub_key": "512018dbffed6f13ef27a3c5b318c2e8d16cab3fccf3fbbbb93933ba2d5bb58c8e16"
+            },
+            {
+              "path": "m/86'/0'/0'/0/127",
+              "index": 127,
+              "public_key": "03fc31a056bda531839a253e1f1123d6e590bfd5e8edf08822ea011e95dd9a350f",
+              "address": "slug1p6lfsd66sgav5ys4mqq8ppem8q8n4uf49jj4xvndx55k5kelm3ysqejvntn",
+              "script_pub_key": "5120d7d306eb5047594242bb000e10e76701e75e26a594aa664da6a52d4b67fb8920"
+            },
+            {
+              "path": "m/86'/0'/0'/0/128",
+              "index": 128,
+              "public_key": "02513ef9f2acb6913d657b41fc92295537c086103e0e5a49b03be61501010de8dc",
+              "address": "slug1ppdmzg7svc9pukxr7pxa4lw7lwl85y6pc7s2p86wheqrm3jaq7v8sphhc96",
+              "script_pub_key": "51200b76247a0cc143cb187e09bb5fbbdf77cf426838f41413e9d7c807b8cba0f30f"
+            },
+            {
+              "path": "m/86'/0'/0'/0/4076",
+              "index": 4076,
+              "public_key": "024b62bedc652146c1abe2d2d6f83eabace14c69580e2e16cc902a6d6c494d08fc",
+              "address": "slug1p6akr83xcagelr2lm8dmfn905zhgergy044jt3vddshn98ncq3h5qwtx67r",
+              "script_pub_key": "5120d76c33c4d8ea33f1abfb3b769995f415d191a08fad64b8b1ad85e653cf008de8"
+            },
+            {
+              "path": "m/86'/0'/0'/0/4077",
+              "index": 4077,
+              "public_key": "0302abbc236ddf0659b095f8eddab208fbc71cf370cd343902199a650948da6fee",
+              "address": "slug1psq9dcqf5zvg9c77pa9etlrn8acfk29jhg86x5t47sftjdxvyqhtqy285up",
+              "script_pub_key": "5120800adc013413105c7bc1e972bf8e67ee1365165741f46a2ebe825726998405d6"
+            },
+            {
+              "path": "m/86'/0'/0'/0/4094",
+              "index": 4094,
+              "public_key": "03b702a4da5bca48f402e18b19e543d1a1185f57d9a75cde8a7400fb8c07347176",
+              "address": "slug1plnvfx0djzlxphgc6j87xf6sd0rcyrtr09x6w8xr6jzm5ng36mjgsruds5p",
+              "script_pub_key": "5120fcd8933db217cc1ba31a91fc64ea0d78f041ac6f29b4e3987a90b749a23adc91"
+            },
+            {
+              "path": "m/86'/0'/0'/0/4095",
+              "index": 4095,
+              "public_key": "025e4c968940654cec2f7b99720ad10bfc466b7b0b7d63c37f5b7f4f638576a390",
+              "address": "slug1php5hn6rk70893hy0sfd8s3su4mu8kfvqvk7dgzecfuxv4lmjzdjs29zy0u",
+              "script_pub_key": "5120b86979e876f3ce58dc8f825a78461caef87b258065bcd40b384f0ccaff721365"
+            }
+          ]
+        },
+        {
+          "purpose": 86,
+          "coin": 0,
+          "account": 0,
+          "branch": 1,
+          "script_type": "p2tr",
+          "branch_public_key": "JgduaQs7DPEtoaDU2p2WPqhbF71EzAJv3uWmWPUf12DmBophqRR6S2z1HwiCNwLDHDdFauwMe3eciD3ZfKR47Vmfp7yduxPtiRiSY9ovPjyHWEMv",
+          "addresses": [
+            {
+              "path": "m/86'/0'/0'/1/0",
+              "index": 0,
+              "public_key": "03103a80152e8910249ca7948207124072acc85ce81d4f52bfef3a21ddb9414a7f",
+              "address": "slug1pgf0v3a655f4xyyhslq8gjly9qpt9zn2wfyd5na0vsfsukk844x4swrxtnc",
+              "script_pub_key": "5120425ec8f754a26a6212f0f80e897c850056514d4e491b49f5ec8261cb58f5a9ab"
+            },
+            {
+              "path": "m/86'/0'/0'/1/1",
+              "index": 1,
+              "public_key": "02a5f6b55d7a404b49d8b0259c866ac8210ef8a7e8e5d86d3b48eb1867f5d746c9",
+              "address": "slug1pcxpef0s8uhhmdg24te405m0m7zmmlye397xa08lm4kpd48fa5vfqr8v9nt",
+              "script_pub_key": "5120c18394be07e5efb6a1555e6afa6dfbf0b7bf93312f8dd79ffbad82da9d3da312"
+            },
+            {
+              "path": "m/86'/0'/0'/1/19",
+              "index": 19,
+              "public_key": "02258c837c05134924a09cc013d7c59683ff23da4ec6f12715fd2363a324d5ce0a",
+              "address": "slug1pvfjw8y5w8pf6aea4lq4xjqdefx0h4h0hkguu8z64ytehm6testqqnnznrs",
+              "script_pub_key": "51206264e3928e3853aee7b5f82a6901b9499f7addf7b239c38b5522f37de97982c0"
+            },
+            {
+              "path": "m/86'/0'/0'/1/20",
+              "index": 20,
+              "public_key": "031a5ea7fdea0c330f46ebd486f92f45a7387435e2c0d5c24f0d7860d9ac51ed65",
+              "address": "slug1pg830t05gpcgzktesdm74vkzdzlu3rk7qycfh7lr4m4nqg30c2k4syhjmjr",
+              "script_pub_key": "512041e2f5be880e102b2f306efd56584d17f911dbc026137f7c75dd660445f855ab"
+            },
+            {
+              "path": "m/86'/0'/0'/1/127",
+              "index": 127,
+              "public_key": "026e09bf8e152efe5b7c82343d3d1819656ebcdf49c93b44f8cc8a0672a1ab33b5",
+              "address": "slug1p3xmwuwp0702yjksex2eu98qzmp3r3p7xfm24xg0ulaj8w8kew6nsvz3py4",
+              "script_pub_key": "512089b6ee382ff3d4495a1932b3c29c02d8623887c64ed55321fcff64771ed976a7"
+            },
+            {
+              "path": "m/86'/0'/0'/1/128",
+              "index": 128,
+              "public_key": "028fe23f00e26b0a63641fb80f1b0061dc5a1022ed389b65500452d8a7d9c61601",
+              "address": "slug1pcvf0y8r9jlqmy8j59wsmxxprl0ee6v835y3hmvycxt9vl75juflslw8hdq",
+              "script_pub_key": "5120c312f21c6597c1b21e542ba1b31823fbf39d30f1a1237db09832cacffa92e27f"
+            },
+            {
+              "path": "m/86'/0'/0'/1/4076",
+              "index": 4076,
+              "public_key": "023a9d7bd598ca9b02f9256f5465857067e703eebb47e93bf394abc1bb6dd53c57",
+              "address": "slug1prjlye425pqmjggd5hdd3e7lreghvq0uxseu8heyeytdf88wcx38s208vwk",
+              "script_pub_key": "51201cbe4cd55408372421b4bb5b1cfbe3ca2ec03f8686787be49922da939dd8344f"
+            },
+            {
+              "path": "m/86'/0'/0'/1/4077",
+              "index": 4077,
+              "public_key": "03d98493a9be3a897a39bb844812213b3dfd35150ec20d3575d575fdf39d16f9ae",
+              "address": "slug1p9fxmpdtdkujfwl89nwv3h3t8n2esl39lrvwv6spllm8rmgrcsrcq6nc6d5",
+              "script_pub_key": "51202a4db0b56db724977ce59b991bc5679ab30fc4bf1b1ccd403ffece3da07880f0"
+            },
+            {
+              "path": "m/86'/0'/0'/1/4094",
+              "index": 4094,
+              "public_key": "03cbf2f9f59c94a866e26bae575c1093602af23ad7ed2c6da5582db43475f42c7a",
+              "address": "slug1pmpp64ptryqza3e74rpac84s46k8cetdvtzu7wnx68ayprhkmvpuslfmrkl",
+              "script_pub_key": "5120d843aa85632005d8e7d5187b83d615d58f8cadac58b9e74cda3f4811dedb6079"
+            },
+            {
+              "path": "m/86'/0'/0'/1/4095",
+              "index": 4095,
+              "public_key": "02f31cccdbf43042bd992f8c1f407628bcdfe55d866b2633ac707cf4ec599347b5",
+              "address": "slug1pjfsf3lthg6ev8mhxuwyatp94geymt2knnpv9rwfjlnupluxel95qqfzcce",
+              "script_pub_key": "5120926098fd7746b2c3eee6e389d584b54649b5aad3985851b932fcf81ff0d9f968"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "incrementing256",
+      "manifest": {
+        "version": 1,
+        "profile": "slug-phase-a-fixture-bip39-v1",
+        "network": 1397511495,
+        "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+        "derivation": "bip32-standard-v1",
+        "scan_from_height": 0,
+        "root_public_key": "JgduaQiYjRcnjcD9syNDf4x3txTZkg8HpvTKZtposTTw7bTLpRzvd7ibV3buRixMEqAwVAyreX36pAw5DxLXwG5gW6EGNWeRcJfJitkx2kCJ54pC",
+        "gym_path": "m/1397511495'/1'/0'",
+        "gym_public_key": "033de5e2e3d5ad06f616572fcb3d61f089ce1105ef486debf308027b3b663d6d92",
+        "gym_id": "28452fc8a478d28f284dfe671cfc57e7cabeca08ea953aef371f5674d3f4c510",
+        "accounts": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "account": 0,
+            "external_type": "p2pkh",
+            "internal_type": "p2pkh",
+            "next_external": 0,
+            "next_internal": 0
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "account": 0,
+            "external_type": "p2sh-p2wpkh",
+            "internal_type": "p2wpkh",
+            "next_external": 0,
+            "next_internal": 0
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "account": 0,
+            "external_type": "p2wpkh",
+            "internal_type": "p2wpkh",
+            "next_external": 26,
+            "next_internal": 27
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "account": 0,
+            "external_type": "p2tr",
+            "internal_type": "p2tr",
+            "next_external": 0,
+            "next_internal": 0
+          }
+        ]
+      },
+      "branches": [
+        {
+          "purpose": 44,
+          "coin": 0,
+          "account": 0,
+          "branch": 0,
+          "script_type": "p2pkh",
+          "branch_public_key": "JgduaQrK276U2hGc1Zq8rMuwMqCvM3PP9DTUJ2C7Yh6G7i4yxV9czabJUVEF4ezCbiTK1xgU7CeyqbEvJgDVXM3QoXvpCu91JmSmaibayF96LD8V",
+          "addresses": [
+            {
+              "path": "m/44'/0'/0'/0/0",
+              "index": 0,
+              "public_key": "0270cacf459f70240e79e1d1194453223bae8e4262adc4858731b7b2c5b57e1e0e",
+              "address": "ai7VACBHDPxvYZai2Y4d5LqSD5F14WMiQZ",
+              "script_pub_key": "76a914c617e898f42c963d631ced3958ffacbeb7107e2788ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/1",
+              "index": 1,
+              "public_key": "03d6eb8f4e10482dc081ab502f5f0b0af8415fa07091a43fc81dc9af4824b3d07a",
+              "address": "abWZya9QfuuN4R7PVudMrY6nu8f7NxYhiL",
+              "script_pub_key": "76a9147dac9dbb932ae97abcf3cc76868241195aa2aaf188ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/19",
+              "index": 19,
+              "public_key": "03ed4f60bf8d07e75d8c86b76995278512b15baecd7f2cbfd679ee8f5f8738a147",
+              "address": "agsxdZ9QH1SQ9x7zJ2beEqNi2ypBcZerLF",
+              "script_pub_key": "76a914b890e43fb7bacfb44e7ea744761eed1830ecc21288ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/20",
+              "index": 20,
+              "public_key": "03bdf40ff46e065fef416f3489eb87910545114aae00456763b3a108db15da8595",
+              "address": "ajaKWgwvzbww5yzyzoJv1TnC1Jzg3DubVi",
+              "script_pub_key": "76a914d623367653734e7dea4ef924591b2d4a1531c18f88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/127",
+              "index": 127,
+              "public_key": "027e27433e0aa4ca72755267d94c86ddf8d8c05610ae5d012fdbd8aea5e4e27306",
+              "address": "aVPHiG7JbZwjWKW96799hejMp385UC6e2m",
+              "script_pub_key": "76a9143a7b5f8b51009d40c3472cdd43884ee137855fd488ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/128",
+              "index": 128,
+              "public_key": "02c99189ce4ed27c60d2479250d676c7f3e1c1eaa059b748bed3bfe43c19621aae",
+              "address": "aenM6f64YtehG3M4WH851BoRXuKd2UcXWW",
+              "script_pub_key": "76a914a190e6250e44d9195a3f465b0b8993f9573262ea88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/4076",
+              "index": 4076,
+              "public_key": "02e7ee3948de3dd522aa133d68ee46fa34302f8eff7cc75bf278b746fc918bdcd9",
+              "address": "aj4VVZSu9ARuy1BaxR3wUXRy29QV9xVqtg",
+              "script_pub_key": "76a914d07f10b1f41105210bf4e33d8ba3bf6dea476c1088ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/4077",
+              "index": 4077,
+              "public_key": "0304171b6b1356c161278dd3f5d57e47e42bb3dd827c579b1a237fcb75a5700ae7",
+              "address": "adjt63MAGuhftRKEaH8vbUeZfFhELdrmLP",
+              "script_pub_key": "76a914962164dab17f4bf08d369cc356cb5aa42a12092188ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/4094",
+              "index": 4094,
+              "public_key": "03c0e87db0f881b3f32f1372ce236689f0c98e168b6ad2c6fb36a0d736c4b23192",
+              "address": "aeEzHhbjobhj1X4ya1sMq3u8aX3qPm4qit",
+              "script_pub_key": "76a9149ba2a21a0795ddf8dcf08a8f1ff7af176e0715ba88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/0/4095",
+              "index": 4095,
+              "public_key": "032b433d438d66a93e11aa97b7776987e536bcd252563ace2ac2e55fa63dc9b729",
+              "address": "aQRC7BNhFMRaDzbWSXEp4q5Na4poRoJWGR",
+              "script_pub_key": "76a91403fee5c448a1ac56bccadfa9ae9d39be41d51ee288ac"
+            }
+          ]
+        },
+        {
+          "purpose": 44,
+          "coin": 0,
+          "account": 0,
+          "branch": 1,
+          "script_type": "p2pkh",
+          "branch_public_key": "JgduaQrK276U2hGc1bnxVEEjzDAbQXP7jZNK9ijbXJeEu5jiZ12rXWvUzR9PADhGRAsRcydEstFJc4s6A7rpqKt9X4Giitga8c2nzJWZgFRZ41Fs",
+          "addresses": [
+            {
+              "path": "m/44'/0'/0'/1/0",
+              "index": 0,
+              "public_key": "02ad74ca96104da4f03f56427f6f02fd53827d7fca146b4b6746d6fcce62d7cbb3",
+              "address": "aeXBX39MeWvML2Hgg8vzTRcgtfucRNgCxB",
+              "script_pub_key": "76a9149eb2a9b2f386fb7d3f60ba78863295261f64dace88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/1",
+              "index": 1,
+              "public_key": "02760724c649041b710f30d007d96cab6d1b73f7a5ea96c48d3ebfdf915829e76c",
+              "address": "adw6e1A2SJ49fsPnmiznkngKqh9sAHKPJe",
+              "script_pub_key": "76a914984072579d98dac5d5c9b823d1f30790852a01b488ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/19",
+              "index": 19,
+              "public_key": "03040453046e8cf9c53fbfc65c37706758628f83c35ed74b17d747adaa9a1033e8",
+              "address": "aamjcm6GWWo4SPQNN9tT3PhR9GJijmr1Qm",
+              "script_pub_key": "76a9147592c720ac3653feaa02309c6d8ed9b91e7bb74188ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/20",
+              "index": 20,
+              "public_key": "03bd122e014b7b526268a394abac198890a693b7f513a62ee6b24cbd56433b073a",
+              "address": "aXxrW7MzYFDZnWYJ9muvnWnMCTz3RcGkhz",
+              "script_pub_key": "76a91456c4b941c6535f8b698712da344c0e14b835773788ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/127",
+              "index": 127,
+              "public_key": "037423a4b6ce500cec7010ab400fd824a04be6278d64847db18d6e738a62f2f837",
+              "address": "abt9WGrJ3Bb8ehjzLSTRoMV6mtaDZBZuuZ",
+              "script_pub_key": "76a91481c15719099fe08bb266c59c01911496c68c21a388ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/128",
+              "index": 128,
+              "public_key": "021883db087bffb378c39ad2bb7af2113fd3dc6b5b43242ecb8db15672bb942728",
+              "address": "agx5jab72SCqiQXmmv3AMtrwXNaiPE9Kd8",
+              "script_pub_key": "76a914b9587c4745a9317a4c8b644af85d82e7f5a0ece288ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/4076",
+              "index": 4076,
+              "public_key": "021aedd897dc74e95cfa2c8b68a589f4eadf75e6b40ec1d2d966adf2f584dbb4bf",
+              "address": "aQZXxLnGJML22jpHYQwfoLv2Sp8hnCCtYB",
+              "script_pub_key": "76a9140592cb0e0392fe90e77a3b908da4c9e052dfbaab88ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/4077",
+              "index": 4077,
+              "public_key": "039f451fe738d7ebaf79e48e89162b39501c04e9245fa16f9268393bcd2ddfcecd",
+              "address": "ahFB4ppfBpUdDYwM7ZQjVsqVMAaHsQ7ey8",
+              "script_pub_key": "76a914bc9401f16a6a2489409261b3976d0ad5d3353f5588ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/4094",
+              "index": 4094,
+              "public_key": "026b8174698da506ec6ed3d143bacfa5648bbf0865f206d5b12ab3bb882c0b4405",
+              "address": "aW8cpaTs716PB5zNUrZS2jGRKWwVxrozod",
+              "script_pub_key": "76a91442ad35fcaa0fd97ae7054f7966756bf9f5272be388ac"
+            },
+            {
+              "path": "m/44'/0'/0'/1/4095",
+              "index": 4095,
+              "public_key": "024ed903d10568d8530807a52bb484345fba5da777792a0d470fd972a89b0b0589",
+              "address": "akXgZGRnxUtSzjADw3UzfiZY9Qg6XxVjdH",
+              "script_pub_key": "76a914e09ba85bd6af723f59766c5ca0b8e0261bef5cb588ac"
+            }
+          ]
+        },
+        {
+          "purpose": 49,
+          "coin": 0,
+          "account": 0,
+          "branch": 0,
+          "script_type": "p2sh-p2wpkh",
+          "branch_public_key": "JgduaQrLRSACSbGtirrWshfcoeg6pB9wJkKZGWeYjVvbCweojRTTQiEr3ZJx3BA4FEyiwV8Pfx6GSxU2qNZnwDtpyAMZpg5ZKrYUDHYRqUYVVwVD",
+          "addresses": [
+            {
+              "path": "m/49'/0'/0'/0/0",
+              "index": 0,
+              "public_key": "02d4a760e2bde75a847437f8ecec3865834657e0e60c63578356db8a5239caec7a",
+              "address": "Vvjf6ixep54q29dozFwyGaqxGHCoWqDpLX",
+              "script_pub_key": "a914e37c3684fc08963947e07d02d6ed2b38fb1bf07387"
+            },
+            {
+              "path": "m/49'/0'/0'/0/1",
+              "index": 1,
+              "public_key": "02dabaaada3f1e0383a4870927d70a7ed97d5749aa376f72f28f2c663e759a4241",
+              "address": "VmvbTb91Nxy3w2EHXobWHQWPWQCQr2xi4Y",
+              "script_pub_key": "a91482d49e257e7f8e7f422b516e1b8cad72a5b2e7a287"
+            },
+            {
+              "path": "m/49'/0'/0'/0/19",
+              "index": 19,
+              "public_key": "03c6446540b61a8129a4ca934938b152f2fea86b8f8ebd5f460c4d613406e6c429",
+              "address": "VqGmsUGW3vNn49zasisZos8CbzMmyhVrYb",
+              "script_pub_key": "a914a78e01718632ef6126133aa5939a5c3162fa185b87"
+            },
+            {
+              "path": "m/49'/0'/0'/0/20",
+              "index": 20,
+              "public_key": "030ac5d6b72003bfff27a09662536d4ae49212c84f7427e2bdd5cfd93c4ccd0415",
+              "address": "VgeBLP5rBkV4PZCUD9cUNmR9g8Z9gMkMy5",
+              "script_pub_key": "a91448e1320dcd8d9093f84067aa2f0f565f38ef6f4487"
+            },
+            {
+              "path": "m/49'/0'/0'/0/127",
+              "index": 127,
+              "public_key": "02943ed59a7cd2f49ccfae51c8223d6bbdf381a10d3e53656cf978ac1a86851ca7",
+              "address": "VcTGGqHeaQBVfnuD7Ve9EkzGGowGNr5Na3",
+              "script_pub_key": "a9141af03d51e4f2ffa5874d5ed66642bb0671cc35c987"
+            },
+            {
+              "path": "m/49'/0'/0'/0/128",
+              "index": 128,
+              "public_key": "025da15f56599ebdc89d07e92c49fe2ce6ab5df705a6463977b7c3eba15370b376",
+              "address": "Vh8AWwLbFWsxuA8Dbt4PrP1dysWLLMQfqS",
+              "script_pub_key": "a9144e2c28dd0921b5c84f439758234c2d8afd8bf31287"
+            },
+            {
+              "path": "m/49'/0'/0'/0/4076",
+              "index": 4076,
+              "public_key": "022e776bcdc141a23705ed68e022beed9e5171beaea16bc7ba2d64323c1b3b5662",
+              "address": "ViYd7N5L4VHLsQp4wAcfQ5y2zGzmXBqN5D",
+              "script_pub_key": "a9145dc477b9977e2465c83ac813dd106b7c8bf3a49087"
+            },
+            {
+              "path": "m/49'/0'/0'/0/4077",
+              "index": 4077,
+              "public_key": "0304d3c417a501be753c2c12ab64c1fa34278c63e40c575efd411c4882c0a4ca45",
+              "address": "VsyaA7f9b4SfXyYxkWEtSE8s42mPZ8SwVp",
+              "script_pub_key": "a914c53588bac9c38b8ad9461df37c8d54d3617f82c487"
+            },
+            {
+              "path": "m/49'/0'/0'/0/4094",
+              "index": 4094,
+              "public_key": "03a696ed7ca8c71a3ba7dc23de913cfff8b014827f99368081790d99348ae956e7",
+              "address": "Vmn8EigztFtTCZ3MZ9bUvt3YHKSAhr57vw",
+              "script_pub_key": "a914813a90fdd703fdd8a5b6f7ed1911fc1ed0e2cd0187"
+            },
+            {
+              "path": "m/49'/0'/0'/0/4095",
+              "index": 4095,
+              "public_key": "0228bc362932d0dc489d1f81e9b9021c6ab46fdaa84426991b112a19785cc3fcb1",
+              "address": "VintWxEgpiAKigEupf7Rqr5G7qxt4tmFVR",
+              "script_pub_key": "a914607726ea3ea719f8b124b9b2995eaa5d6da6627287"
+            }
+          ]
+        },
+        {
+          "purpose": 49,
+          "coin": 0,
+          "account": 0,
+          "branch": 1,
+          "script_type": "p2wpkh",
+          "branch_public_key": "JgduaQrLRSACSbGtiwL9ChBaoZsuQyRdLvVBenSyhNxtSghXWfSatZDQ9p97VUeYBeAW3XP8Y6bPPDWn1PpodDeC95PGgfAgL4ks4ZdwwKnZrFtg",
+          "addresses": [
+            {
+              "path": "m/49'/0'/0'/1/0",
+              "index": 0,
+              "public_key": "033bb083ef60c0318392fedcf731bf0de75dd61d405b03751aedf08c93294e5f50",
+              "address": "slug1qv27g28uu0ggmmtcqgdtlv63rkjh5qr6n2qhdjc",
+              "script_pub_key": "001462bc851f9c7a11bdaf004357f66a23b4af400f53"
+            },
+            {
+              "path": "m/49'/0'/0'/1/1",
+              "index": 1,
+              "public_key": "03366e9aaf3e3199a0ed3b0484fd70ec4b5056650f8fda43a43ecf0ac96052137e",
+              "address": "slug1qwkdevkzl9a4r8hclc4ddafrfqnlk69wyaxfupp",
+              "script_pub_key": "0014759b96585f2f6a33df1fc55adea46904ff6d15c4"
+            },
+            {
+              "path": "m/49'/0'/0'/1/19",
+              "index": 19,
+              "public_key": "0396b4ea8ee069c7f3df7407005d4871520f0d8b25fcd3fe539b7db022df63ee7c",
+              "address": "slug1qdhtu8ljlmpw4sqnflcrwqc9ua97wh93y83l823",
+              "script_pub_key": "00146dd7c3fe5fd85d580269fe06e060bce97ceb9624"
+            },
+            {
+              "path": "m/49'/0'/0'/1/20",
+              "index": 20,
+              "public_key": "0233fea2d7feb020dfa841da564517e48346a994d1f4ac95729fe988b897a0fed8",
+              "address": "slug1qut26aaf4p8w0t2qamkwt34hv74hxx69t6sxlup",
+              "script_pub_key": "0014e2d5aef53509dcf5a81ddd9cb8d6ecf56e6368ab"
+            },
+            {
+              "path": "m/49'/0'/0'/1/127",
+              "index": 127,
+              "public_key": "0287a6b3fe75306631cc5e39cb5c0993bb38a5c9bba634fe0b469d1bad3c7c5222",
+              "address": "slug1qnxalrrqz5krsf5w06dpkndv4rewxg68mwfmf97",
+              "script_pub_key": "001499bbf18c02a58704d1cfd34369b5951e5c6468fb"
+            },
+            {
+              "path": "m/49'/0'/0'/1/128",
+              "index": 128,
+              "public_key": "02d27d6b63542b88cd27ce7ca4aca6a8dbd7a6d2a07c2bf6c9e65c3f2bb4357d16",
+              "address": "slug1qaszzvmreg325usztrvtnv87mmkylt44eq3mfx0",
+              "script_pub_key": "0014ec04266c7944554e404b1b17361fdbdd89f5d6b9"
+            },
+            {
+              "path": "m/49'/0'/0'/1/4076",
+              "index": 4076,
+              "public_key": "03f6a0743655146c7facf33111c18c2605f1e211aae544fb4118be4b7399fe7633",
+              "address": "slug1qsz3v4zamrz0z9qdd0znst35jg4mk4zee43645p",
+              "script_pub_key": "001480a2ca8bbb189e2281ad78a705c69245776a8b39"
+            },
+            {
+              "path": "m/49'/0'/0'/1/4077",
+              "index": 4077,
+              "public_key": "033ccb5578bd50b3b9c11044a3db888501dddddae8ad78fd8a71454200c36687f6",
+              "address": "slug1qt9tgt0xs3fxjfcs2ctc2tnxhgajqdlcgvd5c32",
+              "script_pub_key": "0014595685bcd08a4d24e20ac2f0a5ccd7476406ff08"
+            },
+            {
+              "path": "m/49'/0'/0'/1/4094",
+              "index": 4094,
+              "public_key": "032efc496a396b25b8039b55af74aead72ada6b83d7a7562d85a3491103d42773e",
+              "address": "slug1qzk4vwpc702mqga2kr3qkdn8aeg6a4txn99epa5",
+              "script_pub_key": "001415aac7071e7ab60475561c4166ccfdca35daacd3"
+            },
+            {
+              "path": "m/49'/0'/0'/1/4095",
+              "index": 4095,
+              "public_key": "030f27f22929eae079a6823a63e933340f0e51af6b1421c87734c01e67ad4c8fc6",
+              "address": "slug1q06c0xmafzjw43zgvar9xlsyt0rn2qr64jdkkyg",
+              "script_pub_key": "00147eb0f36fa9149d58890ce8ca6fc08b78e6a00f55"
+            }
+          ]
+        },
+        {
+          "purpose": 84,
+          "coin": 0,
+          "account": 0,
+          "branch": 0,
+          "script_type": "p2wpkh",
+          "branch_public_key": "JgduaQrYhbeZMb61dyisn6iJpxtPJCBzWArvYd8vGcvCL3mn7MgLDQz2HhkLKsLdvBffGxoad3DHn2FQhV7a2pmf2VxgTmrvivQuBafzdQ3LZRxN",
+          "addresses": [
+            {
+              "path": "m/84'/0'/0'/0/0",
+              "index": 0,
+              "public_key": "025e5c348b732544743dd1657ecc258749c02d839dd07ae4e367134aafaf99bc63",
+              "address": "slug1qslk39wvggqa0vl8nd6jckaz54dw3vk45c8educ",
+              "script_pub_key": "001487ed12b988403af67cf36ea58b7454ab5d165ab4"
+            },
+            {
+              "path": "m/84'/0'/0'/0/1",
+              "index": 1,
+              "public_key": "02a1b0bdb67e9853fca2a24ecaa83d9d9c7df9773656d36394636c39940a7815c2",
+              "address": "slug1qvjzlrc4sup32u0e2w2a7k7cd56ky9732vtxz2j",
+              "script_pub_key": "00146485f1e2b0e062ae3f2a72bbeb7b0da6ac42fa2a"
+            },
+            {
+              "path": "m/84'/0'/0'/0/19",
+              "index": 19,
+              "public_key": "02c4a900a2d2dde48ec4d6b2378a1a1cca07213c48ec5e0677417ac9ae5243979e",
+              "address": "slug1qqjy9uj59m5c8lxlgk7scxrehltjtk8sspg969h",
+              "script_pub_key": "001404885e4a85dd307f9be8b7a1830f37fae4bb1e10"
+            },
+            {
+              "path": "m/84'/0'/0'/0/20",
+              "index": 20,
+              "public_key": "0248bf3f40abcbdbdd0e90979735ccdd81cf9515a35517540c1cd745169cb0ffe1",
+              "address": "slug1qld4cqxsfwc2nglla7za5eurv3aerhw30ceg0yl",
+              "script_pub_key": "0014fb6b801a097615347ffdf0bb4cf06c8f723bba2f"
+            },
+            {
+              "path": "m/84'/0'/0'/0/127",
+              "index": 127,
+              "public_key": "0281ef5b0b04a1879a83b351813d011b1752eead754f550f8937774be4bc14daf1",
+              "address": "slug1qf28x0af573sm5asq6yy60jdcsenyl9rj3wfd3p",
+              "script_pub_key": "00144a8e67f534f461ba7600d109a7c9b886664f9472"
+            },
+            {
+              "path": "m/84'/0'/0'/0/128",
+              "index": 128,
+              "public_key": "02a55676c3686ad33a136ea45110f461db737ad29d39b29b2c36249fb477c59455",
+              "address": "slug1qth02stpx66yzf3xmv2kkh29qp595gnnxcm6my2",
+              "script_pub_key": "00145ddea82c26d68824c4db62ad6ba8a00d0b444e66"
+            },
+            {
+              "path": "m/84'/0'/0'/0/4076",
+              "index": 4076,
+              "public_key": "039bcc7a718e1bba0e847f94895a1865460ebe5eafaeb39d66d39a49c577e676aa",
+              "address": "slug1qwymnwe6375u07wy60rf0wu93d5axudrf49gcee",
+              "script_pub_key": "00147137376751f538ff389a78d2f770b16d3a6e3469"
+            },
+            {
+              "path": "m/84'/0'/0'/0/4077",
+              "index": 4077,
+              "public_key": "027842ca374f8da35be2c69c63690510a729fafeaa2a2ea6771d077d0ec102332d",
+              "address": "slug1qqt0xsp88aqg75y9e9n3lzt9xl8x0ph2a8w2078",
+              "script_pub_key": "001402de6804e7e811ea10b92ce3f12ca6f9ccf0dd5d"
+            },
+            {
+              "path": "m/84'/0'/0'/0/4094",
+              "index": 4094,
+              "public_key": "026829751a21f4156bdc9b0613abf8dfa019b54d81167401f5e186830181db642b",
+              "address": "slug1qtk946lhjf0zru4ey0m4czst2gz34hqwzw8r8yu",
+              "script_pub_key": "00145d8b5d7ef24bc43e57247eeb81416a40a35b81c2"
+            },
+            {
+              "path": "m/84'/0'/0'/0/4095",
+              "index": 4095,
+              "public_key": "02dbeb620a74e15ee4910d3e3f6b9a493043c2263bb40c01142fa77071da1eb909",
+              "address": "slug1qwwtgqz0vzk33hy0265wghkr3rxzdl7d0v9j7fx",
+              "script_pub_key": "001473968009ec15a31b91ead51c8bd8711984dff9af"
+            }
+          ]
+        },
+        {
+          "purpose": 84,
+          "coin": 0,
+          "account": 0,
+          "branch": 1,
+          "script_type": "p2wpkh",
+          "branch_public_key": "JgduaQrYhbeZMb61e12LAtTW72VJaBzRqEYdFHV15eqKLYjVrsKh1hqvn8sZ1PsCiRAzuitcdgT6FHqwVjSuSJAqtf5jjMKuhusJmZ2fj5DCgrZe",
+          "addresses": [
+            {
+              "path": "m/84'/0'/0'/1/0",
+              "index": 0,
+              "public_key": "0343f1b864636e6fc5fb5aa78388730a4afeeca65a6fb75073f16ddedd7a263ccd",
+              "address": "slug1qhnsq2ks2dh5cl4ftm64zygtm9a9ytnad4nky3h",
+              "script_pub_key": "0014bce0055a0a6de98fd52bdeaa22217b2f4a45cfad"
+            },
+            {
+              "path": "m/84'/0'/0'/1/1",
+              "index": 1,
+              "public_key": "0266f09123cb8d06b6876f089b540f4b9e0fe073dfed067a1134ba7f15b7007630",
+              "address": "slug1q7xmlq9hqju6juxk0x5f7ca3tzs6d0ym4xmw8vy",
+              "script_pub_key": "0014f1b7f016e097352e1acf3513ec762b1434d79375"
+            },
+            {
+              "path": "m/84'/0'/0'/1/19",
+              "index": 19,
+              "public_key": "025b64b05678320dcc8bc9d56b00ec443b56176fc10d77b301c4d74c784e80fd50",
+              "address": "slug1qy6kq2pyczle8cme92jkjgz78sed6kz4zav0jrc",
+              "script_pub_key": "001426ac05049817f27c6f2554ad240bc7865bab0aa2"
+            },
+            {
+              "path": "m/84'/0'/0'/1/20",
+              "index": 20,
+              "public_key": "035806ecdc023850fe04d9ec27360dce6c09f13b1d9fda5e9e7de7699673e21ea9",
+              "address": "slug1q58yclthpavp5vvrz8psy8j3uge0g53qqaw2mux",
+              "script_pub_key": "0014a1c98faee1eb03463062386043ca3c465e8a4400"
+            },
+            {
+              "path": "m/84'/0'/0'/1/127",
+              "index": 127,
+              "public_key": "034aa2f72878d9241c476af94ef2420846cb59f03f49197528c2b4d3d41d2d44ec",
+              "address": "slug1qnqkgckk9llysrz8wjwaf07804w42erp6ywns9h",
+              "script_pub_key": "0014982c8c5ac5ffc90188ee93ba97f8efabaaac8c3a"
+            },
+            {
+              "path": "m/84'/0'/0'/1/128",
+              "index": 128,
+              "public_key": "03f90715230bee7e885174381d8799f145edbecbff9da4f678e1ca69fddb848df2",
+              "address": "slug1q0fu8cjmy5h26yvfu37288r96tse2l2mfytv3a5",
+              "script_pub_key": "00147a787c4b64a5d5a2313c8f94738cba5c32afab69"
+            },
+            {
+              "path": "m/84'/0'/0'/1/4076",
+              "index": 4076,
+              "public_key": "02fc80b06e3672394ede463842ab3dc11eef956df1537a7a79c3db6cd63eeadd97",
+              "address": "slug1qlcz0jc44v65azc2jyfpx095780nq604wugtj6u",
+              "script_pub_key": "0014fe04f962b566a9d16152224267969e3be60d3eae"
+            },
+            {
+              "path": "m/84'/0'/0'/1/4077",
+              "index": 4077,
+              "public_key": "025ae5253b4fd038bda6be3281425f281e02fbe149fc528f032b56eb6fd6de5022",
+              "address": "slug1qdfngdjs0k862ta4uqrctx52lf2n07luga8kzx6",
+              "script_pub_key": "00146a6686ca0fb1f4a5f6bc00f0b3515f4aa6ff7f88"
+            },
+            {
+              "path": "m/84'/0'/0'/1/4094",
+              "index": 4094,
+              "public_key": "02edaa8bdc6c5955c6b8fb2ece4dba665ec0700e5a21e0f3086a836f2657b71651",
+              "address": "slug1qmlnnsw2k940jzfmm76x35alvwf5j7y529p2gtr",
+              "script_pub_key": "0014dfe73839562d5f21277bf68d1a77ec72692f128a"
+            },
+            {
+              "path": "m/84'/0'/0'/1/4095",
+              "index": 4095,
+              "public_key": "03815c6f3e27b8c97301a420e90667c1cfe447fe3dd73aa82b0bf16921e9e123a3",
+              "address": "slug1ql5kht0jrxhe5xswdtu49ppyly9mmv9rf4038ma",
+              "script_pub_key": "0014fd2d75be4335f34341cd5f2a50849f2177b61469"
+            }
+          ]
+        },
+        {
+          "purpose": 86,
+          "coin": 0,
+          "account": 0,
+          "branch": 0,
+          "script_type": "p2tr",
+          "branch_public_key": "JgduaQrYbifob2SoiibipzW6pYseiQHfRDbjK1MynMm2SrMSS8LcW6HmggdF67yGx4CS87xmQeRNg2aH8MKb7vUKYZUbCHypRDpJswYWfmZe2tqv",
+          "addresses": [
+            {
+              "path": "m/86'/0'/0'/0/0",
+              "index": 0,
+              "public_key": "038334eabaa2d5a44c0263fe9fa84189e577d5dcbb656e6070756477cc48514acf",
+              "address": "slug1p9utz6ct3stasashyme398ck99tewn3yf344e66wuq07c65vh97hsx0sde2",
+              "script_pub_key": "51202f162d617182fb0ec2e4de6253e2c52af2e9c4898d6b9d69dc03fd8d51972faf"
+            },
+            {
+              "path": "m/86'/0'/0'/0/1",
+              "index": 1,
+              "public_key": "02cadf4bcaa0b00e30f0bde7873f14e547c31dd07878877c97adf62a1dc98fed82",
+              "address": "slug1p6d3087vpjlnuxqzvl3kygx5eau3eple649nzepxycnty2aywmsnqstlahq",
+              "script_pub_key": "5120d362f3f98197e7c3004cfc6c441a99ef2390ff3aa9662c84c4c4d645748edc26"
+            },
+            {
+              "path": "m/86'/0'/0'/0/19",
+              "index": 19,
+              "public_key": "0300bea7684bdf6afb512a65b7f5531d358771a904a96bfd6e37ff09096d7c5e86",
+              "address": "slug1p6ugg22plqheuzcvg3x9f3lw8l9padp3wdpq43lzsaj5hfpy7s75qlxzpr5",
+              "script_pub_key": "5120d71085283f05f3c16188898a98fdc7f943d6862e684158fc50eca974849e87a8"
+            },
+            {
+              "path": "m/86'/0'/0'/0/20",
+              "index": 20,
+              "public_key": "02f39318b65d87e09afe78a2ab9a84bd82719eced09384798c31b47c3738e1bc7d",
+              "address": "slug1pclrs6xr8gka5e7wuvk88uu2yfkmq03fkf4ve5q8apsyfj9r2uk0ssxm62h",
+              "script_pub_key": "5120c7c70d186745bb4cf9dc658e7e71444db607c5364d599a00fd0c0899146ae59f"
+            },
+            {
+              "path": "m/86'/0'/0'/0/127",
+              "index": 127,
+              "public_key": "03bf2c3519a2f15944807b1308a0daa8275848e2202673402a0e1fda48662b53f1",
+              "address": "slug1ph084q22s2eh9t4jhx0j6hg9ane22gts3hzfhwa9hxyenpshvt20s304t9g",
+              "script_pub_key": "5120bbcf502950566e55d65733e5aba0bd9e54a42e11b8937774b7313330c2ec5a9f"
+            },
+            {
+              "path": "m/86'/0'/0'/0/128",
+              "index": 128,
+              "public_key": "031a8c86efc7cdbf2a86487b53d619a051d89b5c4dddac9c62d07fb4a120bb1f0a",
+              "address": "slug1pd8ce23a8dl6ejadxj7hf8n5kg6u4lkmgjevanskdpmy07zp3zuxq8sw8ng",
+              "script_pub_key": "512069f19547a76ff59975a697ae93ce9646b95fdb689659d9c2cd0ec8ff0831170c"
+            },
+            {
+              "path": "m/86'/0'/0'/0/4076",
+              "index": 4076,
+              "public_key": "0228e4ceb7dbe1dc4e4cfe7c73a6570a9693c4a6e57a7b29ca20a68feba0f173ab",
+              "address": "slug1pkqscfamtfd2tll5rp2ctc47ah3yvt9xvk3c2ce6lvpfz3gst667sggnnc7",
+              "script_pub_key": "5120b02184f76b4b54bffe830ab0bc57ddbc48c594ccb470ac675f605228a20bd6bd"
+            },
+            {
+              "path": "m/86'/0'/0'/0/4077",
+              "index": 4077,
+              "public_key": "02d3978a2524fb08474e89676500cb4ee3054985272c16c6649011059bf51ee50c",
+              "address": "slug1pmnz6w24g3z86s9wlh8n2nrkt6lqcq2lj7vmhxtvnjt9dkv4a3waqjmcctv",
+              "script_pub_key": "5120dcc5a72aa8888fa815dfb9e6a98ecbd7c1802bf2f337732d9392cadb32bd8bba"
+            },
+            {
+              "path": "m/86'/0'/0'/0/4094",
+              "index": 4094,
+              "public_key": "032ee4baff4061e2624bac1ebd0b8c7a7ce2b5397ca967a0bf6e8588b35099caa6",
+              "address": "slug1pug935xpaf7rw656e7mc9nx8psh6lhe8mcfj0usfepxgn6s4ztl2swglln5",
+              "script_pub_key": "5120e20b1a183d4f86ed5359f6f05998e185f5fbe4fbc264fe413909913d42a25fd5"
+            },
+            {
+              "path": "m/86'/0'/0'/0/4095",
+              "index": 4095,
+              "public_key": "02916a1411d1b7273400ef516c1e958c3954a9e239bd7b68fe16c8025de711b398",
+              "address": "slug1pyq6tardvytaxx2h8mce0pdtm2z3lgxxqg8n30urlmft9m7ytnwyqm5trr4",
+              "script_pub_key": "51202034be8dac22fa632ae7de32f0b57b50a3f418c041e717f07fda565df88b9b88"
+            }
+          ]
+        },
+        {
+          "purpose": 86,
+          "coin": 0,
+          "account": 0,
+          "branch": 1,
+          "script_type": "p2tr",
+          "branch_public_key": "JgduaQrYbifob2SoimQRYqwwK4reQTtWNYCJbFtUUKDLCrPZqcmfQDF6QfneUUyoTJVbWzU5gqkxqbUNV7EqdupezzsDQZMZzvkBB8KiDSi5jEjh",
+          "addresses": [
+            {
+              "path": "m/86'/0'/0'/1/0",
+              "index": 0,
+              "public_key": "0215bf3cca3d06751affad8f2c9c55d2367a22bb7742ac9facdf04d5d9e4321e58",
+              "address": "slug1p5hzxu2a2g2dkjxqgsxyc8vqphev38gska9uhztqa3yef5ddda0ls48qnyw",
+              "script_pub_key": "5120a5c46e2baa429b691808818983b001be5913a216e979712c1d89329a35adebff"
+            },
+            {
+              "path": "m/86'/0'/0'/1/1",
+              "index": 1,
+              "public_key": "03ba6914609d8bdb34f2d1dcc70a41d546316b9065419eaaecf549a4a6e526a63b",
+              "address": "slug1plm9357x6a22vrunapyu75reul9n28744cn2ke38fxr53n3rzhtvqr8950k",
+              "script_pub_key": "5120fecb1a78daea94c1f27d0939ea0f3cf966a3fab5c4d56cc4e930e919c462bad8"
+            },
+            {
+              "path": "m/86'/0'/0'/1/19",
+              "index": 19,
+              "public_key": "0219c2f42486a2d7128eb1e152a91a027377aa3980b931a362233f6976ea2dba62",
+              "address": "slug1pzzfl00ju4ye6j7elyjjxxzh0e4exssta86xn0xeadkra0scvafvqudu475",
+              "script_pub_key": "51201093f7be5ca933a97b3f24a4630aefcd7268417d3e8d379b3d6d87d7c30cea58"
+            },
+            {
+              "path": "m/86'/0'/0'/1/20",
+              "index": 20,
+              "public_key": "0282955d4dd9724670cb848d25073c57688e3663228438f5de6dd66e27cbac5f13",
+              "address": "slug1ps6pta0m897x2j5d48fe7n8kphux3ggmzjx8dreuda73mcn4nx40qa9zszr",
+              "script_pub_key": "51208682bebf672f8ca951b53a73e99ec1bf0d142362918ed1e78defa3bc4eb3355e"
+            },
+            {
+              "path": "m/86'/0'/0'/1/127",
+              "index": 127,
+              "public_key": "028a784d408e8a1fe488330867ebd2b08a1c88069b4d63aa4a6b26639d3a0d1b9d",
+              "address": "slug1p8ep8taky33yefjj8xs88066lth56j0jd6m2h7w7ymt26ejxhyy4skjj5ur",
+              "script_pub_key": "51203e4275f6c48c4994ca47340e77eb5f5de9a93e4dd6d57f3bc4dad5acc8d7212b"
+            },
+            {
+              "path": "m/86'/0'/0'/1/128",
+              "index": 128,
+              "public_key": "027918e95a26da732ad2817ab3cd35d210e2c5c07f16b562f4a488fe7d9ce5d108",
+              "address": "slug1payz4slzd23m8flh638kt2frqeeg463qy2epp9smh2mff5n65l8ms0w8djf",
+              "script_pub_key": "5120e905587c4d547674fefa89ecb52460ce515d4404564212c37756d29a4f54f9f7"
+            },
+            {
+              "path": "m/86'/0'/0'/1/4076",
+              "index": 4076,
+              "public_key": "03f7a31734db61d142793512e9336cf6972d95ba770819abe7c16f631fe31d92bb",
+              "address": "slug1p7t4g5esjzmqlzsuawdf24ux6yr7kfsa99qgg55elh5ne5mapl90qvtf2tu",
+              "script_pub_key": "5120f2ea8a661216c1f1439d7352aaf0da20fd64c3a528108a533fbd279a6fa1f95e"
+            },
+            {
+              "path": "m/86'/0'/0'/1/4077",
+              "index": 4077,
+              "public_key": "02d5e5885f0cd83b6d4d9e593e0952e16ef50a809220bfa4263243e1e78ab92b1d",
+              "address": "slug1px8f9ug734098qp8yrys6mr6z87v34cccrc289y5t0l44x9qjv3dqtc043f",
+              "script_pub_key": "512031d25e23d1abca7004e41921ad8f423f991ae3181e1472928b7feb531412645a"
+            },
+            {
+              "path": "m/86'/0'/0'/1/4094",
+              "index": 4094,
+              "public_key": "026e6dcb0f9769f5808ce6335bb76d7ac8d2a4454f3ce90e91036534d80c78313b",
+              "address": "slug1pk3vy4u9mrn2rpcaryj3sr8hm2v9nzcgdk2w0ctwnw364av47sfysdzjj8k",
+              "script_pub_key": "5120b4584af0bb1cd430e3a324a3019efb530b31610db29cfc2dd374755eb2be8249"
+            },
+            {
+              "path": "m/86'/0'/0'/1/4095",
+              "index": 4095,
+              "public_key": "020f71347bd198f916aa34cca8becddd772e5c4091b4d880ecdd0832b51c986af4",
+              "address": "slug1pkggdullud3mqxy9n7e7erwzyl6rxnmegkp4fuuw8s7vlm7chlmrq5hd8z7",
+              "script_pub_key": "5120b210de7ffc6c760310b3f67d91b844fe8669ef28b06a9e71c78799fdfb17fec6"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "No schema12, scanner, wallet readiness, resume, funds, ownership or complete-history claim.",
+    "Mixed purpose49 is nested witness externally and native witness internally.",
+    "No profile2 coin, key or script reference is imported.",
+    "No real secret, runtime wallet or new implementation output is an oracle input."
+  ]
+}

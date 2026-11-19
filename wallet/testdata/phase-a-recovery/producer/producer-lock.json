@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "approved_kinds": [
+    "addresses",
+    "progress"
+  ],
+  "input_lock_sha256": "0b8007ed401a1be08e7495a636149cf7b468da09a6030a59b1a089cd4f7673f9",
+  "files": {
+    "generate.py": "9e440191446bc57a4376530ccffd0da7d407e66c8a76086d8acb4f7316d99d58",
+    "address_model.py": "d4343afb1603211d52c62cbec5e373e129807858631f1a2e83f4b43b97c2557b",
+    "progress_model.py": "45c4717403a1ab27e346c97a7a0b4b6a3ecbd0eacb2546d91c886ecf4481ba6f",
+    "CASE_PLAN.md": "a0256096554625894a9167f35046484734ec99cf4102de67661f2d58b92b4069",
+    "contract-review.json": "40b3635edd6ad5e6ba06ff99cf68f466ba1ccc648bbcec330a9ecb9fed9c9958",
+    "frozen/PHASE_A_BACKUP_RECOVERY.md": "ea502f20fa91a313e62ba9dc1f577fd1e49456747fa1283726371d5b6583237e"
+  },
+  "reviewer": "root",
+  "review": "Independent finite source review completed before execution: unchanged published v1 oracle reproduces prior standards/corpus; coin0 mixed49 and BIP86 scripts preserved; clipped20/4096, greedy ordered128,236-byte LE progress checked against frozen engineering contract; derivation completion never grants wallet readiness; no new Go/runtime output imported."
+}

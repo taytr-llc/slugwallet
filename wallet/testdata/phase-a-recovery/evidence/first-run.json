@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "passed": true,
+  "source": "/Users/taytrrip/slug/set69-prep/reference",
+  "python": "/opt/homebrew/bin/python3.14",
+  "producer_lock_sha256": "0a0762cf3d51a3e35505494a6afa995e2292fce742c4a92cb1478aa0712abc29",
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/bin/python3.14",
+        "-B",
+        "/Users/taytrrip/slug/set69-prep/reference/generate.py",
+        "--kind",
+        "addresses",
+        "--output",
+        "/Users/taytrrip/slug/artifacts/set69/reference-attempt1/addresses-v1.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.328,
+      "log": "addresses.log"
+    },
+    {
+      "command": [
+        "/opt/homebrew/bin/python3.14",
+        "-B",
+        "/Users/taytrrip/slug/set69-prep/reference/generate.py",
+        "--kind",
+        "progress",
+        "--output",
+        "/Users/taytrrip/slug/artifacts/set69/reference-attempt1/progress-v1.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.078,
+      "log": "progress.log"
+    }
+  ],
+  "outputs": {
+    "addresses-v1.json": {
+      "sha256": "1558bf4a134ab01acfe84fdbb2edc3e8af842b602cb5150feaa9ce2df26b9cf7",
+      "bytes": 67032
+    },
+    "progress-v1.json": {
+      "sha256": "fb0c9a5b1d59711ecb6d855534358f09175df5eb547c1bf88d0474b4b3515801",
+      "bytes": 139687
+    }
+  },
+  "failure": null,
+  "python_version": "Python 3.14.3",
+  "coverage": {
+    "public_fixtures": 2,
+    "address_rows": 160,
+    "old_v1_corpus_reproduced": true,
+    "progress_plans": 7,
+    "discovery_cases": 8,
+    "invalid_cursors": 2
+  },
+  "compared_to": null,
+  "byte_identical": null,
+  "source_unchanged": true,
+  "source_before_sha256": "ea2089968edb67a6c59c7963d0fe8ddc3d2f3bb48b0c89fda95b6e39eb78bbe0",
+  "source_after_sha256": "ea2089968edb67a6c59c7963d0fe8ddc3d2f3bb48b0c89fda95b6e39eb78bbe0",
+  "cache_paths": [],
+  "elapsed_seconds": 6.428
+}

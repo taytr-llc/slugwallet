@@ -18,7 +18,7 @@ func validateResumableInvalidChildren(ns walletdb.ReadBucket, cryptoKeyPub Encry
 		return ErrRecoveryState
 	}
 	version, err := fetchManagerVersion(ns)
-	if err != nil || version != ResumableManagerVersion {
+	if err != nil || version != ResumableManagerVersion && version != PhaseAManagerVersion {
 		return ErrRecoveryState
 	}
 	state, err := fetchRecoveryProgress(ns)
@@ -36,7 +36,11 @@ func validateResumableInvalidChildren(ns walletdb.ReadBucket, cryptoKeyPub Encry
 			}
 		}
 	}()
-	markers := ns.NestedReadBucket(mainBucketName).NestedReadBucket(recoveryInvalidName)
+	policy, err := recoveryPolicyFor(ns)
+	if err != nil {
+		return err
+	}
+	markers := ns.NestedReadBucket(mainBucketName).NestedReadBucket(policy.invalid)
 	return markers.ForEach(func(key, value []byte) error {
 		// The bounded format and coverage check above precedes all slicing
 		// and derivation, including for malformed nested buckets.

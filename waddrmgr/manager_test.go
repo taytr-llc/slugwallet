@@ -2180,7 +2180,7 @@ func TestManagerHigherVersion(t *testing.T) {
 		if ns == nil {
 			return errors.New("top-level namespace does not exist")
 		}
-		return putManagerVersion(ns, ResumableManagerVersion+1)
+		return putManagerVersion(ns, PhaseAManagerVersion+1)
 	})
 	if err != nil {
 		t.Fatalf("unable to update manager version %v", err)

@@ -52,7 +52,7 @@ func TestRecoveryWatchRegistrationIsBounded(t *testing.T) {
 	w := &Wallet{quit: make(chan struct{})}
 	w.SetChainSynced(true)
 	backend := &recoveryWatchBackend{}
-	if err := w.rescanCandidate(backend, watchBatch(t, 257)); err != nil {
+	if err := w.rescanRecoveryLimit(backend, watchBatch(t, 257), waddrmgr.RecoveryAttemptLimit); err != nil {
 		t.Fatal(err)
 	}
 	if len(backend.batches) != 3 || backend.batches[0] != 128 || backend.batches[1] != 128 || backend.batches[2] != 1 || backend.rescans != 1 {
@@ -63,7 +63,7 @@ func TestRecoveryWatchRegistrationIsBounded(t *testing.T) {
 	}
 	tooLarge := watchBatch(t, int(waddrmgr.RecoveryAttemptLimit)+1)
 	backend = &recoveryWatchBackend{}
-	if err := w.rescanCandidate(backend, tooLarge); !errors.Is(err, ErrRecoveryCapacity) || len(backend.batches) != 0 || backend.rescans != 0 {
+	if err := w.rescanRecoveryLimit(backend, tooLarge, waddrmgr.RecoveryAttemptLimit); !errors.Is(err, ErrRecoveryCapacity) || len(backend.batches) != 0 || backend.rescans != 0 {
 		t.Fatal("capacity rejection dispatched a partial watch", err)
 	}
 }
@@ -77,7 +77,7 @@ func TestRecoveryWatchCancellationAndFailureDoNotRescan(t *testing.T) {
 			backend.fail = nil
 			backend.afterNotify = func() { close(w.quit) }
 		}
-		if err := w.rescanCandidate(backend, watchBatch(t, 257)); err == nil || backend.rescans != 0 || w.ChainSynced() {
+		if err := w.rescanRecoveryLimit(backend, watchBatch(t, 257), waddrmgr.RecoveryAttemptLimit); err == nil || backend.rescans != 0 || w.ChainSynced() {
 			t.Fatal("failed registration advanced sync", err)
 		}
 	}

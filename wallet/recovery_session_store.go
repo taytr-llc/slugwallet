@@ -34,11 +34,12 @@ const (
 )
 
 var (
-	recoveryScanBucket   = []byte("slug-candidate-scanner-v1")
-	recoveryScanMeta     = []byte("progress")
-	recoveryScripts      = []byte("scripts")
-	recoveryOutputs      = []byte("outputs")
-	recoveryTransactions = []byte("transactions")
+	phaseARecoveryScanBucket = []byte("slug-phase-a-scanner-v1")
+	recoveryScanBucket       = []byte("slug-candidate-scanner-v1")
+	recoveryScanMeta         = []byte("progress")
+	recoveryScripts          = []byte("scripts")
+	recoveryOutputs          = []byte("outputs")
+	recoveryTransactions     = []byte("transactions")
 )
 
 type recoveryScanState struct {
@@ -65,27 +66,32 @@ type recoveryScript struct {
 // private key unlocking, notifications or spending run during reconstruction.
 // Each successful Step commits one bounded unit and can be resumed after Close.
 type RecoverySession struct {
-	db         walletdb.DB
-	manager    *waddrmgr.Manager
-	txStore    *wtxmgr.Store
-	params     *chaincfg.Params
-	update     func(func(walletdb.ReadWriteTx) error) error
-	checkpoint func(string)
-	onClose    func()
-	gate       chan struct{}
-	life       context.Context
-	cancel     context.CancelFunc
-	closeOnce  sync.Once
-	closeDone  chan struct{}
-	closeErr   error
-	poisoned   bool // protected by gate
+	db             walletdb.DB
+	manager        *waddrmgr.Manager
+	txStore        *wtxmgr.Store
+	params         *chaincfg.Params
+	update         func(func(walletdb.ReadWriteTx) error) error
+	checkpoint     func(string)
+	onClose        func()
+	onCloseFailure func(error) error
+	scanBucket     []byte
+	gate           chan struct{}
+	life           context.Context
+	cancel         context.CancelFunc
+	closeOnce      sync.Once
+	closeDone      chan struct{}
+	closeErr       error
+	poisoned       bool // protected by gate
 }
 
 func initializeCandidateRecovery(tx walletdb.ReadWriteTx) error {
-	if tx.ReadBucket(recoveryScanBucket) != nil {
+	return initializeRecovery(tx, recoveryScanBucket)
+}
+func initializeRecovery(tx walletdb.ReadWriteTx, bucket []byte) error {
+	if tx.ReadBucket(recoveryScanBucket) != nil || tx.ReadBucket(phaseARecoveryScanBucket) != nil {
 		return waddrmgr.ErrRecoveryState
 	}
-	b, err := tx.CreateTopLevelBucket(recoveryScanBucket)
+	b, err := tx.CreateTopLevelBucket(bucket)
 	if err != nil {
 		return err
 	}
@@ -149,16 +155,23 @@ func candidateRecoveryComplete(tx walletdb.ReadTx, mgr *waddrmgr.Manager) error 
 	if !mgr.ResumableRecovery() {
 		return nil
 	}
+	if err := recoveryBucketExclusive(tx, mgr); err != nil {
+		return err
+	}
 	state, err := mgr.CandidateRecoveryState(tx.ReadBucket(waddrmgrNamespaceKey))
 	if err != nil {
 		return err
 	}
-	scan, err := readRecoveryScan(tx.ReadBucket(recoveryScanBucket))
+	scan, err := readRecoveryScan(tx.ReadBucket(recoveryBucketFor(mgr)))
 	if err != nil {
 		return err
 	}
 	if !state.Ready || scan.Phase != "complete" {
 		return ErrRecoveryInProgress
+	}
+	if mgr.RecoveryVersion() == 1 {
+		s := &RecoverySession{manager: mgr, params: mgr.ChainParams(), scanBucket: recoveryBucketFor(mgr)}
+		return s.audit(context.Background(), tx)
 	}
 	return nil
 }
@@ -175,7 +188,7 @@ func newRecoverySession(ctx context.Context, db walletdb.DB, mgr *waddrmgr.Manag
 	ownedParams.GenesisHash = &genesis
 	genesisBlock := *params.GenesisBlock
 	ownedParams.GenesisBlock = &genesisBlock
-	s := &RecoverySession{db: db, manager: mgr, txStore: txs, params: &ownedParams, onClose: onClose, gate: make(chan struct{}, 1), closeDone: make(chan struct{})}
+	s := &RecoverySession{db: db, manager: mgr, txStore: txs, params: &ownedParams, onClose: onClose, scanBucket: recoveryBucketFor(mgr), gate: make(chan struct{}, 1), closeDone: make(chan struct{})}
 	s.life, s.cancel = context.WithCancel(context.Background())
 	s.update = func(f func(walletdb.ReadWriteTx) error) error { return walletdb.Update(db, f) }
 	s.txStore.NotifyUnspent = nil
@@ -223,7 +236,11 @@ func (s *RecoverySession) Close() error {
 		s.gate <- struct{}{}
 		s.manager.Close()
 		s.closeErr = s.db.Close()
-		if s.onClose != nil {
+		if s.manager.RecoveryVersion() == 1 && s.closeErr != nil {
+			if s.onCloseFailure != nil {
+				s.closeErr = s.onCloseFailure(s.closeErr)
+			}
+		} else if s.onClose != nil {
 			s.onClose()
 		}
 		<-s.gate
@@ -239,7 +256,7 @@ func (s *RecoverySession) status(tx walletdb.ReadTx) (RecoveryProgress, error) {
 	if err != nil {
 		return p, err
 	}
-	d, err := readRecoveryScan(tx.ReadBucket(recoveryScanBucket))
+	d, err := readRecoveryScan(tx.ReadBucket(s.scanBucket))
 	if err != nil {
 		return p, err
 	}
@@ -281,12 +298,15 @@ func (s *RecoverySession) committed(stage string, fn func(walletdb.ReadWriteTx) 
 }
 
 func decodeRecoveryScript(raw []byte) (recoveryScript, error) {
+	return decodeRecoveryScriptLimit(raw, productionprofile.MaxNextIndex)
+}
+func decodeRecoveryScriptLimit(raw []byte, limit uint32) (recoveryScript, error) {
 	var v recoveryScript
 	if len(raw) == 0 || len(raw) > 256 || json.Unmarshal(raw, &v) != nil {
 		return v, waddrmgr.ErrRecoveryState
 	}
 	c, _ := json.Marshal(v)
-	if !bytes.Equal(c, raw) || v.Branch > 1 || v.Index >= productionprofile.MaxNextIndex || len(v.Script) < 22 || len(v.Script) > 34 {
+	if !bytes.Equal(c, raw) || v.Branch > 1 || v.Index >= limit || len(v.Script) < 22 || len(v.Script) > 34 {
 		return v, waddrmgr.ErrRecoveryState
 	}
 	switch v.Purpose {
@@ -340,11 +360,14 @@ func (s *RecoverySession) audit(ctx context.Context, tx walletdb.ReadTx) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	if err := recoveryBucketExclusive(tx, s.manager); err != nil {
+		return err
+	}
 	p, err := s.status(tx)
 	if err != nil {
 		return err
 	}
-	b := tx.ReadBucket(recoveryScanBucket)
+	b := tx.ReadBucket(s.scanBucket)
 	count := 0
 	if err := b.ForEach(func(k, v []byte) error {
 		count++
@@ -366,6 +389,9 @@ func (s *RecoverySession) audit(ctx context.Context, tx walletdb.ReadTx) error {
 	// Ready wallets acquire ordinary transaction/address state after the session
 	// closes. The immutable completed scanner checkpoint is not their live ledger.
 	if p.Ready {
+		if s.manager.RecoveryVersion() == 1 {
+			return s.auditPhaseAComplete(ctx, tx, b)
+		}
 		return nil
 	}
 	ledgerSummary, err := s.txStore.ValidateRecoveryStore(tx.ReadBucket(wtxmgrNamespaceKey))
@@ -377,60 +403,7 @@ func (s *RecoverySession) audit(ctx context.Context, tx walletdb.ReadTx) error {
 	if err != nil {
 		return err
 	}
-	keys := make([]*hdkeychain.ExtendedKey, 8)
-	defer func() {
-		for _, k := range keys {
-			if k != nil {
-				k.Zero()
-			}
-		}
-	}()
-	for i, x := range m.Branches {
-		scope, err := s.manager.FetchScopedKeyManager(x.Scope)
-		if err != nil {
-			return err
-		}
-		props, err := scope.AccountProperties(ns, 0)
-		if err != nil {
-			return err
-		}
-		keys[i], err = props.AccountPubKey.Derive(x.Branch)
-		if err != nil {
-			return waddrmgr.ErrRecoveryState
-		}
-	}
-	var scripts uint32
-	err = b.NestedReadBucket(recoveryScripts).ForEach(func(k, v []byte) error {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		scripts++
-		if scripts > waddrmgr.RecoveryAttemptLimit || len(k) != 32 || v == nil {
-			return waddrmgr.ErrRecoveryState
-		}
-		row, err := decodeRecoveryScript(v)
-		if err != nil {
-			return err
-		}
-		idx := recoveryBranchIndex(row.Purpose, row.Branch)
-		if idx < 0 || row.Index >= m.Branches[idx].DerivedNext {
-			return waddrmgr.ErrRecoveryState
-		}
-		h := sha256.Sum256(row.Script)
-		if !bytes.Equal(h[:], k) {
-			return waddrmgr.ErrRecoveryState
-		}
-		child, err := keys[idx].Derive(row.Index)
-		if err != nil {
-			return waddrmgr.ErrRecoveryState
-		}
-		expected, err := recoveryScriptForKey(child, row.Purpose, s.params)
-		child.Zero()
-		if err != nil || !bytes.Equal(expected, row.Script) {
-			return waddrmgr.ErrRecoveryState
-		}
-		return nil
-	})
+	scripts, err := s.auditRecoveryScripts(ctx, tx, b)
 	if err != nil {
 		return err
 	}
@@ -542,7 +515,7 @@ func (s *RecoverySession) audit(ctx context.Context, tx walletdb.ReadTx) error {
 			if !bytes.Equal(indexed, scriptHash[:]) || int64(credit.Amount) != output.Value {
 				return waddrmgr.ErrRecoveryState
 			}
-			row, err := decodeRecoveryScript(b.NestedReadBucket(recoveryScripts).Get(scriptHash[:]))
+			row, err := decodeRecoveryScriptLimit(b.NestedReadBucket(recoveryScripts).Get(scriptHash[:]), s.manager.RecoveryIndexLimit())
 			if err != nil || !bytes.Equal(row.Script, output.PkScript) || credit.Change != (row.Branch == 1) {
 				return waddrmgr.ErrRecoveryState
 			}
@@ -605,6 +578,9 @@ func (s *RecoverySession) audit(ctx context.Context, tx walletdb.ReadTx) error {
 // resetPendingRecovery discards only the bounded, private reconstruction view.
 // Monotonic issued/used address facts and the public script index survive.
 func resetPendingRecovery(tx walletdb.ReadWriteTx, d *recoveryScanState) error {
+	return resetPendingRecoveryBucket(tx, d, recoveryScanBucket)
+}
+func resetPendingRecoveryBucket(tx walletdb.ReadWriteTx, d *recoveryScanState, bucket []byte) error {
 	if d.Phase == "complete" {
 		return waddrmgr.ErrRecoveryState
 	}
@@ -618,7 +594,7 @@ func resetPendingRecovery(tx walletdb.ReadWriteTx, d *recoveryScanState) error {
 	if err = wtxmgr.Create(ns); err != nil {
 		return err
 	}
-	b := tx.ReadWriteBucket(recoveryScanBucket)
+	b := tx.ReadWriteBucket(bucket)
 	for _, name := range [][]byte{recoveryOutputs, recoveryTransactions} {
 		if err = b.DeleteNestedBucket(name); err != nil {
 			return err
@@ -641,4 +617,223 @@ func recoveryOutpointKey(op wire.OutPoint) []byte {
 	copy(k, op.Hash[:])
 	binary.LittleEndian.PutUint32(k[32:], op.Index)
 	return k
+}
+
+func recoveryBucketFor(mgr *waddrmgr.Manager) []byte {
+	if mgr.RecoveryVersion() == 1 {
+		return phaseARecoveryScanBucket
+	}
+	return recoveryScanBucket
+}
+
+func recoveryBucketExclusive(tx walletdb.ReadTx, mgr *waddrmgr.Manager) error {
+	foreign := phaseARecoveryScanBucket
+	if mgr.RecoveryVersion() == 1 {
+		foreign = recoveryScanBucket
+	}
+	if tx.ReadBucket(foreign) != nil {
+		return waddrmgr.ErrRecoveryState
+	}
+	return nil
+}
+
+func (s *RecoverySession) auditRecoveryScripts(ctx context.Context, tx walletdb.ReadTx, b walletdb.ReadBucket) (uint32, error) {
+	ns := tx.ReadBucket(waddrmgrNamespaceKey)
+	m, err := s.manager.CandidateRecoveryState(ns)
+	if err != nil {
+		return 0, err
+	}
+	keys := make([]*hdkeychain.ExtendedKey, 8)
+	defer func() {
+		for _, k := range keys {
+			if k != nil {
+				k.Zero()
+			}
+		}
+	}()
+	for i, x := range m.Branches {
+		scope, err := s.manager.FetchScopedKeyManager(x.Scope)
+		if err != nil {
+			return 0, err
+		}
+		props, err := scope.AccountProperties(ns, 0)
+		if err != nil {
+			return 0, err
+		}
+		keys[i], err = props.AccountPubKey.Derive(x.Branch)
+		if err != nil {
+			return 0, waddrmgr.ErrRecoveryState
+		}
+	}
+	var seen [8][4096]bool
+	var tail [8]uint32
+	var scripts uint32
+	err = b.NestedReadBucket(recoveryScripts).ForEach(func(k, v []byte) error {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		scripts++
+		if scripts > s.manager.RecoveryInventoryLimit() || len(k) != 32 || v == nil {
+			return waddrmgr.ErrRecoveryState
+		}
+		row, err := decodeRecoveryScriptLimit(v, s.manager.RecoveryIndexLimit())
+		if err != nil {
+			return err
+		}
+		idx := recoveryBranchIndex(row.Purpose, row.Branch)
+		if idx < 0 || row.Index >= m.Branches[idx].DerivedNext {
+			return waddrmgr.ErrRecoveryState
+		}
+		if s.manager.RecoveryVersion() == 1 {
+			if seen[idx][row.Index] {
+				return waddrmgr.ErrRecoveryState
+			}
+			seen[idx][row.Index] = true
+			if row.Index+1 > tail[idx] {
+				tail[idx] = row.Index + 1
+			}
+		}
+		h := sha256.Sum256(row.Script)
+		if !bytes.Equal(h[:], k) {
+			return waddrmgr.ErrRecoveryState
+		}
+		child, err := keys[idx].Derive(row.Index)
+		if err != nil {
+			return waddrmgr.ErrRecoveryState
+		}
+		purpose := row.Purpose
+		if s.manager.RecoveryVersion() == 1 && purpose == 49 && row.Branch == 1 {
+			purpose = 84
+		}
+		expected, err := recoveryScriptForKey(child, purpose, s.params)
+		child.Zero()
+		if err != nil || !bytes.Equal(expected, row.Script) {
+			return waddrmgr.ErrRecoveryState
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	if m.Ready && s.manager.RecoveryVersion() == 1 {
+		// Immutable canonical outputs give a minimum discovered issuance. A pending
+		// reorg may have removed an orphan output while retaining its larger public
+		// address inventory, so this is deliberately a minimum, never exact equality.
+		var discovered [8]uint32
+		var observedOutputs uint32
+		e := b.NestedReadBucket(recoveryOutputs).ForEach(func(k, v []byte) error {
+			if e := ctx.Err(); e != nil {
+				return e
+			}
+			observedOutputs++
+			if observedOutputs > MaxRecoveryOwnedOutputs {
+				return waddrmgr.ErrRecoveryState
+			}
+			if len(k) != 36 || len(v) != 32 {
+				return waddrmgr.ErrRecoveryState
+			}
+			row, e := decodeRecoveryScriptLimit(b.NestedReadBucket(recoveryScripts).Get(v), s.manager.RecoveryIndexLimit())
+			if e != nil {
+				return e
+			}
+			i := recoveryBranchIndex(row.Purpose, row.Branch)
+			if i < 0 {
+				return waddrmgr.ErrRecoveryState
+			}
+			if row.Index+1 > discovered[i] {
+				discovered[i] = row.Index + 1
+			}
+			return nil
+		})
+		if e != nil {
+			return 0, e
+		}
+		for i, branch := range m.Branches {
+			if discovered[i] > branch.IssuedNext {
+				return 0, waddrmgr.ErrRecoveryState
+			}
+			issued := branch.ImportedNext
+			if discovered[i] > issued {
+				issued = discovered[i]
+			}
+			minimum := issued + waddrmgr.RecoveryLookahead
+			if minimum > 4096 {
+				minimum = 4096
+			}
+			if tail[i] < minimum {
+				tail[i] = minimum
+			}
+			for index := uint32(0); index < tail[i]; index++ {
+				if seen[i][index] {
+					continue
+				}
+				if err := ctx.Err(); err != nil {
+					return 0, err
+				}
+				child, e := keys[i].Derive(index)
+				if e == hdkeychain.ErrInvalidChild {
+					continue
+				}
+				if child != nil {
+					child.Zero()
+				}
+				return 0, waddrmgr.ErrRecoveryState
+			}
+		}
+	}
+	return scripts, nil
+}
+
+// The completed scanner is an immutable reconstruction checkpoint. Its row
+// grammar/counts and derivations are audited without treating later live-wallet
+// credits, spends, reorgs, or newly issued addresses as checkpoint corruption.
+func (s *RecoverySession) auditPhaseAComplete(ctx context.Context, tx walletdb.ReadTx, b walletdb.ReadBucket) error {
+	if _, e := s.auditRecoveryScripts(ctx, tx, b); e != nil {
+		return e
+	}
+	d, e := readRecoveryScan(b)
+	if e != nil {
+		return e
+	}
+	var outputs, transactions uint32
+	var total uint64
+	e = b.NestedReadBucket(recoveryOutputs).ForEach(func(k, v []byte) error {
+		if e := ctx.Err(); e != nil {
+			return e
+		}
+		outputs++
+		if outputs > MaxRecoveryOwnedOutputs || len(k) != 36 || len(v) != 32 || b.NestedReadBucket(recoveryScripts).Get(v) == nil || b.NestedReadBucket(recoveryTransactions).Get(k[:32]) == nil {
+			return waddrmgr.ErrRecoveryState
+		}
+		return nil
+	})
+	if e != nil {
+		return e
+	}
+	e = b.NestedReadBucket(recoveryTransactions).ForEach(func(k, v []byte) error {
+		if e := ctx.Err(); e != nil {
+			return e
+		}
+		transactions++
+		if transactions > MaxRecoveryTransactions || len(k) != 32 || len(v) != 8 {
+			return waddrmgr.ErrRecoveryState
+		}
+		n := binary.LittleEndian.Uint64(v)
+		if n == 0 || n > wire.MaxBlockPayload {
+			return waddrmgr.ErrRecoveryState
+		}
+		total += n
+		if total > MaxRecoveryTransactionBytes {
+			return waddrmgr.ErrRecoveryState
+		}
+		return nil
+	})
+	if e != nil {
+		return e
+	}
+	if outputs != d.Outputs || transactions != d.Transactions || total != d.TransactionBytes {
+		return waddrmgr.ErrRecoveryState
+	}
+	return nil
 }

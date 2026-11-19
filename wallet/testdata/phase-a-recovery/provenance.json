@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "producer_lock_sha256": "0a0762cf3d51a3e35505494a6afa995e2292fce742c4a92cb1478aa0712abc29",
+  "input_lock_sha256": "0b8007ed401a1be08e7495a636149cf7b468da09a6030a59b1a089cd4f7673f9",
+  "contract_sha256": "ea502f20fa91a313e62ba9dc1f577fd1e49456747fa1283726371d5b6583237e",
+  "outputs": {
+    "addresses-v1.json": {
+      "sha256": "1558bf4a134ab01acfe84fdbb2edc3e8af842b602cb5150feaa9ce2df26b9cf7",
+      "bytes": 67032
+    },
+    "progress-v1.json": {
+      "sha256": "fb0c9a5b1d59711ecb6d855534358f09175df5eb547c1bf88d0474b4b3515801",
+      "bytes": 139687
+    }
+  },
+  "independent_execution": {
+    "first_python": "Python 3.14.3",
+    "second_python": "Python 3.9.6",
+    "byte_identical": true,
+    "source_unchanged": true,
+    "first_report_sha256": "36c2ab7dd09dd8747234955eacb403d54288611177eaae33561e4efd8912ffb8",
+    "second_report_sha256": "c248c2aa8c74f2186da8dbc555f631f8366b69a72e53aa4e6872eaf89424df85"
+  },
+  "scope": "Published Phase-A v1 fixture address/script derivation and separately adopted bounded progress arithmetic; no Go/runtime expected outputs."
+}

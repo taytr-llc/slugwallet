@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "created_before_new_producer_sources": true,
+  "created_at_utc": "2026-11-19T21:04:19.525381+00:00",
+  "wallet_commit": "7eaf344601cf34c1ba07455e78483218a2cac3b0",
+  "chain_commit": "0484a055333735dd335bcddb7aff5f1ee459e628",
+  "scope": "Only frozen pre-Set69 v1 coin0 derivation plus explicitly draft progress proposal. No new implementation, profile2 oracle, new runtime outputs or actual private keys.",
+  "files": [
+    {
+      "path": "inputs/inherited/recovery/README.md",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/README.md",
+      "sha256": "f3577b29c090a8486ed3b56b86a136e697fa421456c8fc6a62ffa88f634a84d2",
+      "bytes": 3537,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/reference.py",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/reference.py",
+      "sha256": "60e1527ce408213fd89bc2cf6b4d2d8ecaedbd3c811ef4d40b6f888bb608202f",
+      "bytes": 15839,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/reference_vectors.json",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/reference_vectors.json",
+      "sha256": "28612cb0e83d6997fdd78333f57d827eb6162981433581490bcd8ad8ae3070d9",
+      "bytes": 10107,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/sources/bip-0032.mediawiki",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources/bip-0032.mediawiki",
+      "sha256": "e5e00a8289db2f681052cf24a745320afc225e66b25d1e489a7c884d2fc7f11f",
+      "bytes": 28032,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/sources/bip-0039.mediawiki",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources/bip-0039.mediawiki",
+      "sha256": "afcbcbed36fe9eb734bd607398a8c124683ded2a75c3830e1b16c47b043a9134",
+      "bytes": 6842,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/sources/bip-0084.mediawiki",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources/bip-0084.mediawiki",
+      "sha256": "1900feec6cafca65b8c09906ca0658d2d742b4c9b44cb15678996985b6bfe627",
+      "bytes": 4648,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/sources/bip-0086.mediawiki",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources/bip-0086.mediawiki",
+      "sha256": "d8d01dee331da07c2562615bc1f064c1868ec3fce61184973da76d1196c7f5b0",
+      "bytes": 5896,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/sources/english.txt",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources/english.txt",
+      "sha256": "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda",
+      "bytes": 13116,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/sources/mnemonic-LICENSE",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources/mnemonic-LICENSE",
+      "sha256": "d5e3c7c62a84e80073201e2f6e5130e9e6804fa05f8ac4f8b26a13c7d3969697",
+      "bytes": 1084,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/sources/mnemonic-vectors.json",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources/mnemonic-vectors.json",
+      "sha256": "fa3b937b7cff9c9b8ecd3aa011faeb8d6dd67993174b72326e83f4de8fdb30f8",
+      "bytes": 152400,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/oracle/sources.json",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/oracle/sources.json",
+      "sha256": "d770189379de4fb2368909eeca246071f79bbf887afa06387c84c90551dd89b9",
+      "bytes": 2896,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/recovery_v1.json",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/recovery_v1.json",
+      "sha256": "d5141f4a8ee4378d77d483b09f6ecd809f8b328f82e79a69ff83164e73bc799a",
+      "bytes": 16064,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/inherited/recovery/reference_recovery.py",
+      "source": "/Users/taytrrip/slug/slugwallet/recovery/testdata/reference_recovery.py",
+      "sha256": "7fa363566bb3ae003f646a89accc029045b083b643f4fb921121ed00eeb8d6c8",
+      "bytes": 4326,
+      "role": "frozen pre-Set69 v1 reference/standard/public fixture"
+    },
+    {
+      "path": "inputs/proposal/recovery-contract-proposal.initial.md",
+      "source": "/Users/taytrrip/slug/set69-prep/recovery-contract-proposal.md",
+      "sha256": "ad75950890bb4f5ce680e24c8eb788ec87d70e33c927657bbe46ee28873b6114",
+      "bytes": 17472,
+      "role": "unfrozen proposed progress semantics; not stable derivation authority"
+    },
+    {
+      "path": "inputs/public/fixture-recovery-v1.json",
+      "source": "/Users/taytrrip/slug/slugwallet/wallet/testdata/candidate-withdrawals/reference-inputs/public/fixture-recovery-v1.json",
+      "sha256": "d5141f4a8ee4378d77d483b09f6ecd809f8b328f82e79a69ff83164e73bc799a",
+      "bytes": 16064,
+      "role": "previously published public fixture tuple used by Set68"
+    }
+  ]
+}

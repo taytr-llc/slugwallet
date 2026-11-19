@@ -1,0 +1,4447 @@
+{
+  "version": 1,
+  "status": "adopted-bounded-progress-model",
+  "input_lock_sha256": "0b8007ed401a1be08e7495a636149cf7b468da09a6030a59b1a089cd4f7673f9",
+  "cursor_limit": 4096,
+  "lookahead": 20,
+  "step_raw_attempt_limit": 128,
+  "packing_policy": "root-approved-greedy128-ordered-scopes-branches",
+  "scope_order": [
+    {
+      "purpose": 44,
+      "coin": 0,
+      "branch": 0
+    },
+    {
+      "purpose": 44,
+      "coin": 0,
+      "branch": 1
+    },
+    {
+      "purpose": 49,
+      "coin": 0,
+      "branch": 0
+    },
+    {
+      "purpose": 49,
+      "coin": 0,
+      "branch": 1
+    },
+    {
+      "purpose": 84,
+      "coin": 0,
+      "branch": 0
+    },
+    {
+      "purpose": 84,
+      "coin": 0,
+      "branch": 1
+    },
+    {
+      "purpose": 86,
+      "coin": 0,
+      "branch": 0
+    },
+    {
+      "purpose": 86,
+      "coin": 0,
+      "branch": 1
+    }
+  ],
+  "plans": [
+    {
+      "name": "uniform_0",
+      "imported": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "initial": {
+        "records": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          }
+        ],
+        "progress_hex": "0100000000000000000000002c0000000000000000000000000000000000000000000000140000002c000000000000000100000000000000000000000000000014000000310000000000000000000000000000000000000000000000140000003100000000000000010000000000000000000000000000001400000054000000000000000000000000000000000000000000000014000000540000000000000001000000000000000000000000000000140000005600000000000000000000000000000000000000000000001400000056000000000000000100000000000000000000000000000014000000"
+      },
+      "total_raw_attempts": 160,
+      "step_count": 2,
+      "step_attempt_runs": [
+        {
+          "raw_attempts": 128,
+          "count": 1
+        },
+        {
+          "raw_attempts": 32,
+          "count": 1
+        }
+      ],
+      "selected_steps": [
+        {
+          "step": 1,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 0,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 1,
+              "start": 0,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 2,
+              "start": 0,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 3,
+              "start": 0,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 4,
+              "start": 0,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 5,
+              "start": 0,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 6,
+              "start": 0,
+              "end_exclusive": 8
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 8,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 0,
+              "target_next": 20
+            }
+          ],
+          "progress_hex": "0100000000000000800000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000000000000000000001400000014000000310000000000000000000000000000000000000014000000140000003100000000000000010000000000000000000000140000001400000054000000000000000000000000000000000000001400000014000000540000000000000001000000000000000000000014000000140000005600000000000000000000000000000000000000080000001400000056000000000000000100000000000000000000000000000014000000"
+        },
+        {
+          "step": 2,
+          "raw_attempts": 32,
+          "segments": [
+            {
+              "branch_record": 6,
+              "start": 8,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 7,
+              "start": 0,
+              "end_exclusive": 20
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            }
+          ],
+          "progress_hex": "0100000000000000a00000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000000000000000000001400000014000000310000000000000000000000000000000000000014000000140000003100000000000000010000000000000000000000140000001400000054000000000000000000000000000000000000001400000014000000540000000000000001000000000000000000000014000000140000005600000000000000000000000000000000000000140000001400000056000000000000000100000000000000000000001400000014000000"
+        }
+      ],
+      "derivation_complete": true,
+      "wallet_ready": false,
+      "final_progress_hex": "0100000000000000a00000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000000000000000000001400000014000000310000000000000000000000000000000000000014000000140000003100000000000000010000000000000000000000140000001400000054000000000000000000000000000000000000001400000014000000540000000000000001000000000000000000000014000000140000005600000000000000000000000000000000000000140000001400000056000000000000000100000000000000000000001400000014000000"
+    },
+    {
+      "name": "uniform_1",
+      "imported": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "initial": {
+        "records": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          },
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          }
+        ],
+        "progress_hex": "0100000000000000000000002c0000000000000000000000010000000100000000000000150000002c000000000000000100000001000000010000000000000015000000310000000000000000000000010000000100000000000000150000003100000000000000010000000100000001000000000000001500000054000000000000000000000001000000010000000000000015000000540000000000000001000000010000000100000000000000150000005600000000000000000000000100000001000000000000001500000056000000000000000100000001000000010000000000000015000000"
+      },
+      "total_raw_attempts": 168,
+      "step_count": 2,
+      "step_attempt_runs": [
+        {
+          "raw_attempts": 128,
+          "count": 1
+        },
+        {
+          "raw_attempts": 40,
+          "count": 1
+        }
+      ],
+      "selected_steps": [
+        {
+          "step": 1,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 0,
+              "end_exclusive": 21
+            },
+            {
+              "branch_record": 1,
+              "start": 0,
+              "end_exclusive": 21
+            },
+            {
+              "branch_record": 2,
+              "start": 0,
+              "end_exclusive": 21
+            },
+            {
+              "branch_record": 3,
+              "start": 0,
+              "end_exclusive": 21
+            },
+            {
+              "branch_record": 4,
+              "start": 0,
+              "end_exclusive": 21
+            },
+            {
+              "branch_record": 5,
+              "start": 0,
+              "end_exclusive": 21
+            },
+            {
+              "branch_record": 6,
+              "start": 0,
+              "end_exclusive": 2
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 2,
+              "target_next": 21
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 0,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000800000002c0000000000000000000000010000000100000015000000150000002c000000000000000100000001000000010000001500000015000000310000000000000000000000010000000100000015000000150000003100000000000000010000000100000001000000150000001500000054000000000000000000000001000000010000001500000015000000540000000000000001000000010000000100000015000000150000005600000000000000000000000100000001000000020000001500000056000000000000000100000001000000010000000000000015000000"
+        },
+        {
+          "step": 2,
+          "raw_attempts": 40,
+          "segments": [
+            {
+              "branch_record": 6,
+              "start": 2,
+              "end_exclusive": 21
+            },
+            {
+              "branch_record": 7,
+              "start": 0,
+              "end_exclusive": 21
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000a80000002c0000000000000000000000010000000100000015000000150000002c000000000000000100000001000000010000001500000015000000310000000000000000000000010000000100000015000000150000003100000000000000010000000100000001000000150000001500000054000000000000000000000001000000010000001500000015000000540000000000000001000000010000000100000015000000150000005600000000000000000000000100000001000000150000001500000056000000000000000100000001000000010000001500000015000000"
+        }
+      ],
+      "derivation_complete": true,
+      "wallet_ready": false,
+      "final_progress_hex": "0100000000000000a80000002c0000000000000000000000010000000100000015000000150000002c000000000000000100000001000000010000001500000015000000310000000000000000000000010000000100000015000000150000003100000000000000010000000100000001000000150000001500000054000000000000000000000001000000010000001500000015000000540000000000000001000000010000000100000015000000150000005600000000000000000000000100000001000000150000001500000056000000000000000100000001000000010000001500000015000000"
+    },
+    {
+      "name": "uniform_4076",
+      "imported": [
+        4076,
+        4076,
+        4076,
+        4076,
+        4076,
+        4076,
+        4076,
+        4076
+      ],
+      "initial": {
+        "records": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          }
+        ],
+        "progress_hex": "0100000000000000000000002c0000000000000000000000ec0f0000ec0f000000000000001000002c0000000000000001000000ec0f0000ec0f00000000000000100000310000000000000000000000ec0f0000ec0f00000000000000100000310000000000000001000000ec0f0000ec0f00000000000000100000540000000000000000000000ec0f0000ec0f00000000000000100000540000000000000001000000ec0f0000ec0f00000000000000100000560000000000000000000000ec0f0000ec0f00000000000000100000560000000000000001000000ec0f0000ec0f00000000000000100000"
+      },
+      "total_raw_attempts": 32768,
+      "step_count": 256,
+      "step_attempt_runs": [
+        {
+          "raw_attempts": 128,
+          "count": 256
+        }
+      ],
+      "selected_steps": [
+        {
+          "step": 1,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 0,
+              "end_exclusive": 128
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 128,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000800000002c0000000000000000000000ec0f0000ec0f000080000000001000002c0000000000000001000000ec0f0000ec0f00000000000000100000310000000000000000000000ec0f0000ec0f00000000000000100000310000000000000001000000ec0f0000ec0f00000000000000100000540000000000000000000000ec0f0000ec0f00000000000000100000540000000000000001000000ec0f0000ec0f00000000000000100000560000000000000000000000ec0f0000ec0f00000000000000100000560000000000000001000000ec0f0000ec0f00000000000000100000"
+        },
+        {
+          "step": 2,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 128,
+              "end_exclusive": 256
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 256,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000000100002c0000000000000000000000ec0f0000ec0f000000010000001000002c0000000000000001000000ec0f0000ec0f00000000000000100000310000000000000000000000ec0f0000ec0f00000000000000100000310000000000000001000000ec0f0000ec0f00000000000000100000540000000000000000000000ec0f0000ec0f00000000000000100000540000000000000001000000ec0f0000ec0f00000000000000100000560000000000000000000000ec0f0000ec0f00000000000000100000560000000000000001000000ec0f0000ec0f00000000000000100000"
+        },
+        {
+          "step": 31,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 3840,
+              "end_exclusive": 3968
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 3968,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000800f00002c0000000000000000000000ec0f0000ec0f0000800f0000001000002c0000000000000001000000ec0f0000ec0f00000000000000100000310000000000000000000000ec0f0000ec0f00000000000000100000310000000000000001000000ec0f0000ec0f00000000000000100000540000000000000000000000ec0f0000ec0f00000000000000100000540000000000000001000000ec0f0000ec0f00000000000000100000560000000000000000000000ec0f0000ec0f00000000000000100000560000000000000001000000ec0f0000ec0f00000000000000100000"
+        },
+        {
+          "step": 32,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 3968,
+              "end_exclusive": 4096
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000001000002c0000000000000000000000ec0f0000ec0f000000100000001000002c0000000000000001000000ec0f0000ec0f00000000000000100000310000000000000000000000ec0f0000ec0f00000000000000100000310000000000000001000000ec0f0000ec0f00000000000000100000540000000000000000000000ec0f0000ec0f00000000000000100000540000000000000001000000ec0f0000ec0f00000000000000100000560000000000000000000000ec0f0000ec0f00000000000000100000560000000000000001000000ec0f0000ec0f00000000000000100000"
+        },
+        {
+          "step": 33,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 1,
+              "start": 0,
+              "end_exclusive": 128
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 128,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000801000002c0000000000000000000000ec0f0000ec0f000000100000001000002c0000000000000001000000ec0f0000ec0f00008000000000100000310000000000000000000000ec0f0000ec0f00000000000000100000310000000000000001000000ec0f0000ec0f00000000000000100000540000000000000000000000ec0f0000ec0f00000000000000100000540000000000000001000000ec0f0000ec0f00000000000000100000560000000000000000000000ec0f0000ec0f00000000000000100000560000000000000001000000ec0f0000ec0f00000000000000100000"
+        },
+        {
+          "step": 255,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 7,
+              "start": 3840,
+              "end_exclusive": 3968
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 3968,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000807f00002c0000000000000000000000ec0f0000ec0f000000100000001000002c0000000000000001000000ec0f0000ec0f00000010000000100000310000000000000000000000ec0f0000ec0f00000010000000100000310000000000000001000000ec0f0000ec0f00000010000000100000540000000000000000000000ec0f0000ec0f00000010000000100000540000000000000001000000ec0f0000ec0f00000010000000100000560000000000000000000000ec0f0000ec0f00000010000000100000560000000000000001000000ec0f0000ec0f0000800f000000100000"
+        },
+        {
+          "step": 256,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 7,
+              "start": 3968,
+              "end_exclusive": 4096
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000008000002c0000000000000000000000ec0f0000ec0f000000100000001000002c0000000000000001000000ec0f0000ec0f00000010000000100000310000000000000000000000ec0f0000ec0f00000010000000100000310000000000000001000000ec0f0000ec0f00000010000000100000540000000000000000000000ec0f0000ec0f00000010000000100000540000000000000001000000ec0f0000ec0f00000010000000100000560000000000000000000000ec0f0000ec0f00000010000000100000560000000000000001000000ec0f0000ec0f00000010000000100000"
+        }
+      ],
+      "derivation_complete": true,
+      "wallet_ready": false,
+      "final_progress_hex": "0100000000000000008000002c0000000000000000000000ec0f0000ec0f000000100000001000002c0000000000000001000000ec0f0000ec0f00000010000000100000310000000000000000000000ec0f0000ec0f00000010000000100000310000000000000001000000ec0f0000ec0f00000010000000100000540000000000000000000000ec0f0000ec0f00000010000000100000540000000000000001000000ec0f0000ec0f00000010000000100000560000000000000000000000ec0f0000ec0f00000010000000100000560000000000000001000000ec0f0000ec0f00000010000000100000"
+    },
+    {
+      "name": "uniform_4077",
+      "imported": [
+        4077,
+        4077,
+        4077,
+        4077,
+        4077,
+        4077,
+        4077,
+        4077
+      ],
+      "initial": {
+        "records": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          }
+        ],
+        "progress_hex": "0100000000000000000000002c0000000000000000000000ed0f0000ed0f000000000000001000002c0000000000000001000000ed0f0000ed0f00000000000000100000310000000000000000000000ed0f0000ed0f00000000000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ed0f0000ed0f00000000000000100000540000000000000001000000ed0f0000ed0f00000000000000100000560000000000000000000000ed0f0000ed0f00000000000000100000560000000000000001000000ed0f0000ed0f00000000000000100000"
+      },
+      "total_raw_attempts": 32768,
+      "step_count": 256,
+      "step_attempt_runs": [
+        {
+          "raw_attempts": 128,
+          "count": 256
+        }
+      ],
+      "selected_steps": [
+        {
+          "step": 1,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 0,
+              "end_exclusive": 128
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 128,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000800000002c0000000000000000000000ed0f0000ed0f000080000000001000002c0000000000000001000000ed0f0000ed0f00000000000000100000310000000000000000000000ed0f0000ed0f00000000000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ed0f0000ed0f00000000000000100000540000000000000001000000ed0f0000ed0f00000000000000100000560000000000000000000000ed0f0000ed0f00000000000000100000560000000000000001000000ed0f0000ed0f00000000000000100000"
+        },
+        {
+          "step": 2,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 128,
+              "end_exclusive": 256
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 256,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000000100002c0000000000000000000000ed0f0000ed0f000000010000001000002c0000000000000001000000ed0f0000ed0f00000000000000100000310000000000000000000000ed0f0000ed0f00000000000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ed0f0000ed0f00000000000000100000540000000000000001000000ed0f0000ed0f00000000000000100000560000000000000000000000ed0f0000ed0f00000000000000100000560000000000000001000000ed0f0000ed0f00000000000000100000"
+        },
+        {
+          "step": 31,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 3840,
+              "end_exclusive": 3968
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 3968,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000800f00002c0000000000000000000000ed0f0000ed0f0000800f0000001000002c0000000000000001000000ed0f0000ed0f00000000000000100000310000000000000000000000ed0f0000ed0f00000000000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ed0f0000ed0f00000000000000100000540000000000000001000000ed0f0000ed0f00000000000000100000560000000000000000000000ed0f0000ed0f00000000000000100000560000000000000001000000ed0f0000ed0f00000000000000100000"
+        },
+        {
+          "step": 32,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 3968,
+              "end_exclusive": 4096
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000001000002c0000000000000000000000ed0f0000ed0f000000100000001000002c0000000000000001000000ed0f0000ed0f00000000000000100000310000000000000000000000ed0f0000ed0f00000000000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ed0f0000ed0f00000000000000100000540000000000000001000000ed0f0000ed0f00000000000000100000560000000000000000000000ed0f0000ed0f00000000000000100000560000000000000001000000ed0f0000ed0f00000000000000100000"
+        },
+        {
+          "step": 33,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 1,
+              "start": 0,
+              "end_exclusive": 128
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 128,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000801000002c0000000000000000000000ed0f0000ed0f000000100000001000002c0000000000000001000000ed0f0000ed0f00008000000000100000310000000000000000000000ed0f0000ed0f00000000000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ed0f0000ed0f00000000000000100000540000000000000001000000ed0f0000ed0f00000000000000100000560000000000000000000000ed0f0000ed0f00000000000000100000560000000000000001000000ed0f0000ed0f00000000000000100000"
+        },
+        {
+          "step": 255,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 7,
+              "start": 3840,
+              "end_exclusive": 3968
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 3968,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000807f00002c0000000000000000000000ed0f0000ed0f000000100000001000002c0000000000000001000000ed0f0000ed0f00000010000000100000310000000000000000000000ed0f0000ed0f00000010000000100000310000000000000001000000ed0f0000ed0f00000010000000100000540000000000000000000000ed0f0000ed0f00000010000000100000540000000000000001000000ed0f0000ed0f00000010000000100000560000000000000000000000ed0f0000ed0f00000010000000100000560000000000000001000000ed0f0000ed0f0000800f000000100000"
+        },
+        {
+          "step": 256,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 7,
+              "start": 3968,
+              "end_exclusive": 4096
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000008000002c0000000000000000000000ed0f0000ed0f000000100000001000002c0000000000000001000000ed0f0000ed0f00000010000000100000310000000000000000000000ed0f0000ed0f00000010000000100000310000000000000001000000ed0f0000ed0f00000010000000100000540000000000000000000000ed0f0000ed0f00000010000000100000540000000000000001000000ed0f0000ed0f00000010000000100000560000000000000000000000ed0f0000ed0f00000010000000100000560000000000000001000000ed0f0000ed0f00000010000000100000"
+        }
+      ],
+      "derivation_complete": true,
+      "wallet_ready": false,
+      "final_progress_hex": "0100000000000000008000002c0000000000000000000000ed0f0000ed0f000000100000001000002c0000000000000001000000ed0f0000ed0f00000010000000100000310000000000000000000000ed0f0000ed0f00000010000000100000310000000000000001000000ed0f0000ed0f00000010000000100000540000000000000000000000ed0f0000ed0f00000010000000100000540000000000000001000000ed0f0000ed0f00000010000000100000560000000000000000000000ed0f0000ed0f00000010000000100000560000000000000001000000ed0f0000ed0f00000010000000100000"
+    },
+    {
+      "name": "uniform_4095",
+      "imported": [
+        4095,
+        4095,
+        4095,
+        4095,
+        4095,
+        4095,
+        4095,
+        4095
+      ],
+      "initial": {
+        "records": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          }
+        ],
+        "progress_hex": "0100000000000000000000002c0000000000000000000000ff0f0000ff0f000000000000001000002c0000000000000001000000ff0f0000ff0f00000000000000100000310000000000000000000000ff0f0000ff0f00000000000000100000310000000000000001000000ff0f0000ff0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000ff0f0000ff0f00000000000000100000560000000000000000000000ff0f0000ff0f00000000000000100000560000000000000001000000ff0f0000ff0f00000000000000100000"
+      },
+      "total_raw_attempts": 32768,
+      "step_count": 256,
+      "step_attempt_runs": [
+        {
+          "raw_attempts": 128,
+          "count": 256
+        }
+      ],
+      "selected_steps": [
+        {
+          "step": 1,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 0,
+              "end_exclusive": 128
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 128,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000800000002c0000000000000000000000ff0f0000ff0f000080000000001000002c0000000000000001000000ff0f0000ff0f00000000000000100000310000000000000000000000ff0f0000ff0f00000000000000100000310000000000000001000000ff0f0000ff0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000ff0f0000ff0f00000000000000100000560000000000000000000000ff0f0000ff0f00000000000000100000560000000000000001000000ff0f0000ff0f00000000000000100000"
+        },
+        {
+          "step": 2,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 128,
+              "end_exclusive": 256
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 256,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000000100002c0000000000000000000000ff0f0000ff0f000000010000001000002c0000000000000001000000ff0f0000ff0f00000000000000100000310000000000000000000000ff0f0000ff0f00000000000000100000310000000000000001000000ff0f0000ff0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000ff0f0000ff0f00000000000000100000560000000000000000000000ff0f0000ff0f00000000000000100000560000000000000001000000ff0f0000ff0f00000000000000100000"
+        },
+        {
+          "step": 31,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 3840,
+              "end_exclusive": 3968
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 3968,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000800f00002c0000000000000000000000ff0f0000ff0f0000800f0000001000002c0000000000000001000000ff0f0000ff0f00000000000000100000310000000000000000000000ff0f0000ff0f00000000000000100000310000000000000001000000ff0f0000ff0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000ff0f0000ff0f00000000000000100000560000000000000000000000ff0f0000ff0f00000000000000100000560000000000000001000000ff0f0000ff0f00000000000000100000"
+        },
+        {
+          "step": 32,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 3968,
+              "end_exclusive": 4096
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000001000002c0000000000000000000000ff0f0000ff0f000000100000001000002c0000000000000001000000ff0f0000ff0f00000000000000100000310000000000000000000000ff0f0000ff0f00000000000000100000310000000000000001000000ff0f0000ff0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000ff0f0000ff0f00000000000000100000560000000000000000000000ff0f0000ff0f00000000000000100000560000000000000001000000ff0f0000ff0f00000000000000100000"
+        },
+        {
+          "step": 33,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 1,
+              "start": 0,
+              "end_exclusive": 128
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 128,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000801000002c0000000000000000000000ff0f0000ff0f000000100000001000002c0000000000000001000000ff0f0000ff0f00008000000000100000310000000000000000000000ff0f0000ff0f00000000000000100000310000000000000001000000ff0f0000ff0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000ff0f0000ff0f00000000000000100000560000000000000000000000ff0f0000ff0f00000000000000100000560000000000000001000000ff0f0000ff0f00000000000000100000"
+        },
+        {
+          "step": 255,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 7,
+              "start": 3840,
+              "end_exclusive": 3968
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 3968,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000807f00002c0000000000000000000000ff0f0000ff0f000000100000001000002c0000000000000001000000ff0f0000ff0f00000010000000100000310000000000000000000000ff0f0000ff0f00000010000000100000310000000000000001000000ff0f0000ff0f00000010000000100000540000000000000000000000ff0f0000ff0f00000010000000100000540000000000000001000000ff0f0000ff0f00000010000000100000560000000000000000000000ff0f0000ff0f00000010000000100000560000000000000001000000ff0f0000ff0f0000800f000000100000"
+        },
+        {
+          "step": 256,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 7,
+              "start": 3968,
+              "end_exclusive": 4096
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000008000002c0000000000000000000000ff0f0000ff0f000000100000001000002c0000000000000001000000ff0f0000ff0f00000010000000100000310000000000000000000000ff0f0000ff0f00000010000000100000310000000000000001000000ff0f0000ff0f00000010000000100000540000000000000000000000ff0f0000ff0f00000010000000100000540000000000000001000000ff0f0000ff0f00000010000000100000560000000000000000000000ff0f0000ff0f00000010000000100000560000000000000001000000ff0f0000ff0f00000010000000100000"
+        }
+      ],
+      "derivation_complete": true,
+      "wallet_ready": false,
+      "final_progress_hex": "0100000000000000008000002c0000000000000000000000ff0f0000ff0f000000100000001000002c0000000000000001000000ff0f0000ff0f00000010000000100000310000000000000000000000ff0f0000ff0f00000010000000100000310000000000000001000000ff0f0000ff0f00000010000000100000540000000000000000000000ff0f0000ff0f00000010000000100000540000000000000001000000ff0f0000ff0f00000010000000100000560000000000000000000000ff0f0000ff0f00000010000000100000560000000000000001000000ff0f0000ff0f00000010000000100000"
+    },
+    {
+      "name": "uniform_4096",
+      "imported": [
+        4096,
+        4096,
+        4096,
+        4096,
+        4096,
+        4096,
+        4096,
+        4096
+      ],
+      "initial": {
+        "records": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          }
+        ],
+        "progress_hex": "0100000000000000000000002c0000000000000000000000001000000010000000000000001000002c000000000000000100000000100000001000000000000000100000310000000000000000000000001000000010000000000000001000003100000000000000010000000010000000100000000000000010000054000000000000000000000000100000001000000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000010000000100000000000000010000056000000000000000100000000100000001000000000000000100000"
+      },
+      "total_raw_attempts": 32768,
+      "step_count": 256,
+      "step_attempt_runs": [
+        {
+          "raw_attempts": 128,
+          "count": 256
+        }
+      ],
+      "selected_steps": [
+        {
+          "step": 1,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 0,
+              "end_exclusive": 128
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 128,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000800000002c0000000000000000000000001000000010000080000000001000002c000000000000000100000000100000001000000000000000100000310000000000000000000000001000000010000000000000001000003100000000000000010000000010000000100000000000000010000054000000000000000000000000100000001000000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000010000000100000000000000010000056000000000000000100000000100000001000000000000000100000"
+        },
+        {
+          "step": 2,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 128,
+              "end_exclusive": 256
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 256,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000000100002c0000000000000000000000001000000010000000010000001000002c000000000000000100000000100000001000000000000000100000310000000000000000000000001000000010000000000000001000003100000000000000010000000010000000100000000000000010000054000000000000000000000000100000001000000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000010000000100000000000000010000056000000000000000100000000100000001000000000000000100000"
+        },
+        {
+          "step": 31,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 3840,
+              "end_exclusive": 3968
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 3968,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000800f00002c00000000000000000000000010000000100000800f0000001000002c000000000000000100000000100000001000000000000000100000310000000000000000000000001000000010000000000000001000003100000000000000010000000010000000100000000000000010000054000000000000000000000000100000001000000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000010000000100000000000000010000056000000000000000100000000100000001000000000000000100000"
+        },
+        {
+          "step": 32,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 3968,
+              "end_exclusive": 4096
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000001000002c0000000000000000000000001000000010000000100000001000002c000000000000000100000000100000001000000000000000100000310000000000000000000000001000000010000000000000001000003100000000000000010000000010000000100000000000000010000054000000000000000000000000100000001000000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000010000000100000000000000010000056000000000000000100000000100000001000000000000000100000"
+        },
+        {
+          "step": 33,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 1,
+              "start": 0,
+              "end_exclusive": 128
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 128,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000801000002c0000000000000000000000001000000010000000100000001000002c000000000000000100000000100000001000008000000000100000310000000000000000000000001000000010000000000000001000003100000000000000010000000010000000100000000000000010000054000000000000000000000000100000001000000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000010000000100000000000000010000056000000000000000100000000100000001000000000000000100000"
+        },
+        {
+          "step": 255,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 7,
+              "start": 3840,
+              "end_exclusive": 3968
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 3968,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000807f00002c0000000000000000000000001000000010000000100000001000002c00000000000000010000000010000000100000001000000010000031000000000000000000000000100000001000000010000000100000310000000000000001000000001000000010000000100000001000005400000000000000000000000010000000100000001000000010000054000000000000000100000000100000001000000010000000100000560000000000000000000000001000000010000000100000001000005600000000000000010000000010000000100000800f000000100000"
+        },
+        {
+          "step": 256,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 7,
+              "start": 3968,
+              "end_exclusive": 4096
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            }
+          ],
+          "progress_hex": "0100000000000000008000002c0000000000000000000000001000000010000000100000001000002c000000000000000100000000100000001000000010000000100000310000000000000000000000001000000010000000100000001000003100000000000000010000000010000000100000001000000010000054000000000000000000000000100000001000000010000000100000540000000000000001000000001000000010000000100000001000005600000000000000000000000010000000100000001000000010000056000000000000000100000000100000001000000010000000100000"
+        }
+      ],
+      "derivation_complete": true,
+      "wallet_ready": false,
+      "final_progress_hex": "0100000000000000008000002c0000000000000000000000001000000010000000100000001000002c000000000000000100000000100000001000000010000000100000310000000000000000000000001000000010000000100000001000003100000000000000010000000010000000100000001000000010000054000000000000000000000000100000001000000010000000100000540000000000000001000000001000000010000000100000001000005600000000000000000000000010000000100000001000000010000056000000000000000100000000100000001000000010000000100000"
+    },
+    {
+      "name": "mixed_boundary_cursors",
+      "imported": [
+        0,
+        1,
+        4076,
+        4077,
+        4095,
+        4096,
+        0,
+        1
+      ],
+      "initial": {
+        "records": [
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 44,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4076,
+            "issued_next": 4076,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 49,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4077,
+            "issued_next": 4077,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 4095,
+            "issued_next": 4095,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 84,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 4096,
+            "issued_next": 4096,
+            "derived_next": 0,
+            "target_next": 4096
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 0,
+            "imported_next": 0,
+            "issued_next": 0,
+            "derived_next": 0,
+            "target_next": 20
+          },
+          {
+            "purpose": 86,
+            "coin": 0,
+            "branch": 1,
+            "imported_next": 1,
+            "issued_next": 1,
+            "derived_next": 0,
+            "target_next": 21
+          }
+        ],
+        "progress_hex": "0100000000000000000000002c0000000000000000000000000000000000000000000000140000002c000000000000000100000001000000010000000000000015000000310000000000000000000000ec0f0000ec0f00000000000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000000000000000000000000001400000056000000000000000100000001000000010000000000000015000000"
+      },
+      "total_raw_attempts": 16466,
+      "step_count": 129,
+      "step_attempt_runs": [
+        {
+          "raw_attempts": 128,
+          "count": 128
+        },
+        {
+          "raw_attempts": 82,
+          "count": 1
+        }
+      ],
+      "selected_steps": [
+        {
+          "step": 1,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 0,
+              "start": 0,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 1,
+              "start": 0,
+              "end_exclusive": 21
+            },
+            {
+              "branch_record": 2,
+              "start": 0,
+              "end_exclusive": 87
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 87,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 0,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 0,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000800000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000001000000010000001500000015000000310000000000000000000000ec0f0000ec0f00005700000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000000000000000000000000001400000056000000000000000100000001000000010000000000000015000000"
+        },
+        {
+          "step": 2,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 2,
+              "start": 87,
+              "end_exclusive": 215
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 215,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 0,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 0,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000000100002c0000000000000000000000000000000000000014000000140000002c000000000000000100000001000000010000001500000015000000310000000000000000000000ec0f0000ec0f0000d700000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000000000000000000000000001400000056000000000000000100000001000000010000000000000015000000"
+        },
+        {
+          "step": 31,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 2,
+              "start": 3799,
+              "end_exclusive": 3927
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 3927,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 0,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 0,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000800f00002c0000000000000000000000000000000000000014000000140000002c000000000000000100000001000000010000001500000015000000310000000000000000000000ec0f0000ec0f0000570f000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000000000000000000000000001400000056000000000000000100000001000000010000000000000015000000"
+        },
+        {
+          "step": 32,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 2,
+              "start": 3927,
+              "end_exclusive": 4055
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4055,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 0,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 0,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000001000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000001000000010000001500000015000000310000000000000000000000ec0f0000ec0f0000d70f000000100000310000000000000001000000ed0f0000ed0f00000000000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000000000000000000000000001400000056000000000000000100000001000000010000000000000015000000"
+        },
+        {
+          "step": 33,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 2,
+              "start": 4055,
+              "end_exclusive": 4096
+            },
+            {
+              "branch_record": 3,
+              "start": 0,
+              "end_exclusive": 87
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 87,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 0,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 0,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 0,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000801000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000001000000010000001500000015000000310000000000000000000000ec0f0000ec0f00000010000000100000310000000000000001000000ed0f0000ed0f00005700000000100000540000000000000000000000ff0f0000ff0f00000000000000100000540000000000000001000000001000000010000000000000001000005600000000000000000000000000000000000000000000001400000056000000000000000100000001000000010000000000000015000000"
+        },
+        {
+          "step": 128,
+          "raw_attempts": 128,
+          "segments": [
+            {
+              "branch_record": 5,
+              "start": 3927,
+              "end_exclusive": 4055
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4055,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 0,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 0,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000004000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000001000000010000001500000015000000310000000000000000000000ec0f0000ec0f00000010000000100000310000000000000001000000ed0f0000ed0f00000010000000100000540000000000000000000000ff0f0000ff0f000000100000001000005400000000000000010000000010000000100000d70f0000001000005600000000000000000000000000000000000000000000001400000056000000000000000100000001000000010000000000000015000000"
+        },
+        {
+          "step": 129,
+          "raw_attempts": 82,
+          "segments": [
+            {
+              "branch_record": 5,
+              "start": 4055,
+              "end_exclusive": 4096
+            },
+            {
+              "branch_record": 6,
+              "start": 0,
+              "end_exclusive": 20
+            },
+            {
+              "branch_record": 7,
+              "start": 0,
+              "end_exclusive": 21
+            }
+          ],
+          "records": [
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 44,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4076,
+              "issued_next": 4076,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 49,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4077,
+              "issued_next": 4077,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 4095,
+              "issued_next": 4095,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 84,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 4096,
+              "issued_next": 4096,
+              "derived_next": 4096,
+              "target_next": 4096
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 0,
+              "imported_next": 0,
+              "issued_next": 0,
+              "derived_next": 20,
+              "target_next": 20
+            },
+            {
+              "purpose": 86,
+              "coin": 0,
+              "branch": 1,
+              "imported_next": 1,
+              "issued_next": 1,
+              "derived_next": 21,
+              "target_next": 21
+            }
+          ],
+          "progress_hex": "0100000000000000524000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000001000000010000001500000015000000310000000000000000000000ec0f0000ec0f00000010000000100000310000000000000001000000ed0f0000ed0f00000010000000100000540000000000000000000000ff0f0000ff0f00000010000000100000540000000000000001000000001000000010000000100000001000005600000000000000000000000000000000000000140000001400000056000000000000000100000001000000010000001500000015000000"
+        }
+      ],
+      "derivation_complete": true,
+      "wallet_ready": false,
+      "final_progress_hex": "0100000000000000524000002c0000000000000000000000000000000000000014000000140000002c000000000000000100000001000000010000001500000015000000310000000000000000000000ec0f0000ec0f00000010000000100000310000000000000001000000ed0f0000ed0f00000010000000100000540000000000000000000000ff0f0000ff0f00000010000000100000540000000000000001000000001000000010000000100000001000005600000000000000000000000000000000000000140000001400000056000000000000000100000001000000010000001500000015000000"
+    }
+  ],
+  "discoveries": [
+    {
+      "name": "imported_0_used_0",
+      "used_index": 0,
+      "before": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 0,
+        "issued_next": 0,
+        "derived_next": 20,
+        "target_next": 20
+      },
+      "after": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 0,
+        "issued_next": 1,
+        "derived_next": 20,
+        "target_next": 21
+      },
+      "additional_raw_attempts": 1,
+      "requires_historical_rescan": true
+    },
+    {
+      "name": "imported_0_used_19",
+      "used_index": 19,
+      "before": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 0,
+        "issued_next": 0,
+        "derived_next": 20,
+        "target_next": 20
+      },
+      "after": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 0,
+        "issued_next": 20,
+        "derived_next": 20,
+        "target_next": 40
+      },
+      "additional_raw_attempts": 20,
+      "requires_historical_rescan": true
+    },
+    {
+      "name": "imported_1_used_0",
+      "used_index": 0,
+      "before": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 1,
+        "issued_next": 1,
+        "derived_next": 21,
+        "target_next": 21
+      },
+      "after": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 1,
+        "issued_next": 1,
+        "derived_next": 21,
+        "target_next": 21
+      },
+      "additional_raw_attempts": 0,
+      "requires_historical_rescan": false
+    },
+    {
+      "name": "imported_1_used_20",
+      "used_index": 20,
+      "before": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 1,
+        "issued_next": 1,
+        "derived_next": 21,
+        "target_next": 21
+      },
+      "after": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 1,
+        "issued_next": 21,
+        "derived_next": 21,
+        "target_next": 41
+      },
+      "additional_raw_attempts": 20,
+      "requires_historical_rescan": true
+    },
+    {
+      "name": "imported_4076_used_4095",
+      "used_index": 4095,
+      "before": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 4076,
+        "issued_next": 4076,
+        "derived_next": 4096,
+        "target_next": 4096
+      },
+      "after": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 4076,
+        "issued_next": 4096,
+        "derived_next": 4096,
+        "target_next": 4096
+      },
+      "additional_raw_attempts": 0,
+      "requires_historical_rescan": false
+    },
+    {
+      "name": "imported_4077_used_4095",
+      "used_index": 4095,
+      "before": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 4077,
+        "issued_next": 4077,
+        "derived_next": 4096,
+        "target_next": 4096
+      },
+      "after": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 4077,
+        "issued_next": 4096,
+        "derived_next": 4096,
+        "target_next": 4096
+      },
+      "additional_raw_attempts": 0,
+      "requires_historical_rescan": false
+    },
+    {
+      "name": "imported_4095_used_4095",
+      "used_index": 4095,
+      "before": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 4095,
+        "issued_next": 4095,
+        "derived_next": 4096,
+        "target_next": 4096
+      },
+      "after": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 4095,
+        "issued_next": 4096,
+        "derived_next": 4096,
+        "target_next": 4096
+      },
+      "additional_raw_attempts": 0,
+      "requires_historical_rescan": false
+    },
+    {
+      "name": "imported_4096_used_4095",
+      "used_index": 4095,
+      "before": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 4096,
+        "issued_next": 4096,
+        "derived_next": 4096,
+        "target_next": 4096
+      },
+      "after": {
+        "purpose": 84,
+        "coin": 0,
+        "branch": 1,
+        "imported_next": 4096,
+        "issued_next": 4096,
+        "derived_next": 4096,
+        "target_next": 4096
+      },
+      "additional_raw_attempts": 0,
+      "requires_historical_rescan": false
+    }
+  ],
+  "invalid_cursors": [
+    {
+      "cursor": -1,
+      "model_error": "cursor_out_of_range"
+    },
+    {
+      "cursor": 4097,
+      "model_error": "cursor_out_of_range"
+    }
+  ],
+  "limits": [
+    "The exact progress policy/codec is bound by contract-review.json and its frozen contract copy.",
+    "Every modeled raw child is valid; no synthetic invalid child is represented as a cryptographic proof.",
+    "Raw attempts count skips in the eventual scanner, but skip-proof vectors need separate reviewed input.",
+    "Completed derivation leaves ready=0 and does not establish a canonical tip or complete history.",
+    "Historical-rescan indication is adopted scheduling arithmetic, not block or wallet verification.",
+    "No profile2 oracle or 65536-index allowance is used."
+  ]
+}
