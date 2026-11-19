@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "status": "source-only plan; root must freeze producer bytes before execution",
+  "input_lock_sha256": "177734937ccfeaf12c6618fbd15d757b86a9a85731b06460b9a8d3e1269c2ee0",
+  "contract_sha256": "71bff8b11210aab89e324fc96d296a41e3a0248c5ae6e2293face8e51de51138",
+  "transaction_groups": [
+    "For each actual fixture: own confirmed withdrawal, original pool payout, own unconfirmed withdrawal, and reciprocal incoming raw/ownership with explicitly modeled first-seen time",
+    "All 24 prior independent withdrawal cases projected with owned inputs/change; identical recipient/change script records both outputs as internal change",
+    "Modeled self-payment, partial-input unknown fee, known zero fee, coinbase, zero-valued owned output, unrepresentable output address, bare pubkey/1-of-1 multisig with no invented address, zero-length witness element, mixed empty/nonempty witness stacks, maximum input/output and total witness counts"
+  ],
+  "transaction_negative_controls": [
+    "wrong txid", "uppercase raw", "trailing raw", "missing owned facts",
+    "credit amount mismatch", "duplicate credit", "credit index overflow",
+    "duplicate debit", "debit index overflow", "negative debit", "individual debit bound", "two-input checked accumulation overflow",
+    "known negative fee", "block beyond captured height", "negative timestamp",
+    "extra record field", "wrong credit flag type", "coinbase with debit"
+  ],
+  "raw_controls": [
+    "nonminimal input CompactSize", "input count 257", "zero output count",
+    "output count 257", "unknown witness flag", "all witness stacks empty",
+    "129 witness items per input", "total witness items 4097",
+    "signature script 10241", "output script 10241", "raw byte ceiling",
+    "duplicate previous outpoint", "mixed coinbase prevout", "negative output",
+    "output sum above MaxMoney", "truncated CompactSize", "truncated witness item", "declared witness-item byte bound"
+  ],
+  "storage_groups": [
+    "empty", "actual-shaped three-record fixture wallet", "two unmined conflicting own spends with mi ignored",
+    "unmined parent credit lookup", "unmined takes precedence over older mined occurrence",
+    "5000-block indexed history with only selected t records valid", "exact 256/257 boundaries",
+    "within-height txid sort independent of insertion order", "repeated old txids hit visit budget without broad audit"
+  ],
+  "storage_negative_controls": [
+    "short present u", "long present u", "missing u-referenced c", "spent u-referenced c",
+    "malformed fallback mc", "mined debit amount mismatch", "mined debit bad backlink",
+    "missing selected t", "malformed selected t", "duplicate visited block txid",
+    "block count too large", "block length mismatch", "block beyond sync height",
+    "4097 unmined rows", "credit prefix excess", "bad selected credit flags"
+  ],
+  "provenance_limits": [
+    "No local wallet DB is opened. Legacy RPC floating monetary fields are never used as atom authority.",
+    "Actual raw/prevout/fee facts come from locked preimplementation artifacts and old independent vectors. Newly synthesized metadata and transactions are labeled modeled.",
+    "No signature/PoW verification, spendability, canonicality, conflict-absence or full historical completeness claim.",
+    "The producer emits no expected output until root reviews and freezes all source files. No Go implementation is imported or executed.",
+    "Uppercase raw hex, unknown fixture JSON fields and nonboolean fixture flags are fixture-parser-only controls. They do not claim the Go Raw byte slice or bool fields can reject a lost JSON spelling/type."
+  ],
+  "address_interpretation": "Root approved the five direct address/script forms P2PKH, P2SH, P2WPKH, P2WSH and P2TR under the frozen unambiguous-supported-script clause. P2PK, multisig, P2A and other forms return empty address without rejecting the record. Existing address/address.go:502-512 documents that AddressPubKey.EncodeAddress substitutes a P2PKH address, so it must not label the original bare-key output. Modeled bare-key/1-of-1 examples use a locked public fixture key and claim no actual spend.",
+  "raw_budget_controls": "A compact modeled previously-captured-byte accumulator tests exact remaining capacity, one-byte overflow and capacity-before-corrupt-parse. These are precharge unit witnesses, not a claim that the small fixture contains a real 8MiB history."
+}

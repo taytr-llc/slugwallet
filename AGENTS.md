@@ -152,4 +152,23 @@ the paired LAUNCH_READINESS.md tracks that gate. Engineering work continues.
 - This restores wallet history into scratch, not the installed app's durable
   withdrawal journal/reservations or hosted recovery authority. Library resume
   does not imply UI task resume after app restart. See CHANGESET_69_NOTES.md;
-  qualification is in progress until its final evidence section is completed.
+  its completed qualification and limits are recorded in the final evidence.
+
+## Bounded own-wallet activity (set 70)
+
+- `CaptureOwnActivity` is an atomic, read-only schema-9 Phase-A public snapshot.
+  Read public retained root/gym/profile identity and the persisted sync stamp in
+  the same transaction as bounded history. Do not load private recovery fields,
+  unlock or derive private material, allocate addresses or modify wallet state.
+- Keep fixed metadata/block-index traversal and raw-transaction/aggregate bounds;
+  never replace them with an unbounded history RPC or whole transaction bucket
+  scan. Owned credits/debits are integer storage facts, separate from current
+  reservations, spendability and unmined-input conflict bookkeeping.
+- Preserve canonical raw framing, checked amount totals and strict storage
+  crosslinks. The five direct address forms are P2PKH, P2SH, P2WPKH, P2WSH and
+  P2TR; unsupported scripts retain an empty address, not a substituted script.
+- The paired desktop fences the original View/source/root/gym, checks live
+  synchronization and both tip hash and height around capture, and joins capture
+  or detail work before unloading. Existing RPC/history APIs remain unchanged.
+  See paired `WALLET_ACTIVITY.md`, portable `wallet/testdata/own-activity`, and
+  `CHANGESET_70_NOTES.md`; this does not enable production issuance or custody.

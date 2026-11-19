@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "approved_by": "root",
+  "frozen_at_utc": "2026-11-19T22:29:43.361013+00:00",
+  "input_lock_sha256": "177734937ccfeaf12c6618fbd15d757b86a9a85731b06460b9a8d3e1269c2ee0",
+  "contract_sha256": "71bff8b11210aab89e324fc96d296a41e3a0248c5ae6e2293face8e51de51138",
+  "sources": {
+    "transaction_model.py": "ce3ddae4e0b16103ce7421ca5695b0dcc7f3f1b4c7231dfec413ac3fa8cf1b05",
+    "storage_model.py": "a01cee580b2166872cc683e8e5b8ba7a0cc50f4f837e9ef52456619b179f294d",
+    "generate_core.py": "f737c1ef3d70a3f0b12274d9485b4749ef9af8c4dae4deb988f245acd5ee53ba",
+    "core-case-plan.json": "84da7a34551014ebdc773dd6170d7c7f341c267e7a2ba3baa7918f216d7552b5"
+  },
+  "review": "Root and pool_service_tests read all core source before execution. Root reviewed successor fixes for fixture-only parser controls, preparse aggregate raw budget, two-debit accumulation overflow, five direct-address script forms and execution guard. Prior sources preserved externally. No new Go wallet/projection source or outputs used.",
+  "producer_executed": false,
+  "wallet_core_implementation_started": false,
+  "unrelated_wire_implementation_started": true
+}

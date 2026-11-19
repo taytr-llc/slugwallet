@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "approved_at_utc": "2026-11-19T22:14:08.141077+00:00",
+  "reviewed_by": "root",
+  "proposal_sha256": "d6a416b90c7c6e0317451be106e7a64c3dfc9a2e54adee67007bd4d721f76867",
+  "scope": "Locked public preimplementation inputs for independent raw transaction/storage/wire producer design. No new expected outputs have been generated. Producers use these copied bytes, not live implementation.",
+  "files": [
+    {
+      "path": "contract/WALLET_ACTIVITY.md",
+      "source": "/Users/taytrrip/slug/set70-prep/frozen/WALLET_ACTIVITY.md",
+      "bytes": 46932,
+      "sha256": "71bff8b11210aab89e324fc96d296a41e3a0248c5ae6e2293face8e51de51138",
+      "role": "frozen Set70 semantics, grammar and bounds"
+    },
+    {
+      "path": "public/set68-report.json",
+      "source": "/Users/taytrrip/slug/artifacts/set68/actual-withdrawal-attempt1/report.json",
+      "bytes": 18013,
+      "sha256": "3e1bebea95a471455836c2afd6b50248b54958dbdbcc968f15c4fac9468f7494",
+      "role": "qualified normal-work actual acceptance and source preservation"
+    },
+    {
+      "path": "public/set68-result.json",
+      "source": "/Users/taytrrip/slug/artifacts/set68/actual-withdrawal-attempt1/owned-copy/actual-withdrawal-result.json",
+      "bytes": 13424,
+      "sha256": "fdf83e3626819f07d54c329ebe8839809cd4338961683c1033878ddb29e96c94",
+      "role": "actual two-fixture reciprocal withdrawal operations and integer facts"
+    },
+    {
+      "path": "independent/wallet-withdrawal-v1.json",
+      "source": "/Users/taytrrip/slug/slugwallet/wallet/testdata/candidate-withdrawals/reference-v1.json",
+      "bytes": 230798,
+      "sha256": "d7c7b1e4c94e02f734a162b5974749853c91828ea1a0a4c4446c379bddc841c3",
+      "role": "previous independent raw signed transaction and address/script vectors"
+    },
+    {
+      "path": "independent/payout-wire-v1.json",
+      "source": "/Users/taytrrip/slug/slug/desktop/frontend/testdata/payout-history-wire/wire-v1.json",
+      "bytes": 488661,
+      "sha256": "4b3eafc010d515557097357a968bd007571c7126f7c0f15a2cd4184bcc88f802",
+      "role": "previous independent exact public View/source bindings and native grammar patterns"
+    },
+    {
+      "path": "inherited/gymaccount-fixtures.go",
+      "source": "/Users/taytrrip/slug/slug/gymaccount/fixtures.go",
+      "bytes": 1332,
+      "sha256": "f499c5042d61cff5bfeac127a21b92d9560ccbdb5c5a96ed7606acb70a38d3fa",
+      "role": "published independently derived root/gym identities; literal input only"
+    },
+    {
+      "path": "inherited/wtxmgr-db.go",
+      "source": "/Users/taytrrip/slug/slugwallet/wtxmgr/db.go",
+      "bytes": 48790,
+      "sha256": "4fdeb97feeb214bf1555197ba41a837c0e241a045a7fb80a29b4273886338c14",
+      "role": "legacy binary field layouts and byte order; read-only specification input"
+    },
+    {
+      "path": "inherited/wtxmgr-query.go",
+      "source": "/Users/taytrrip/slug/slugwallet/wtxmgr/query.go",
+      "bytes": 14185,
+      "sha256": "f28a6a446e0d8881ac3981ad8e14615e90806e51f1a21a30283e5a938936bcb5",
+      "role": "existing integer credit/debit ownership and occurrence semantics"
+    },
+    {
+      "path": "inherited/wtxmgr-unconfirmed.go",
+      "source": "/Users/taytrrip/slug/slugwallet/wtxmgr/unconfirmed.go",
+      "bytes": 6976,
+      "sha256": "78717d6fc91d55be155060c14ab1c2c4ba0c4e5c3a12825ce19b14d5e5b7ebb9",
+      "role": "existing unmined spender/conflict behavior"
+    },
+    {
+      "path": "inherited/wire-msgtx.go",
+      "source": "/Users/taytrrip/slug/slug/wire/msgtx.go",
+      "bytes": 39047,
+      "sha256": "fe700294c0ea7be85773c10b0e419441e3cd27138f27230bd1f3f66ac9e65e37",
+      "role": "wire framing and txid serialization; not executed by independent producer"
+    },
+    {
+      "path": "public/legacy-original-zero256.json",
+      "source": "/Users/taytrrip/slug/artifacts/set68/actual-withdrawal-attempt1/owned-copy/legacy-original-zero256.json",
+      "bytes": 3118,
+      "sha256": "0f36f1486da808d66dea36625fe3341d2ef5edbe6e79ab336077b746422a53af",
+      "role": "old allowlisted RPC raw transaction/time/block facts; floating monetary fields are not authority"
+    },
+    {
+      "path": "public/legacy-live-zero256.json",
+      "source": "/Users/taytrrip/slug/artifacts/set68/actual-withdrawal-attempt1/owned-copy/legacy-live-zero256.json",
+      "bytes": 872,
+      "sha256": "325970b6035b3ff41a5278ad15820b7a65e90b3ab234d0a4c2678c60925009e5",
+      "role": "old allowlisted RPC raw transaction/time/block facts; floating monetary fields are not authority"
+    },
+    {
+      "path": "public/legacy-confirmed-zero256.json",
+      "source": "/Users/taytrrip/slug/artifacts/set68/actual-withdrawal-attempt1/owned-copy/legacy-confirmed-zero256.json",
+      "bytes": 945,
+      "sha256": "0cde587283ccc7201b366594da7a414c7c442ee3e5428f7194ff68e77df19901",
+      "role": "old allowlisted RPC raw transaction/time/block facts; floating monetary fields are not authority"
+    },
+    {
+      "path": "public/zero256.manifest.json",
+      "source": "/Users/taytrrip/slug/artifacts/set69/old-source-intake-attempt1/exports/zero256.manifest.json",
+      "bytes": 1035,
+      "sha256": "f027cb1dfc522b59a6f863ad9921b499d42ea7102fa3d7a17a8153b650be9ed5",
+      "role": "previously frozen public old-source retained manifest; no phrase/private export"
+    },
+    {
+      "path": "public/legacy-original-incrementing256.json",
+      "source": "/Users/taytrrip/slug/artifacts/set68/actual-withdrawal-attempt1/owned-copy/legacy-original-incrementing256.json",
+      "bytes": 3118,
+      "sha256": "1a6d4230c11bd28a5627b19198f9abfb742dbc5fb752504c5097221b02abd31f",
+      "role": "old allowlisted RPC raw transaction/time/block facts; floating monetary fields are not authority"
+    },
+    {
+      "path": "public/legacy-live-incrementing256.json",
+      "source": "/Users/taytrrip/slug/artifacts/set68/actual-withdrawal-attempt1/owned-copy/legacy-live-incrementing256.json",
+      "bytes": 872,
+      "sha256": "096676a75c9a7983e2dd586396244d1091b3b355c818b93f29621fb072b31ff1",
+      "role": "old allowlisted RPC raw transaction/time/block facts; floating monetary fields are not authority"
+    },
+    {
+      "path": "public/legacy-confirmed-incrementing256.json",
+      "source": "/Users/taytrrip/slug/artifacts/set68/actual-withdrawal-attempt1/owned-copy/legacy-confirmed-incrementing256.json",
+      "bytes": 945,
+      "sha256": "64d9587035a85def879bf5c39c9a59ff9822d4fe965399bb1256f11fa748c335",
+      "role": "old allowlisted RPC raw transaction/time/block facts; floating monetary fields are not authority"
+    },
+    {
+      "path": "public/incrementing256.manifest.json",
+      "source": "/Users/taytrrip/slug/artifacts/set69/old-source-intake-attempt1/exports/incrementing256.manifest.json",
+      "bytes": 1035,
+      "sha256": "41776b5beb5b341714a285e62444fceb0cf2a9d408123f05ec1eeeff739db4e6",
+      "role": "previously frozen public old-source retained manifest; no phrase/private export"
+    }
+  ],
+  "locked_case_selectors": {
+    "wallet_withdrawal_cases": [
+      "zero256-original-to-84",
+      "incrementing256-original-to-84"
+    ],
+    "actual_fixtures": [
+      "zero256",
+      "incrementing256"
+    ],
+    "actual_tip_height": 110,
+    "actual_tip_hash": "765630b06f7fdd63e92f0d5787c956198ad887d56431f0c19c19b87f416a533e",
+    "wire_bindings": "existing payout-wire-v1.json bindings, exact bytes retained; new activity fields come from matching public root/gym manifests"
+  },
+  "source_rules": [
+    "Raw integer amounts come from locked independent unsigned/signed bytes, original qualified drafts and original pool-payout prevout values, not legacy RPC floats.",
+    "Existing operational account/view/source IDs are inputs only, not new Set70 expected outputs. Wire synthetic cases must be labeled separately from actual Set68 wallet facts.",
+    "Do not rewrite input bytes or use a new Go projection to derive expectations. Any changed input requires a reviewed successor inventory."
+  ]
+}

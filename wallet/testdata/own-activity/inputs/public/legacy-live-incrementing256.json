@@ -1,0 +1,22 @@
+{
+  "amount": 0,
+  "fee": 0.00000141,
+  "confirmations": 0,
+  "blockhash": "",
+  "blockindex": 0,
+  "blocktime": 0,
+  "txid": "758ea94d1a81356178b236abfbb74124e8d70b5e937418a3678d7a5d0e3fefa9",
+  "walletconflicts": [],
+  "time": 1795121234,
+  "timereceived": 1795121234,
+  "details": [
+    {
+      "account": "",
+      "amount": -49.5,
+      "category": "send",
+      "fee": 0.00000141,
+      "vout": 0
+    }
+  ],
+  "hex": "0100000000010126edb39a9a2833101ea65e900f48b0fb70b9e4aa4c793556ceb88c3119d03beb0000000000ffffffff0200e1f5050000000016001416d630413cea75fd5ad88433cd815ae5ba1ba645f31f152101000000160014bce0055a0a6de98fd52bdeaa22217b2f4a45cfad02473044022065ed80cadf0e4c535c9472226db4861f688cebaf3ba470ec7f08567edaf81d86022003289ab964ba0a5f776699378c641dcb20131ec4c87f502dcb7a41f21423b4030121025e5c348b732544743dd1657ecc258749c02d839dd07ae4e367134aafaf99bc6300000000"
+}
