@@ -2,6 +2,7 @@
 package wallet
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -25,6 +26,10 @@ func restoredCarrierPinMatches(pin fightercarrier.Pin, g waddrmgr.RestoredCarrie
 // A nonzero returned guard is the observed pre-mutation snapshot, including on
 // an uncertain commit; it never authorizes signing without audited reopen.
 func (l *Loader) ActivateRestoredCarrierWallet(ctx context.Context, pubPass []byte, original recovery.Manifest, journal *fightercarrier.Journal) (*Wallet, waddrmgr.RestoredCarrierGuard, error) {
+	return l.activateRestoredCarrierWallet(ctx, pubPass, original, journal, nil)
+}
+
+func (l *Loader) activateRestoredCarrierWallet(ctx context.Context, pubPass []byte, original recovery.Manifest, journal *fightercarrier.Journal, expected *waddrmgr.RestoredCarrierGuard) (*Wallet, waddrmgr.RestoredCarrierGuard, error) {
 	var guard waddrmgr.RestoredCarrierGuard
 	if ctx == nil || journal == nil {
 		return nil, guard, fightercarrier.ErrInvalid
@@ -78,6 +83,7 @@ func (l *Loader) ActivateRestoredCarrierWallet(ctx context.Context, pubPass []by
 	}
 	l.hostedAllocation = true
 	var manager *waddrmgr.Manager
+	mutationStarted := false
 	e = walletdb.Update(l.db, func(tx walletdb.ReadWriteTx) error {
 		var e error
 		ns := tx.ReadWriteBucket(waddrmgrNamespaceKey)
@@ -95,6 +101,17 @@ func (l *Loader) ActivateRestoredCarrierWallet(ctx context.Context, pubPass []by
 		if !restoredCarrierPinMatches(identity.Pin, guard) {
 			return fightercarrier.ErrConflict
 		}
+		if expected != nil {
+			want, e := waddrmgr.MarshalRestoredCarrierGuard(*expected)
+			if e != nil {
+				return e
+			}
+			got, e := waddrmgr.MarshalRestoredCarrierGuard(guard)
+			if e != nil || !bytes.Equal(want, got) {
+				return fightercarrier.ErrConflict
+			}
+		}
+		mutationStarted = true
 		if e = createCarrierWalletNamespaces(tx, 15, identity.JournalID, "", &identity.Pin); e != nil {
 			return e
 		}
@@ -108,7 +125,12 @@ func (l *Loader) ActivateRestoredCarrierWallet(ctx context.Context, pubPass []by
 		manager = nil
 	}
 	if e != nil {
-		return nil, guard, l.closeHostedAllocationFailure(nil, errors.Join(fightercarrier.ErrOutcomeUnknown, e))
+		// Preserve the original entry point's uncertainty semantics. The new
+		// exact-expected path can prove refusal before its first mutation.
+		if expected == nil || mutationStarted {
+			e = errors.Join(fightercarrier.ErrOutcomeUnknown, e)
+		}
+		return nil, guard, l.closeHostedAllocationFailure(nil, e)
 	}
 	w, e := l.finishRestoredCarrierOpen(ctx, pubPass, guard, identity)
 	return w, guard, e
