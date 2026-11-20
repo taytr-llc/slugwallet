@@ -83,6 +83,8 @@ type Loader struct {
 	wallet             *Wallet
 	recoverySession    bool
 	phaseARecovery     bool
+	hostedAllocation   bool
+	hostedCleanup      *HostedAllocationCleanupError
 	phaseACleanup      *PhaseARecoveryCleanupError
 	recoveryCheckpoint func(string)
 	localDB            bool
@@ -357,6 +359,10 @@ func (l *Loader) OpenExistingWallet(pubPassphrase []byte,
 		}
 	}
 
+	if hostedSchema(l.db) {
+		l.hostedAllocation = true
+		return nil, l.closeHostedAllocationFailure(nil, waddrmgr.ErrHostedAllocationProfile)
+	}
 	if e := l.checkPhaseASchema(l.db); e != nil {
 		return nil, l.closePhaseAFailure(l.db, nil, e)
 	}
@@ -416,7 +422,7 @@ func (l *Loader) WalletExists() (bool, error) {
 func (l *Loader) LoadedWallet() (*Wallet, bool) {
 	l.mu.Lock()
 	w := l.wallet
-	if l.phaseACleanup != nil {
+	if l.phaseACleanup != nil || l.hostedCleanup != nil {
 		w = nil
 	}
 	l.mu.Unlock()
@@ -431,6 +437,9 @@ func (l *Loader) UnloadWallet() error {
 	defer l.mu.Unlock()
 	l.mu.Lock()
 
+	if l.hostedCleanup != nil {
+		return l.hostedCleanup
+	}
 	if l.phaseACleanup != nil {
 		return l.phaseACleanup
 	}
@@ -440,12 +449,15 @@ func (l *Loader) UnloadWallet() error {
 
 	l.wallet.Stop()
 	l.wallet.WaitForShutdown()
-	if l.phaseARecovery {
+	if l.phaseARecovery || l.hostedAllocation {
 		l.wallet.Manager.Close()
 	}
 	if l.localDB {
 		err := l.db.Close()
 		if err != nil {
+			if l.hostedAllocation {
+				return l.retainHostedAllocationCleanup(l.wallet.Manager, nil, err)
+			}
 			if l.phaseARecovery {
 				return l.retainPhaseACleanup(l.db, l.wallet.Manager, nil, err)
 			}

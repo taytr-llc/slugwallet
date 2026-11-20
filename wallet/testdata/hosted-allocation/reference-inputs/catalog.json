@@ -1,0 +1,311 @@
+{
+  "version": 1,
+  "status": "staged public input proposal; root review required before execution",
+  "base_commits": {
+    "slug": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+    "slugwallet": "27c8fc2042377b3131e34f1f04e23629f666c579"
+  },
+  "files": [
+    {
+      "path": "inherited/slugwallet/recoveryvault/testdata/hosted-current-recovery/current.json",
+      "bytes": 2379561,
+      "sha256": "d8b3f965fe83272568042b21cf378c86c60f1d4d220a0ec92c1f837109f3756a",
+      "origin": "slugwallet/recoveryvault/testdata/hosted-current-recovery/current.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "c1b33e4b2545d54de4bc7069e8ae2a97ec7e3ce4",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/recoveryvault/testdata/hosted-current-recovery/README.md",
+      "bytes": 747,
+      "sha256": "1dbf0cf7e1736425ea7d197a862eb0252e0360a9955e2aa28355d462f5481c85",
+      "origin": "slugwallet/recoveryvault/testdata/hosted-current-recovery/README.md",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "fb36e9cea80e436a3f2857e49db96d882257810a",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/hosted-current-recovery/public.json",
+      "bytes": 496893,
+      "sha256": "e5b71e541b8fd41328dc46ccfd4c14fb9f3de724eea34e9d2fec3d54b349ed3c",
+      "origin": "slugwallet/wallet/testdata/hosted-current-recovery/public.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "bfabcad6122b94bb0cd062b1bd0e3ee9b8c56236",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/phase-a-recovery/addresses-v1.json",
+      "bytes": 67032,
+      "sha256": "1558bf4a134ab01acfe84fdbb2edc3e8af842b602cb5150feaa9ce2df26b9cf7",
+      "origin": "slugwallet/wallet/testdata/phase-a-recovery/addresses-v1.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "54c3e238a081a6fe9dbdcdc136de75aa93474c7a",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/phase-a-recovery/progress-v1.json",
+      "bytes": 139687,
+      "sha256": "fb0c9a5b1d59711ecb6d855534358f09175df5eb547c1bf88d0474b4b3515801",
+      "origin": "slugwallet/wallet/testdata/phase-a-recovery/progress-v1.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "09104596807e7966ae3928d3570fc0e1bce1289b",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/phase-a-recovery/README.md",
+      "bytes": 2499,
+      "sha256": "837b302e756da5abe223339886c58762445eb51c24827ef0a97b5a3445309e32",
+      "origin": "slugwallet/wallet/testdata/phase-a-recovery/README.md",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "8cc06cb937b37231fbdd1202a0d358ba6cd0c352",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/phase-a-recovery/producer/address_model.py",
+      "bytes": 5448,
+      "sha256": "d4343afb1603211d52c62cbec5e373e129807858631f1a2e83f4b43b97c2557b",
+      "origin": "slugwallet/wallet/testdata/phase-a-recovery/producer/address_model.py",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "49a9470480edcb08afac7474560c04a0f090c9cc",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/phase-a-recovery/producer/progress_model.py",
+      "bytes": 6148,
+      "sha256": "45c4717403a1ab27e346c97a7a0b4b6a3ecbd0eacb2546d91c886ecf4481ba6f",
+      "origin": "slugwallet/wallet/testdata/phase-a-recovery/producer/progress_model.py",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "b771d027d5461d6aa0f3c129985b5283ada211ef",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/phase-a-recovery/producer/CASE_PLAN.md",
+      "bytes": 6616,
+      "sha256": "a0256096554625894a9167f35046484734ec99cf4102de67661f2d58b92b4069",
+      "origin": "slugwallet/wallet/testdata/phase-a-recovery/producer/CASE_PLAN.md",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "5be59f9773be28680b0a163d325e5de3cd1957a9",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/phase-a-recovery/producer/producer-lock.json",
+      "bytes": 1145,
+      "sha256": "0a0762cf3d51a3e35505494a6afa995e2292fce742c4a92cb1478aa0712abc29",
+      "origin": "slugwallet/wallet/testdata/phase-a-recovery/producer/producer-lock.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "905f9ac087241eb9645a948c951bdaf930bb5728",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/recovery/testdata/oracle/reference.py",
+      "bytes": 15839,
+      "sha256": "60e1527ce408213fd89bc2cf6b4d2d8ecaedbd3c811ef4d40b6f888bb608202f",
+      "origin": "slugwallet/recovery/testdata/oracle/reference.py",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "a2aaec371bb54269a6b303d061056b8ebc50583d",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/recovery/testdata/oracle/sources/english.txt",
+      "bytes": 13116,
+      "sha256": "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda",
+      "origin": "slugwallet/recovery/testdata/oracle/sources/english.txt",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "942040ed50f7205cafc465496229128ba4f78e75",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/recovery/testdata/oracle/sources/bip-0032.mediawiki",
+      "bytes": 28032,
+      "sha256": "e5e00a8289db2f681052cf24a745320afc225e66b25d1e489a7c884d2fc7f11f",
+      "origin": "slugwallet/recovery/testdata/oracle/sources/bip-0032.mediawiki",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "558bbaab60d63e3e50648816d5e3449cfb887f85",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/recovery/testdata/oracle/sources/bip-0084.mediawiki",
+      "bytes": 4648,
+      "sha256": "1900feec6cafca65b8c09906ca0658d2d742b4c9b44cb15678996985b6bfe627",
+      "origin": "slugwallet/recovery/testdata/oracle/sources/bip-0084.mediawiki",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "f266a1455317e3cfb69e477f24fe9f23577a5433",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/candidate-withdrawals/reference-v1.json",
+      "bytes": 230798,
+      "sha256": "d7c7b1e4c94e02f734a162b5974749853c91828ea1a0a4c4446c379bddc841c3",
+      "origin": "slugwallet/wallet/testdata/candidate-withdrawals/reference-v1.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "c5a5dc509154660d96983b638f51cae052bc9066",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/candidate-withdrawals/README.md",
+      "bytes": 1284,
+      "sha256": "f433a6d504c9a80eaf0eedc0ab0f9f374effe16ea3dcd6b09baae34a6ca706d9",
+      "origin": "slugwallet/wallet/testdata/candidate-withdrawals/README.md",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "9547b1525e1bf02e54f283ecc0c9c49ee0238786",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/candidate-withdrawals/reference-producer/transaction_model.py",
+      "bytes": 6572,
+      "sha256": "05ee7a66d91dd436663cf6081203e9d7bc053407eeee0867298ee0037cdbb6f3",
+      "origin": "slugwallet/wallet/testdata/candidate-withdrawals/reference-producer/transaction_model.py",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "9c7046a64c62a92c9c92d01bb1832381674c9ded",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/candidate-withdrawals/reference-producer/CASE_PLAN.md",
+      "bytes": 2824,
+      "sha256": "cbc956436defefd2f55ed86304da95da96a94dc2a7bbcc91a4dafed4ccd8f890",
+      "origin": "slugwallet/wallet/testdata/candidate-withdrawals/reference-producer/CASE_PLAN.md",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "3f80bd60810cdedbbcea943e8f169757b07d2ccc",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/candidate-withdrawals/reference-producer/producer-lock.json",
+      "bytes": 1080,
+      "sha256": "2639c1969f19a3a65ce7e8d6ffad5b0811dcdf2ede09a9cc3b95533a5959f7e0",
+      "origin": "slugwallet/wallet/testdata/candidate-withdrawals/reference-producer/producer-lock.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "e6f9031c2d7f13515fab38ceb440d0740b1d3db1",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/own-activity/inputs/public/zero256.manifest.json",
+      "bytes": 1035,
+      "sha256": "f027cb1dfc522b59a6f863ad9921b499d42ea7102fa3d7a17a8153b650be9ed5",
+      "origin": "slugwallet/wallet/testdata/own-activity/inputs/public/zero256.manifest.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "67ee5aef0f33b4c0a9284a5f6b15acf35244df7b",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/wallet/testdata/own-activity/inputs/public/incrementing256.manifest.json",
+      "bytes": 1035,
+      "sha256": "41776b5beb5b341714a285e62444fceb0cf2a9d408123f05ec1eeeff739db4e6",
+      "origin": "slugwallet/wallet/testdata/own-activity/inputs/public/incrementing256.manifest.json",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "ba065d34b37765e174b6abd4010892c8bfee85d1",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slugwallet/CANDIDATE_WITHDRAWALS.md",
+      "bytes": 25669,
+      "sha256": "e1da62fdf3785cd6e7cf1c24ae5269ff2d7409b4b9366a13f95a5c88d7fa8524",
+      "origin": "slugwallet/CANDIDATE_WITHDRAWALS.md",
+      "commit": "27c8fc2042377b3131e34f1f04e23629f666c579",
+      "git_blob": "d871d37e3b8895e45dd1ce5bf7b7d267c9ed5d6a",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/HOSTED_CURRENT_RECOVERY.md",
+      "bytes": 58973,
+      "sha256": "92b247a5c3f47e637ed0dbf09d08c8f580a881cc80ff114a4c22d2e119572a86",
+      "origin": "slug/HOSTED_CURRENT_RECOVERY.md",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "a5d5482818a8b3b089f8feab8240e6ad00a853bd",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/PHASE_A_BACKUP_RECOVERY.md",
+      "bytes": 21287,
+      "sha256": "ea502f20fa91a313e62ba9dc1f577fd1e49456747fa1283726371d5b6583237e",
+      "origin": "slug/PHASE_A_BACKUP_RECOVERY.md",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "dac989d1595404d3f5b46dc46699be5b228c6a47",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/REVIEWED_WITHDRAWALS.md",
+      "bytes": 35561,
+      "sha256": "33bcf03ea830a3d87fc7e174fc5b874690c80969a2656f36bf31b730c2022386",
+      "origin": "slug/REVIEWED_WITHDRAWALS.md",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "f91728dba268b3959fbe54e0d267775c564f8c86",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/testdata/hosted-current-recovery/reference/source/common.py",
+      "bytes": 3466,
+      "sha256": "77d04d88185063b06dcfad5a8f30afb6aefaaa1846737d92fdb467ac2da763a2",
+      "origin": "slug/testdata/hosted-current-recovery/reference/source/common.py",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "22a99a5909f8c431a31914cf3ab21e1be19a2f2b",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/testdata/hosted-current-recovery/reference/source/current_model.py",
+      "bytes": 16567,
+      "sha256": "d23965e3dedd4ec21f5a54541193c7e0ca6c4cb3024978d47ebf3e0e5ead2b12",
+      "origin": "slug/testdata/hosted-current-recovery/reference/source/current_model.py",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "a49d759bdfb8ab0bb94bd3ec7b63371971fe8c0f",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/testdata/hosted-current-recovery/reference/source/generate_current_reference.py",
+      "bytes": 22438,
+      "sha256": "b6fb9c8c32b1dc1caa671cf5286a01db00779558004fe5ecaab8efe71eda5d99",
+      "origin": "slug/testdata/hosted-current-recovery/reference/source/generate_current_reference.py",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "f1a774e97a26df35c4006b730c7cdf164a2ab754",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/testdata/hosted-current-recovery/reference/source/current-case-plan.json",
+      "bytes": 4677,
+      "sha256": "cba83644a8c43b286e5cda4a0b0b16781f720ccaf1f87d313cbff6499fa14e64",
+      "origin": "slug/testdata/hosted-current-recovery/reference/source/current-case-plan.json",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "e3bc376b33eb85406c7d7b68c1cadc8ea8a30cae",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/testdata/hosted-current-recovery/reference/current-producer-lock-v1.json",
+      "bytes": 1072,
+      "sha256": "7ae418e3cd0aab3f253a1e4cb0a22e9e8241193cdcd594996b15bb6be6ba42fc",
+      "origin": "slug/testdata/hosted-current-recovery/reference/current-producer-lock-v1.json",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "1db3810c5c07567d0fe4d34f67feb87d429ec2e9",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "inherited/slug/testdata/hosted-current-recovery/reference/preparation/inputs/fixture-recipe.json",
+      "bytes": 4202,
+      "sha256": "d501b92fc10e2b307bf210bf3457655f0c0632dc20bd91b57548462e3ea699d3",
+      "origin": "slug/testdata/hosted-current-recovery/reference/preparation/inputs/fixture-recipe.json",
+      "commit": "b61907a2da1a2735705ed324c96ea43c5d462c70",
+      "git_blob": "ef3414c5a5ed42a3cd6c573be270187522fbae7e",
+      "scope": "prior qualified public fixture or source; copied byte-identically"
+    },
+    {
+      "path": "proposal/HOSTED_ALLOCATION_RECOVERY.draft.md",
+      "bytes": 63198,
+      "sha256": "dd83e7b9af431b55861ad9c14949c8e9ccd34760d4c1c738eb0c514088742ddf",
+      "origin": "/Users/taytrrip/slug/set72-prep/HOSTED_ALLOCATION_RECOVERY.draft.md",
+      "scope": "moving proposal snapshot; execution requires separately frozen adopted contract"
+    },
+    {
+      "path": "recipe.json",
+      "bytes": 1447,
+      "sha256": "b10e4852e6e5ce209438f98d9d4894796eb77a856f802798f0c4b37aac4f3360",
+      "origin": "Set72 source-only literal recipe before producer design",
+      "scope": "new literal inputs, not generated expectations"
+    }
+  ],
+  "excluded": [
+    "all wallet/account databases",
+    "all runtime private recovery exports",
+    "all private scalar/seed/mnemonic fixture fields",
+    "new product output",
+    "network inputs"
+  ],
+  "note": "Published transaction signatures/public keys and branch xpubs are public evidence. Prior producer source is provenance; only CKDpub public arithmetic will execute."
+}

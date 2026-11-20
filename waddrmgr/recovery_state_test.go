@@ -440,6 +440,10 @@ func TestRecoveryMissingNamespace(t *testing.T) {
 		t.Fatal(err)
 	}
 	err := walletdb.View(db, func(tx walletdb.ReadTx) error {
+		accounts, err := RecoveryAccounts(tx.ReadBucket(waddrmgrNamespaceKey))
+		if !errors.Is(err, ErrRecoveryState) || accounts != nil {
+			t.Fatal("deleted namespace returned inventory or wrong refusal", err)
+		}
 		plain, err := mgr.RecoveryData(tx.ReadBucket(waddrmgrNamespaceKey), false)
 		if len(plain) != 0 {
 			t.Fatal("missing namespace returned payload")

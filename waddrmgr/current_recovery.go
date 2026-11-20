@@ -85,6 +85,10 @@ func currentRecoveryPublicError(e error) error {
 // retention Get, unlock/KDF, address derivation, address inventory or chain read.
 // The returned value is owned public data; it is not a wallet capture capability.
 func (m *Manager) ReadCurrentRecoveryManifest(ctx context.Context, ns walletdb.ReadBucket) (recovery.Manifest, error) {
+	return m.readCurrentRecoveryManifestSchema(ctx, ns, RecoveryManagerVersion)
+}
+
+func (m *Manager) readCurrentRecoveryManifestSchema(ctx context.Context, ns walletdb.ReadBucket, schema uint32) (recovery.Manifest, error) {
 	var none recovery.Manifest
 	if ctx == nil || ns == nil {
 		return none, ErrCurrentRecoveryCorrupt
@@ -103,14 +107,14 @@ func (m *Manager) ReadCurrentRecoveryManifest(ctx context.Context, ns walletdb.R
 	if m.closed {
 		return none, ErrCurrentRecoveryUnavailable
 	}
-	if !m.publicRecoveryProfileLocked() {
+	if !m.publicRecoveryProfileLocked() || (schema == HostedAllocationManagerVersion) != m.hostedAllocation {
 		return none, ErrCurrentRecoveryProfile
 	}
 	main := ns.NestedReadBucket(mainBucketName)
 	if main == nil {
 		return none, ErrCurrentRecoveryCorrupt
 	}
-	manifest, e := m.publicRecoveryManifestLocked(ctx, main, 4096)
+	manifest, e := m.publicRecoveryManifestSchemaLocked(ctx, main, 4096, schema)
 	if e != nil {
 		return none, currentRecoveryPublicError(e)
 	}

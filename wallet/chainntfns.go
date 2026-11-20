@@ -155,7 +155,7 @@ func (w *Wallet) handleChainNotifications() {
 			case *chain.RescanFinished:
 				err = w.catchUpHashes(chainClient, n.Height)
 				notificationName = "rescan finished"
-				if !w.Manager.ResumableRecovery() || (err == nil && !w.recoverySyncFailed.Load()) {
+				if (!w.Manager.ResumableRecovery() && !w.Manager.HostedAllocation()) || (err == nil && !w.recoverySyncFailed.Load()) {
 					w.SetChainSynced(true)
 				}
 				select {
@@ -180,7 +180,7 @@ func (w *Wallet) handleChainNotifications() {
 					continue
 				}
 
-				if w.Manager.ResumableRecovery() {
+				if w.Manager.ResumableRecovery() || w.Manager.HostedAllocation() {
 					w.recoverySyncFailed.Store(true)
 					w.SetChainSynced(false)
 				}

@@ -1,0 +1,30 @@
+{
+  "source_lock_sha256": "efd14e873da46b9d3b1c680ccfceb9dd484f73e98a23acde99e38505e8bb78de",
+  "runs": [
+    {
+      "label": "python314",
+      "version": "Python 3.14.3",
+      "command": [
+        "/opt/homebrew/bin/python3.14",
+        "/Users/taytrrip/slug/set72-prep/reference-producer/generate_reference.py",
+        "--execute",
+        "--approved-producer-lock",
+        "/Users/taytrrip/slug/set72-prep/producer-execution-lock.json",
+        "--approved-lock-sha256",
+        "efd14e873da46b9d3b1c680ccfceb9dd484f73e98a23acde99e38505e8bb78de",
+        "--input-lock",
+        "/Users/taytrrip/slug/set72-prep/reference-inputs/input-lock.json",
+        "--inputs",
+        "/Users/taytrrip/slug/set72-prep/reference-inputs/inputs",
+        "--contract",
+        "/Users/taytrrip/slug/slug/HOSTED_ALLOCATION_RECOVERY.md",
+        "--output",
+        "/Users/taytrrip/slug/artifacts/set72/core-reference-attempt1/python314.json"
+      ],
+      "exit_code": 1,
+      "seconds": 0.125,
+      "group_empty": true
+    }
+  ],
+  "status": "failed"
+}

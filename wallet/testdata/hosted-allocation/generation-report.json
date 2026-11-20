@@ -1,0 +1,60 @@
+{
+  "source_lock_sha256": "bfe9086f70c64702163d6c14a74245d4369718a31331752501e0516b832c8801",
+  "runs": [
+    {
+      "label": "python314",
+      "version": "Python 3.14.3",
+      "command": [
+        "/opt/homebrew/bin/python3.14",
+        "/Users/taytrrip/slug/set72-prep/reference-producer/generate_reference.py",
+        "--execute",
+        "--approved-producer-lock",
+        "/Users/taytrrip/slug/set72-prep/producer-execution-lock-v2.json",
+        "--approved-lock-sha256",
+        "bfe9086f70c64702163d6c14a74245d4369718a31331752501e0516b832c8801",
+        "--input-lock",
+        "/Users/taytrrip/slug/set72-prep/reference-inputs/input-lock.json",
+        "--inputs",
+        "/Users/taytrrip/slug/set72-prep/reference-inputs/inputs",
+        "--contract",
+        "/Users/taytrrip/slug/slug/HOSTED_ALLOCATION_RECOVERY.md",
+        "--output",
+        "/Users/taytrrip/slug/artifacts/set72/core-reference-attempt2/python314.json"
+      ],
+      "exit_code": 0,
+      "seconds": 80.596,
+      "group_empty": true,
+      "output_sha256": "221fc42f6848fed27912a43454a1fa9ebe2d4e16b383aad9e294c31316424e6b",
+      "output_bytes": 4004018
+    },
+    {
+      "label": "python39",
+      "version": "Python 3.9.6",
+      "command": [
+        "/usr/bin/python3",
+        "/Users/taytrrip/slug/set72-prep/reference-producer/generate_reference.py",
+        "--execute",
+        "--approved-producer-lock",
+        "/Users/taytrrip/slug/set72-prep/producer-execution-lock-v2.json",
+        "--approved-lock-sha256",
+        "bfe9086f70c64702163d6c14a74245d4369718a31331752501e0516b832c8801",
+        "--input-lock",
+        "/Users/taytrrip/slug/set72-prep/reference-inputs/input-lock.json",
+        "--inputs",
+        "/Users/taytrrip/slug/set72-prep/reference-inputs/inputs",
+        "--contract",
+        "/Users/taytrrip/slug/slug/HOSTED_ALLOCATION_RECOVERY.md",
+        "--output",
+        "/Users/taytrrip/slug/artifacts/set72/core-reference-attempt2/python39.json"
+      ],
+      "exit_code": 0,
+      "seconds": 105.395,
+      "group_empty": true,
+      "output_sha256": "221fc42f6848fed27912a43454a1fa9ebe2d4e16b383aad9e294c31316424e6b",
+      "output_bytes": 4004018
+    }
+  ],
+  "status": "passed",
+  "identical": true,
+  "sources_unchanged": true
+}

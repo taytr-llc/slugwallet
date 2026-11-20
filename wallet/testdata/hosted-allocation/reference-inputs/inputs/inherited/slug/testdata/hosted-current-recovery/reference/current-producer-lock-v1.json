@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "approved_by": "root",
+  "frozen_at_utc": "2026-11-19T23:33:48.040661+00:00",
+  "input_lock_sha256": "f7809a938be24d9a320beeff9f8ed09fb2a43f9245864ca7ab0d4f5bb7a16dd9",
+  "contract_sha256": "92b247a5c3f47e637ed0dbf09d08c8f580a881cc80ff114a4c22d2e119572a86",
+  "sources": {
+    "common.py": "77d04d88185063b06dcfad5a8f30afb6aefaaa1846737d92fdb467ac2da763a2",
+    "current_model.py": "d23965e3dedd4ec21f5a54541193c7e0ca6c4cb3024978d47ebf3e0e5ead2b12",
+    "generate_current_reference.py": "b6fb9c8c32b1dc1caa671cf5286a01db00779558004fe5ecaab8efe71eda5d99",
+    "current-case-plan.json": "cba83644a8c43b286e5cda4a0b0b16781f720ccaf1f87d313cbff6499fa14e64"
+  },
+  "review": "Root finite source review: all common/current model and generator source read before execution; bounded CAS/audit/canonical arithmetic and explicitly modeled export stages reviewed. Explicit root/execution guard successor checked. No product implementation or outputs used.",
+  "producer_executed": false,
+  "execution_authorized": true,
+  "product_implementation_started": false
+}

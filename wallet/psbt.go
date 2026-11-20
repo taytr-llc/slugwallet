@@ -48,6 +48,9 @@ func (w *Wallet) FundPsbt(packet *psbt.Packet, keyScope *waddrmgr.KeyScope,
 	minConfs int32, account uint32, feeSatPerKB btcutil.Amount,
 	coinSelectionStrategy CoinSelectionStrategy,
 	optFuncs ...TxCreateOption) (int32, error) {
+	if w.Manager.HostedAllocation() {
+		return 0, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	if w.Manager.ResumableRecovery() && !w.ChainSynced() {
 		return 0, ErrNotSynced
@@ -423,6 +426,9 @@ func createOutputInfo(txOut *wire.TxOut,
 // successfully.
 func (w *Wallet) FinalizePsbt(keyScope *waddrmgr.KeyScope, account uint32,
 	packet *psbt.Packet) error {
+	if w.Manager.HostedAllocation() {
+		return waddrmgr.ErrHostedAllocationProfile
+	}
 
 	if w.Manager.ResumableRecovery() && !w.ChainSynced() {
 		return ErrNotSynced

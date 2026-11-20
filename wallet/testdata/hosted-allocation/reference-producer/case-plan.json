@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "status": "source-only; no expected output until exact root-approved execution lock",
+  "scope": "One core allocation codec/state corpus, not a new production profile or authority proof",
+  "inherited_inputs": [
+    "Set71 independently generated public CurrentBindings and original zero-cursor manifests",
+    "Set69 published native84 branch xpubs and 40 sparse address overlaps across both fixtures",
+    "Set24 independent public point/Base58/Bech32 arithmetic source; CKDpub only, no secret inputs",
+    "Set68 24 unchanged independent drafts/digests and canonical supported destination scripts"
+  ],
+  "positive_plan": {
+    "bindings": 2,
+    "states": 37,
+    "replays": 2,
+    "per_fixture_states": [
+      "empty bound inventory",
+      "pool reserve",
+      "pool local commit before acknowledgment",
+      "pool completion",
+      "receive reserve",
+      "receive completion",
+      "burned receive",
+      "eight independent original/dust/no-change withdrawal cases",
+      "explicitly injected invalid-child prefix",
+      "reserved withdrawal after private plan loss",
+      "explicit burned withdrawal after private plan loss"
+    ],
+    "one_capacity_state": "1024 actual public-key-derived allocation rows; 1025th reservation refuses; no reclaimed IDs"
+  },
+  "storage_negative_plan": [
+    "metadata revision", "cursor regression", "missing local link", "foreign reservation binding",
+    "duplicate sequence", "false invalid-child witness", "wrong local digest", "wrong wallet guard",
+    "Boolean count", "local range mismatch", "clock regression", "unknown row field"
+  ],
+  "raw_plan": [
+    "canonical database row", "extra LF", "leading whitespace", "duplicate key",
+    "null instead of row", "trailing object", "omitted phase"
+  ],
+  "lifecycle_model_only": [
+    "lost reply after acknowledgment requires fresh exact-ID redisplay, new action/View and proof/watch",
+    "lost private withdrawal plan before local commit permits only explicit Burn then user Abandon/new OperationID",
+    "known local withdrawal commit recovers the exact saved draft without reselecting",
+    "missing-wallet recovery uses the surviving reserved highwater and restores no payment journal"
+  ],
+  "sizing": {
+    "standalone": "sizing.py can be separately frozen before contract adoption; it emits no expected protocol states",
+    "core": "sizing_model.py includes conservative widths in the guarded corpus",
+    "bounds": [2048, 4096, 8192, 12288, 16384, 32768, 4194304],
+    "claim": "Count and byte limits are independent; invalid maximum-width compositions are size witnesses only; logical work reservation is not total heap usage"
+  },
+  "limits": [
+    "No Go output, network, wallet/account DB, recovery phrase, private scalar, seed or runtime export is read",
+    "Synthetic retained IDs are model inputs, not live receipts or capabilities",
+    "Invalid-child injections are labeled faults and are not represented as naturally observed BIP32 invalidity",
+    "State arithmetic cannot qualify original-session fences, locks, IO atomicity, watch behavior or cleanup; implementation tests must do so",
+    "No file installation, transferable fighter ownership, active replacement spending or production custody claim"
+  ]
+}

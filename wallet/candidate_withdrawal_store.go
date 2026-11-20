@@ -50,6 +50,7 @@ type withdrawalState struct {
 // before unloading that wallet. The account/app journal boundary is deliberately
 // not an argument to this internal wallet library; the concrete adapter owns it.
 type CandidateWithdrawals struct {
+	allocated *HostedAllocator // nonnil only for the private schema13 adapter
 	wallet    *Wallet
 	binding   string
 	identity  withdrawalIdentity
@@ -69,7 +70,10 @@ func (w *Wallet) CreateCandidateWithdrawals(ctx context.Context, bindingID strin
 func (w *Wallet) OpenCandidateWithdrawals(ctx context.Context, bindingID string) (*CandidateWithdrawals, error) {
 	return w.openCandidateWithdrawals(ctx, bindingID, false)
 }
-func (w *Wallet) openCandidateWithdrawals(ctx context.Context, bindingID string, create bool) (result *CandidateWithdrawals, err error) {
+func (w *Wallet) openCandidateWithdrawals(ctx context.Context, bindingID string, create bool) (*CandidateWithdrawals, error) {
+	return w.openCandidateWithdrawalsOwned(ctx, bindingID, create, nil)
+}
+func (w *Wallet) openCandidateWithdrawalsOwned(ctx context.Context, bindingID string, create bool, allocated *HostedAllocator) (result *CandidateWithdrawals, err error) {
 	if ctx == nil {
 		return nil, ErrWithdrawalInvalid
 	}
@@ -91,7 +95,7 @@ func (w *Wallet) openCandidateWithdrawals(ctx context.Context, bindingID string,
 		}
 	}()
 	life, cancel := context.WithCancel(context.Background())
-	s := &CandidateWithdrawals{wallet: w, binding: bindingID, life: life, cancel: cancel}
+	s := &CandidateWithdrawals{wallet: w, binding: bindingID, life: life, cancel: cancel, allocated: allocated}
 	defer func() {
 		if err != nil {
 			cancel()
@@ -105,7 +109,7 @@ func (w *Wallet) openCandidateWithdrawals(ctx context.Context, bindingID string,
 			if tx.ReadBucket(withdrawalNamespace) != nil {
 				return ErrWithdrawalConflict
 			}
-			identity, e := withdrawalProfile(tx, w)
+			identity, e := s.profile(ctx, tx)
 			if e != nil {
 				return e
 			}
@@ -127,7 +131,7 @@ func (w *Wallet) openCandidateWithdrawals(ctx context.Context, bindingID string,
 		})
 	} else {
 		err = walletdb.View(w.db, func(tx walletdb.ReadTx) error {
-			identity, e := withdrawalProfile(tx, w)
+			identity, e := s.profile(ctx, tx)
 			if e != nil {
 				return e
 			}
@@ -293,7 +297,7 @@ func (s *CandidateWithdrawals) audit(ctx context.Context, tx walletdb.ReadTx) (w
 	if e := ctx.Err(); e != nil {
 		return state, e
 	}
-	identity, e := withdrawalProfile(tx, s.wallet)
+	identity, e := s.profile(ctx, tx)
 	if e != nil {
 		return state, e
 	}

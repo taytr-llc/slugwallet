@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "scope": "Public deterministic SOURCE-ONLY model recipe; synthetic IDs grant no live authority and are not production trust pins",
+  "fixture_order": [
+    "zero256",
+    "incrementing256"
+  ],
+  "ids": {
+    "authority": "1111111111111111111111111111111111111111111111111111111111111111",
+    "coordinator": "2222222222222222222222222222222222222222222222222222222222222222",
+    "vault": "3333333333333333333333333333333333333333333333333333333333333333",
+    "wallets": {
+      "zero256": "4141414141414141414141414141414141414141414141414141414141414141",
+      "incrementing256": "4242424242424242424242424242424242424242424242424242424242424242"
+    },
+    "accounts": {
+      "zero256": "5151515151515151515151515151515151515151515151515151515151515151",
+      "incrementing256": "5252525252525252525252525252525252525252525252525252525252525252"
+    },
+    "provisions": {
+      "zero256": "6161616161616161616161616161616161616161616161616161616161616161",
+      "incrementing256": "6262626262626262626262626262626262626262626262626262626262626262"
+    },
+    "retentions": {
+      "zero256": "7171717171717171717171717171717171717171717171717171717171717171",
+      "incrementing256": "7272727272727272727272727272727272727272727272727272727272727272"
+    },
+    "source_binding": "8181818181818181818181818181818181818181818181818181818181818181"
+  },
+  "id_qualification": "Literal preselected synthetic ID values only. Account/provision/retention/source-binding identifiers model exact shape and relational binding, not an issued receipt, runtime, encrypted envelope, opaque capability or actual authority.",
+  "base_ms": 1795070000000,
+  "non_second_aligned_ms": 1795070000123,
+  "id_sequence_rule": {
+    "width_hex_chars": 64,
+    "encoding": "unsigned integer to lowercase hexadecimal, left-zero-padded to 64; disjoint starts below; nonzero; source-only synthetic IDs"
+  },
+  "sequence_starts": {
+    "capture": 4096,
+    "flow": 8192,
+    "attempt": 12288,
+    "nonce": 16384,
+    "auth": 20480,
+    "operation": 24576,
+    "event": 28672
+  },
+  "event_rule": {
+    "encoding": "Same 64-lowercase-hex id_sequence_rule with event sequence start; raw provider EventID remains distinct from derived account Barrier.EventID"
+  },
+  "paths": {
+    "rsa": "inherited/slug/gymidentity/testdata/rfc7515_rsa.json",
+    "old_identity": "inherited/slug/gymidentity/testdata/identity_v1.json",
+    "old_coordinated": "inherited/slug/gymidentity/testdata/coordinated/coordinated_identity_v1.json",
+    "old_vault": "inherited/slugwallet/recoveryvault/testdata/vault_v1.json",
+    "old_recovery": "inherited/slugwallet/recovery/testdata/recovery_v1.json",
+    "descriptor": "public/descriptor-v2.json",
+    "actual_manifests": {
+      "zero256": "inherited/slugwallet/wallet/testdata/own-activity/inputs/public/zero256.manifest.json",
+      "incrementing256": "inherited/slugwallet/wallet/testdata/own-activity/inputs/public/incrementing256.manifest.json"
+    },
+    "contract": "contract/HOSTED_CURRENT_RECOVERY.md"
+  },
+  "initial_manifest_rule": "Use each exact inherited public actual-manifest immutable identity/profile fields and independently inherited DefaultAccounts zero cursors for all eight branches. Keep actual native84 1/1 copy distinct and apply it as a capture, never relabel old vault vectors with nonzero cursors as initial DefaultAccounts.",
+  "policy": {
+    "version": 1,
+    "network": 1397511495,
+    "genesis": "7893676099cf9985bb198dfb6a347d9422a19f2422cf3326a999a7230ce246cd",
+    "dna_version": 1,
+    "prospect_target": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  },
+  "semantics": {
+    "provider_timestamp_ms": "floor(sample_ms/1000)*1000 for immutable authenticated_at_ms/verified_at_ms; JWT integer seconds; driver clock retains full sampled milliseconds",
+    "config_order": "IdentityConfig Accounts.Principals sorted by independently derived inherited PrincipalID; fixture arrays remain zero256 then incrementing256",
+    "publication": "State-machine labels and arithmetic only. Actual fence, key clear, filesystem identity, crash, sync/rename/link and cleanup effects require implementation fault injection."
+  }
+}

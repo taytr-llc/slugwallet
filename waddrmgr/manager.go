@@ -7,6 +7,7 @@ package waddrmgr
 import (
 	"crypto/rand"
 	"crypto/sha512"
+	"errors"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -353,6 +354,7 @@ type Manager struct {
 	recoveryEnabled   bool
 	recoveryVersion   uint32
 	resumableRecovery bool
+	hostedAllocation  bool
 	recoveryPending   atomic.Bool
 	defaultScopes     map[KeyScope]ScopeAddrSchema
 	chainParams       *chaincfg.Params
@@ -516,6 +518,10 @@ func (m *Manager) Close() {
 // mark as gucci?
 func (m *Manager) NewScopedKeyManager(ns walletdb.ReadWriteBucket,
 	scope KeyScope, addrSchema ScopeAddrSchema) (*ScopedKeyManager, error) {
+	if m.HostedAllocation() {
+		return nil, ErrHostedAllocationProfile
+	}
+
 	if m.recoveryVersion == 2 {
 		return nil, ErrRecoveryInventory
 	}
@@ -727,6 +733,9 @@ func (m *Manager) Address(ns walletdb.ReadBucket,
 	for _, scopedMgr := range m.scopedManagers {
 		addr, err := scopedMgr.Address(ns, address)
 		if err != nil {
+			if m.hostedAllocation && errors.Is(err, ErrHostedAllocationFrontier) {
+				return nil, err
+			}
 			continue
 		}
 
@@ -752,6 +761,9 @@ func (m *Manager) MarkUsed(ns walletdb.ReadWriteBucket,
 	// First, we'll figure out which scoped manager this address belong to.
 	for _, scopedMgr := range m.scopedManagers {
 		if _, err := scopedMgr.Address(ns, address); err != nil {
+			if m.hostedAllocation && errors.Is(err, ErrHostedAllocationFrontier) {
+				return err
+			}
 			continue
 		}
 
@@ -776,6 +788,9 @@ func (m *Manager) AddrAccount(ns walletdb.ReadBucket,
 
 	for _, scopedMgr := range m.scopedManagers {
 		if _, err := scopedMgr.Address(ns, address); err != nil {
+			if m.hostedAllocation && errors.Is(err, ErrHostedAllocationFrontier) {
+				return nil, 0, err
+			}
 			continue
 		}
 
@@ -1549,6 +1564,10 @@ func loadManager(ns walletdb.ReadBucket, pubPassphrase []byte,
 // before retained cursor minima have been materialized. Public Open never sets it.
 func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	chainParams *chaincfg.Params, candidateCreation bool) (*Manager, error) {
+	return loadManagerProfile(ns, pubPassphrase, chainParams, candidateCreation, false)
+}
+
+func loadManagerProfile(ns walletdb.ReadBucket, pubPassphrase []byte, chainParams *chaincfg.Params, candidateCreation, hosted bool) (*Manager, error) {
 
 	// Verify the version is neither too old or too new.
 	version, err := fetchManagerVersion(ns)
@@ -1559,7 +1578,7 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	if version < latestMgrVersion {
 		str := "database upgrade required"
 		return nil, managerError(ErrUpgrade, str, nil)
-	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion && version != ResumableManagerVersion && version != PhaseAManagerVersion {
+	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion && version != ResumableManagerVersion && version != PhaseAManagerVersion && !(hosted && version == HostedAllocationManagerVersion) {
 		str := "database version is greater than latest understood version"
 		return nil, managerError(ErrUpgrade, str, nil)
 	}
@@ -1621,7 +1640,7 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	var phaseACrypto *cryptoKey
 	phaseAOpened := false
 	defer func() {
-		if version == PhaseAManagerVersion && !phaseAOpened {
+		if (version == PhaseAManagerVersion || version == HostedAllocationManagerVersion) && !phaseAOpened {
 			masterKeyPriv.Zero()
 			masterKeyPub.Zero()
 			if phaseACrypto != nil {
@@ -1719,6 +1738,7 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 	)
 
 	mgr.derivationMode, mgr.recoveryEnabled = mode, hasRecovery
+	mgr.hostedAllocation = version == HostedAllocationManagerVersion
 	mgr.defaultScopes = defaults
 	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
 		state, _ := fetchRecoveryProgress(ns)

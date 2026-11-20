@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "scope": "synthetic conservative codec size arithmetic; not expected valid states",
+  "note": "All variable strings here have ASCII address/hex grammar; six-byte JSON escaping is inapplicable. Locked guard plus nonempty binding and all-max cursors are deliberate unreachable size compositions.",
+  "fixtures": [
+    {
+      "gym_id": "a227587d837507dbcb5f9d781967339d816070fb7bd574931c690ba6937b88e5",
+      "encoded_bytes": {
+        "binding": 1926,
+        "request": 666,
+        "reservation": 1798,
+        "row": 2127,
+        "meta": 311,
+        "guard": 619,
+        "local_meta": 173,
+        "local_link": 1746,
+        "marker": 2082,
+        "outer_guard": 1421,
+        "init": 328,
+        "setup": 2149,
+        "ready": 916,
+        "batch": 2517
+      },
+      "limits": {
+        "request": 2048,
+        "row": 4096,
+        "meta": 4096,
+        "guard": 2048,
+        "local_meta": 2048,
+        "local_link": 4096,
+        "marker": 8192,
+        "outer_guard": 32768,
+        "init": 16384,
+        "setup": 8192,
+        "ready": 16384,
+        "batch": 12288
+      },
+      "host_1024_width_bytes": 2255163,
+      "local_1024_width_bytes": 1792849
+    },
+    {
+      "gym_id": "28452fc8a478d28f284dfe671cfc57e7cabeca08ea953aef371f5674d3f4c510",
+      "encoded_bytes": {
+        "binding": 1926,
+        "request": 666,
+        "reservation": 1798,
+        "row": 2127,
+        "meta": 311,
+        "guard": 619,
+        "local_meta": 173,
+        "local_link": 1746,
+        "marker": 2082,
+        "outer_guard": 1421,
+        "init": 328,
+        "setup": 2149,
+        "ready": 916,
+        "batch": 2517
+      },
+      "limits": {
+        "request": 2048,
+        "row": 4096,
+        "meta": 4096,
+        "guard": 2048,
+        "local_meta": 2048,
+        "local_link": 4096,
+        "marker": 8192,
+        "outer_guard": 32768,
+        "init": 16384,
+        "setup": 8192,
+        "ready": 16384,
+        "batch": 12288
+      },
+      "host_1024_width_bytes": 2255163,
+      "local_1024_width_bytes": 1792849
+    }
+  ],
+  "independent_store_cap": 4194304,
+  "count_cap": 1024,
+  "accounting": {
+    "host_old_and_staged": 8388608,
+    "local_audit_reference": 4194304,
+    "remaining_row_metadata_indexes_plans": 4194304,
+    "per_store": 16777216,
+    "two_stores": 33554432
+  },
+  "disclaimer": "Count/byte limits are independent. Not all maximum rows need fit together. Logical accounting is not total heap usage; no helper wire or private export is generated.",
+  "input_lock_sha256": "d12ed9f3541d856ec44c0244669593384f7fc2a2a3fafe7c1fb0e138d321468b",
+  "approved_lock_sha256": "cd4e3cbad372394794078559f924da11c16391da297b381a15853a0adb7f06db"
+}

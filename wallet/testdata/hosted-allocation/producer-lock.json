@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "approved_by": "root",
+  "execution_authorized": true,
+  "final_contract_reviewed": true,
+  "contract_sha256": "8e6036d0bb1dac60a0e513427fe71bcc42cb5909bfdc67fb0c42a61de6790307",
+  "input_lock_sha256": "d12ed9f3541d856ec44c0244669593384f7fc2a2a3fafe7c1fb0e138d321468b",
+  "sources": {
+    "README.md": "29be5eb04530cc648c3104b0ae678a06451abfc9239cf699f6061c5524cc9ccd",
+    "allocation_model.py": "c8e832bd2baf32c811932e1f84f2b02ba62a1446193a6f9bc9e98471a8c4177c",
+    "case-plan.json": "76d9d328466b0255891993ffeba4500870f7030bee2aa52df97d855a3e1b9d6a",
+    "common.py": "77d04d88185063b06dcfad5a8f30afb6aefaaa1846737d92fdb467ac2da763a2",
+    "generate_reference.py": "b39dee21108229fc1f9dc660412820849479c1d28bc9f4087e5a8b3de2dee358",
+    "public_derivation.py": "65b0417e4ace996009a9a6a3a271a6083a4738d76cdd135e15a6f4a4e3993dcf",
+    "sizing.py": "7e9235823d4bafa5c68d3b13b7c1ca737129626ba31771bb9ff7865d633ebb36",
+    "sizing_model.py": "fbd084740ac5cbf35b23a658d3aa9b7835eb5a513e661931f9dc62a812d4cb4a"
+  },
+  "supersedes_lock_sha256": "efd14e873da46b9d3b1c680ccfceb9dd484f73e98a23acde99e38505e8bb78de",
+  "correction": "Normalize only the copied inherited address-example cursors for immutable identity comparison; retain original cursor provenance."
+}

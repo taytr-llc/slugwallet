@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "status": "locked before first producer execution",
+  "wallet_contract_sha256": "e1da62fdf3785cd6e7cf1c24ae5269ff2d7409b4b9366a13f95a5c88d7fa8524",
+  "input_lock_sha256": "9871f524dd2f1060ef37ef45c3e13d895ddf7963cfac2c269a5225d7b196e59c",
+  "sources": {
+    "transaction_model.py": "05ee7a66d91dd436663cf6081203e9d7bc053407eeee0867298ee0037cdbb6f3",
+    "generate.py": "baf3cb01449aa3e94a9fc6af5b88201d9cf63602bb1b474633f12afc7f5fd672",
+    "CASE_PLAN.md": "cbc956436defefd2f55ed86304da95da96a94dc2a7bbcc91a4dafed4ccd8f890"
+  },
+  "independent_review": {
+    "path": "/Users/taytrrip/slug/set68-prep/transaction-producer-review.md",
+    "sha256": "26bfa418409a0483193293e9a67e399c4b628841a55b02150bb5d22eb907f0f4",
+    "post_review_delta": "Added one all-three same-parent vout1/2/256 case based on reviewer recommendation and one explicit above-ceiling draft mutation. No algorithm change."
+  },
+  "scope": "Standalone Python only; public existing inputs and preimplementation inherited sources. No new Go/runtime output. App/wire corpus remains separate."
+}

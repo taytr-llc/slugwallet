@@ -297,6 +297,10 @@ func (w *Wallet) validateRecoveryAccountKeys(ns walletdb.ReadBucket, entropy [32
 // metadata after explicit unlock. Returned strings are secret caller-owned data;
 // Go memory clearing is best effort. No file, RPC, log, or webview output occurs.
 func (w *Wallet) ExportRecovery(ctx context.Context) (recovery.Export, error) {
+	if w.Manager.HostedAllocation() {
+		return recovery.Export{}, waddrmgr.ErrHostedAllocationProfile
+	}
+
 	lease, err := w.holdUnlockContext(ctx)
 	if err != nil {
 		return recovery.Export{}, err

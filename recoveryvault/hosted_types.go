@@ -46,9 +46,12 @@ type hostedMetadata struct {
 // HostedVault exposes no legacy Vault. Its private codec reuses only the
 // immutable v1 record/cipher validators; all authorization uses hosted fences.
 type HostedVault struct {
-	core    *Vault
-	header  hostedHeader
-	records map[string]vaultRecord // owned by the pre-acquired core gate
+	core             *Vault
+	header           hostedHeader
+	records          map[string]vaultRecord // owned by the pre-acquired core gate
+	inventoryMu      sync.Mutex
+	inventoryClosing bool
+	inventoryExports map[*PreparedInventoryExport]bool
 }
 
 func nonzeroID(s string) bool {
@@ -95,7 +98,18 @@ func (h *HostedVault) Close() error {
 	if h == nil || h.core == nil {
 		return nil
 	}
-	return h.core.Close()
+	h.inventoryMu.Lock()
+	h.inventoryClosing = true
+	prepared := make([]*PreparedInventoryExport, 0, len(h.inventoryExports))
+	for p := range h.inventoryExports {
+		prepared = append(prepared, p)
+	}
+	h.inventoryMu.Unlock()
+	var err error
+	for _, p := range prepared {
+		err = errors.Join(err, p.Close())
+	}
+	return errors.Join(err, h.core.Close())
 }
 func (h *HostedVault) Info(ctx context.Context) (HostedInfo, error) {
 	ctx, done, err := h.acquire(ctx)

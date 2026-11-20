@@ -305,6 +305,9 @@ func (w *Wallet) ImportAccountDryRun(name string,
 	addrType *waddrmgr.AddressType, numAddrs uint32) (
 	*waddrmgr.AccountProperties, []waddrmgr.ManagedAddress,
 	[]waddrmgr.ManagedAddress, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, nil, nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	// The address manager uses OnCommit on the walletdb tx to update the
 	// in-memory state of the account state. But because the commit happens

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "status": "SOURCE ONLY; execution requires a separately approved input and producer lock",
+  "contract_sha256": "92b247a5c3f47e637ed0dbf09d08c8f580a881cc80ff114a4c22d2e119572a86",
+  "sources": ["common.py", "current_model.py", "generate_current_reference.py", "current-case-plan.json"],
+  "scope": "Independent public supplied-record arithmetic and finite lifecycle model. No wallet/source/account capability, concrete IO, signing, key derivation, PoW or installed-state authority is created or proven.",
+  "provenance": {
+    "public_identities": "Both frozen inherited profile1 fixture manifests; roots/gym values remain byte-identical.",
+    "initial_inventory": "Existing DefaultAccounts semantics: four fixed account-zero scopes, all eight cursors zero.",
+    "actual_current_inventory": "The two old-source Set69 intake public manifests copied into Set70: native84 cursors1/1, other cursors0.",
+    "new_ids_and_times": "The shared reviewed literal recipe only. New store/account/retention/source IDs are modeled inputs, not claims of real retained envelopes, account authority or live source configuration.",
+    "never_inputs": ["private recovery exports", "wallet databases", "new Go outputs", "opaque live capture handles", "real provider keys", "network responses"]
+  },
+  "families": {
+    "bindings": ["two exact fixed-order bindings", "exact domain plus ordered canonical JSON digest", "each top-level binding field crossed independently", "each nested vault Binding field crossed independently", "zero generated owner IDs", "uppercase hex", "duplicate or reordered bindings", "shared authority/vault/source mismatch"],
+    "manifests": ["both default inventories", "both original actual1/1 inventories", "each of eight branches advanced alone", "4095 and4096 cursor edges", "4097 refusal", "unchanged non-cursor fields", "mixed49 internal native type remains exact"],
+    "checkpoint_transitions": ["expected0 to revision1", "interleaved accounts and shared count", "same-cursor fresh capture consumes one action", "exact old-ID replay after newer capture returns original timestamp", "replay at full capacity remains possible", "same ID with changed manifest/expected revision/capture time conflicts", "cursor regression for each branch", "captured time regression", "commit before capture", "commit below global highwater", "equal times permitted", "time upper bound", "128th action accepted and129th refused"],
+    "canonical_storage": ["marker file has one LF and marker digest excludes LF", "meta and action values have no LF", "keys carry original CaptureID", "exact expected bindings remain external", "complete per-account contiguous revisions", "latest pointer membership", "count equals rows", "clock equals maximum committed time", "missing action", "unknown key", "duplicate key", "wrong marker digest", "action key mismatch", "wrong own current pointer", "duplicate revision", "expected revision gap", "manifest hash mismatch", "timestamp and cursor regression"],
+    "raw_parser": ["required field omitted", "unknown field", "duplicate decoded key", "case alias", "null", "boolean integer", "float", "exponent", "negative zero", "negative integer", "overflow", "invalid UTF8", "reordered canonical fields", "extra whitespace", "wrong LF policy", "over-cap before parse"],
+    "export_lifecycle": ["successful joined publication", "held before unwrap", "stale original view", "cancel before final fence", "existing destination", "missing callback", "late callback", "double callback after first commit", "failed temporary creation", "write/file-sync failure before link", "uncertain link", "post-link cancellation", "unlink failure", "directory-sync failure", "postcheck failure", "outer fence error after commit", "swallowed inner failure", "sticky cleanup failure", "process death starts no export replay"]
+  },
+  "lifecycle_limit": "Modeled inputs explicitly name the fault stage. Trace/terminal classifications are contract expectations only; actual filesystem ownership, secret visibility, original-session reauthorization, joined cleanup and locking need implementation fault-injection and real acceptance separately.",
+  "caps": {"manifest":4096,"checkpoint":8192,"meta":4096,"marker_including_lf":32768,"batch_key_value_bytes":12288,"store_key_value_bytes":2097152,"actions":128,"bindings":2,"audit_visits_including_refusal_witness":130},
+  "execution": "No import-time generation. Require --execute, exact --approved-lock-sha256, reviewed --approved-producer-lock, all listed source/input hashes, and exclusive new --output. Preserve any failed output attempt. Reproduce from portable layout without workspace paths."
+}

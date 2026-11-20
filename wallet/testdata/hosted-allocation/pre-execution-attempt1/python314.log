@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/Users/taytrrip/slug/set72-prep/reference-producer/generate_reference.py", line 200, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/Users/taytrrip/slug/set72-prep/reference-producer/generate_reference.py", line 191, in main
+    values=guard(args);result=generate(*values)
+                              ~~~~~~~~^^^^^^^^^
+  File "/Users/taytrrip/slug/set72-prep/reference-producer/generate_reference.py", line 83, in generate
+    need(a['manifest']==initial,'prior_manifest')
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/taytrrip/slug/set72-prep/reference-producer/common.py", line 24, in need
+    raise Rejected(code)
+common.Rejected: prior_manifest

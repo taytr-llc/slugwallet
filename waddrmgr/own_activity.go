@@ -90,11 +90,15 @@ func (m *Manager) publicRecoveryProfileLocked() bool {
 // that older helper also Gets private-retention metadata. The bound is selected
 // by the fixed caller, never by untrusted input. No sync stamp is needed here.
 func (m *Manager) publicRecoveryManifestLocked(ctx context.Context, main walletdb.ReadBucket, maxManifestBytes int) (recovery.Manifest, error) {
+	return m.publicRecoveryManifestSchemaLocked(ctx, main, maxManifestBytes, RecoveryManagerVersion)
+}
+
+func (m *Manager) publicRecoveryManifestSchemaLocked(ctx context.Context, main walletdb.ReadBucket, maxManifestBytes int, schema uint32) (recovery.Manifest, error) {
 	v := main.Get(mgrVersionName)
 	if len(v) != 4 {
 		return recovery.Manifest{}, ErrOwnActivityCorrupt
 	}
-	if binary.LittleEndian.Uint32(v) != RecoveryManagerVersion {
+	if binary.LittleEndian.Uint32(v) != schema {
 		return recovery.Manifest{}, ErrOwnActivityProfile
 	}
 	mode, version, watch := main.Get(derivationModeName), main.Get(recoveryVersionName), main.Get(watchingOnlyName)

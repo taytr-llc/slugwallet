@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "scope": "literal source-only inputs; synthetic IDs and times grant no authority",
+  "fixture_order": [
+    "zero256",
+    "incrementing256"
+  ],
+  "inventory_ids": {
+    "zero256": "0000000000000000000000000000000000000000000000000000000000007201",
+    "incrementing256": "0000000000000000000000000000000000000000000000000000000000007202"
+  },
+  "operation_sequence_start": 1912602624,
+  "consumer_sequence_start": 1920991232,
+  "base_ms": 1795071000000,
+  "paths": {
+    "current": "inherited/slugwallet/recoveryvault/testdata/hosted-current-recovery/current.json",
+    "addresses": "inherited/slugwallet/wallet/testdata/phase-a-recovery/addresses-v1.json",
+    "withdrawals": "inherited/slugwallet/wallet/testdata/candidate-withdrawals/reference-v1.json",
+    "old_oracle": "inherited/slugwallet/recovery/testdata/oracle/reference.py",
+    "proposal": "proposal/HOSTED_ALLOCATION_RECOVERY.draft.md"
+  },
+  "derivation": "CKDpub only from frozen native84 branch public keys; never load entropy/phrase/seed/private exports or DBs",
+  "invalid_children": "explicit modeled fault traces only, never relabel ordinary valid child as an observed cryptographic invalidity",
+  "authority": "CurrentBinding IDs are inherited synthetic model values, not real retained vault receipts or live account authority",
+  "capacity": "1024 rows and byte cap are independent; maximum-width sizing witnesses need not be semantically reachable"
+}

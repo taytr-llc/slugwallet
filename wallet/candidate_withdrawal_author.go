@@ -130,145 +130,36 @@ func (s *CandidateWithdrawals) Prepare(ctx context.Context, request CandidateWit
 		if state.meta.RecordCount >= 128 {
 			return ErrWithdrawalCapacity
 		}
-		if !s.wallet.ChainSynced() {
-			return ErrWithdrawalUnavailable
-		}
-		tip := s.wallet.Manager.SyncedTo()
-		if tip.Height < 0 || !withdrawalHex(tip.Hash.String(), 32, true) {
-			return ErrWithdrawalUnavailable
-		}
-		reader, e := s.wallet.TxStore.NewCandidateCreditReader(dbtx.ReadBucket(wtxmgrNamespaceKey))
-		if e != nil {
-			return withdrawalCreditError(e)
-		}
-		best := make([]withdrawalSelection, 0, 16)
-		e = reader.Visit(ctx, func(c wtxmgr.Credit) error {
-			if c.Height > tip.Height || !hasMinConfs(1, c.Height, tip.Height) || c.FromCoinBase && !hasMinConfs(int32(s.wallet.chainParams.CoinbaseMaturity), c.Height, tip.Height) || s.wallet.LockedOutpoint(c.OutPoint) {
-				return nil
-			}
-			reserved, e := candidateWithdrawalReserved(dbtx, c.OutPoint)
-			if e != nil {
-				return e
-			}
-			if reserved {
-				return nil
-			}
-			branch, index, e := s.path(dbtx, c.PkScript)
-			if errors.Is(e, ErrWithdrawalUnavailable) {
-				return nil
-			}
-			if e != nil {
-				return e
-			}
-			next := withdrawalSelection{c, CandidateWithdrawalInput{c.Hash.String(), c.OutPoint.Index, int64(c.Amount), hex.EncodeToString(c.PkScript), branch, index, c.BlockMeta.Hash.String(), c.Height, c.FromCoinBase}}
-			best = append(best, next)
-			sort.Slice(best, func(i, j int) bool { return withdrawalSelectionLess(best[i], best[j]) })
-			if len(best) > 16 {
-				best = best[:16]
-			}
-			return nil
-		})
-		if e != nil {
-			if errors.Is(e, ErrWithdrawalCorrupt) || errors.Is(e, ErrWithdrawalUnavailable) {
-				return e
-			}
-			return withdrawalCreditError(e)
-		}
-		if len(best) == 0 {
-			return ErrWithdrawalUnavailable
-		}
-		coins := make([]Coin, len(best))
-		lookup := make(map[wire.OutPoint]CandidateWithdrawalInput, len(best))
-		var available int64
-		for i, x := range best {
-			if int64(x.credit.Amount) > int64(btcutil.MaxSatoshi)-available {
-				return ErrWithdrawalCorrupt
-			}
-			available += int64(x.credit.Amount)
-			coins[i] = Coin{TxOut: wire.TxOut{Value: int64(x.credit.Amount), PkScript: x.credit.PkScript}, OutPoint: x.credit.OutPoint}
-			lookup[x.credit.OutPoint] = x.input
-		}
-		var change CandidateWithdrawalChange
-		source := &txauthor.ChangeSource{ScriptSize: 22, NewScript: func() ([]byte, error) {
-			if e := ctx.Err(); e != nil {
-				return nil, e
-			}
+		d, e := s.candidateWithdrawalDraft(ctx, dbtx, request, recipient, func() (CandidateWithdrawalChange, []byte, error) {
 			manager, e := s.wallet.Manager.FetchScopedKeyManager(waddrmgr.KeyScopeBIP0084)
 			if e != nil {
-				return nil, ErrWithdrawalCorrupt
+				return CandidateWithdrawalChange{}, nil, ErrWithdrawalCorrupt
 			}
 			addrs, e := manager.NextInternalAddresses(dbtx.ReadWriteBucket(waddrmgrNamespaceKey), 0, 1)
 			if e != nil {
-				return nil, ErrWithdrawalCapacity
+				return CandidateWithdrawalChange{}, nil, ErrWithdrawalCapacity
 			}
 			p, ok := addrs[0].(waddrmgr.ManagedPubKeyAddress)
 			if !ok {
-				return nil, ErrWithdrawalCorrupt
+				return CandidateWithdrawalChange{}, nil, ErrWithdrawalCorrupt
 			}
 			scope, path, known := p.DerivationInfo()
 			if !known || scope != waddrmgr.KeyScopeBIP0084 || path.Branch != 1 || path.Index >= 4096 {
-				return nil, ErrWithdrawalCapacity
+				return CandidateWithdrawalChange{}, nil, ErrWithdrawalCapacity
 			}
 			script, e := txscript.PayToAddrScript(p.Address())
 			if e != nil || len(script) != 22 {
-				return nil, ErrWithdrawalCorrupt
+				return CandidateWithdrawalChange{}, nil, ErrWithdrawalCorrupt
 			}
-			change = CandidateWithdrawalChange{Address: p.Address().EncodeAddress(), Script: hex.EncodeToString(script), Index: path.Index, OutputIndex: -1}
-			return script, nil
-		}}
-		authored, e := txauthor.NewUnsignedTransaction([]*wire.TxOut{wire.NewTxOut(request.AmountAtoms, recipient)}, 1000, makeInputSource(coins), source)
+			change := CandidateWithdrawalChange{Address: p.Address().EncodeAddress(), Script: hex.EncodeToString(script), Index: path.Index, OutputIndex: -1}
+			return change, script, nil
+		})
 		if e != nil {
-			if ctx.Err() != nil {
-				return ctx.Err()
-			}
-			if errors.Is(e, ErrWithdrawalCapacity) || errors.Is(e, ErrWithdrawalCorrupt) {
-				return e
-			}
-			return ErrWithdrawalUnavailable
+			return e
 		}
-		txsort.InPlaceSort(authored.Tx)
-		d := CandidateWithdrawalDraft{Version: 1, BindingID: s.binding, OperationID: request.OperationID, Recipient: request.Recipient, RecipientScript: hex.EncodeToString(recipient), AmountAtoms: request.AmountAtoms, FeeRateAtomsPerKB: 1000, FeeCeilingAtoms: 100000, MinConfirmations: 1, TipHash: tip.Hash.String(), TipHeight: tip.Height, TxVersion: 1, InputSequence: wire.MaxTxInSequenceNum, LockTime: 0, SighashType: 1, Change: change}
-		d.Inputs = make([]CandidateWithdrawalInput, len(authored.Tx.TxIn))
-		for i, in := range authored.Tx.TxIn {
-			x, ok := lookup[in.PreviousOutPoint]
-			if !ok {
-				return ErrWithdrawalCorrupt
-			}
-			d.Inputs[i] = x
-			d.TotalInputAtoms += x.Atoms
-		}
-		role := -1
-		var sum int64
-		for i, out := range authored.Tx.TxOut {
-			sum += out.Value
-			if role < 0 && out.Value == request.AmountAtoms && bytes.Equal(out.PkScript, recipient) {
-				role = i
-			}
-		}
-		if role < 0 {
-			return ErrWithdrawalCorrupt
-		}
-		d.RecipientOutputIndex = uint32(role)
-		if len(authored.Tx.TxOut) == 2 {
-			other := 1 - role
-			d.Change.OutputIndex = int32(other)
-			d.Change.Atoms = authored.Tx.TxOut[other].Value
-		}
-		d.FeeAtoms = d.TotalInputAtoms - sum
-		if d.FeeAtoms > 100000 {
-			return ErrWithdrawalUnavailable
-		}
-		var raw bytes.Buffer
-		if authored.Tx.SerializeNoWitness(&raw) != nil {
-			return ErrWithdrawalCorrupt
-		}
-		d.UnsignedTxHex = hex.EncodeToString(raw.Bytes())
 		digest, e := CandidateWithdrawalDraftDigest(d)
 		if e != nil {
 			return ErrWithdrawalCorrupt
-		}
-		if !s.wallet.ChainSynced() || s.wallet.Manager.SyncedTo() != tip {
-			return ErrWithdrawalUnavailable
 		}
 		record := CandidateWithdrawalRecord{Version: 1, State: "prepared", DraftDigest: digest, Draft: d}
 		encoded, e := json.Marshal(record)
@@ -299,6 +190,136 @@ func (s *CandidateWithdrawals) Prepare(ctx context.Context, request CandidateWit
 		return empty, e
 	}
 	return result, nil
+}
+
+// candidateWithdrawalDraft factors bounded selection/authoring without owning
+// a transaction or publishing a draft. Legacy Prepare supplies its original
+// transactional allocator; the hosted path supplies an already planned script.
+func (s *CandidateWithdrawals) candidateWithdrawalDraft(ctx context.Context, dbtx walletdb.ReadTx, request CandidateWithdrawalRequest, recipient []byte, changeScript func() (CandidateWithdrawalChange, []byte, error)) (CandidateWithdrawalDraft, error) {
+	if !s.wallet.ChainSynced() {
+		return CandidateWithdrawalDraft{}, ErrWithdrawalUnavailable
+	}
+	tip := s.wallet.Manager.SyncedTo()
+	if tip.Height < 0 || !withdrawalHex(tip.Hash.String(), 32, true) {
+		return CandidateWithdrawalDraft{}, ErrWithdrawalUnavailable
+	}
+	reader, e := s.wallet.TxStore.NewCandidateCreditReader(dbtx.ReadBucket(wtxmgrNamespaceKey))
+	if e != nil {
+		return CandidateWithdrawalDraft{}, withdrawalCreditError(e)
+	}
+	best := make([]withdrawalSelection, 0, 16)
+	e = reader.Visit(ctx, func(c wtxmgr.Credit) error {
+		if c.Height > tip.Height || !hasMinConfs(1, c.Height, tip.Height) || c.FromCoinBase && !hasMinConfs(int32(s.wallet.chainParams.CoinbaseMaturity), c.Height, tip.Height) || s.wallet.LockedOutpoint(c.OutPoint) {
+			return nil
+		}
+		reserved, e := candidateWithdrawalReserved(dbtx, c.OutPoint)
+		if e != nil {
+			return e
+		}
+		if reserved {
+			return nil
+		}
+		branch, index, e := s.path(dbtx, c.PkScript)
+		if errors.Is(e, ErrWithdrawalUnavailable) {
+			return nil
+		}
+		if e != nil {
+			return e
+		}
+		next := withdrawalSelection{c, CandidateWithdrawalInput{c.Hash.String(), c.OutPoint.Index, int64(c.Amount), hex.EncodeToString(c.PkScript), branch, index, c.BlockMeta.Hash.String(), c.Height, c.FromCoinBase}}
+		best = append(best, next)
+		sort.Slice(best, func(i, j int) bool { return withdrawalSelectionLess(best[i], best[j]) })
+		if len(best) > 16 {
+			best = best[:16]
+		}
+		return nil
+	})
+	if e != nil {
+		if errors.Is(e, ErrWithdrawalCorrupt) || errors.Is(e, ErrWithdrawalUnavailable) {
+			return CandidateWithdrawalDraft{}, e
+		}
+		return CandidateWithdrawalDraft{}, withdrawalCreditError(e)
+	}
+	if len(best) == 0 {
+		return CandidateWithdrawalDraft{}, ErrWithdrawalUnavailable
+	}
+	coins := make([]Coin, len(best))
+	lookup := make(map[wire.OutPoint]CandidateWithdrawalInput, len(best))
+	var available int64
+	for i, x := range best {
+		if int64(x.credit.Amount) > int64(btcutil.MaxSatoshi)-available {
+			return CandidateWithdrawalDraft{}, ErrWithdrawalCorrupt
+		}
+		available += int64(x.credit.Amount)
+		coins[i] = Coin{TxOut: wire.TxOut{Value: int64(x.credit.Amount), PkScript: x.credit.PkScript}, OutPoint: x.credit.OutPoint}
+		lookup[x.credit.OutPoint] = x.input
+	}
+	var change CandidateWithdrawalChange
+	source := &txauthor.ChangeSource{ScriptSize: 22, NewScript: func() ([]byte, error) {
+		if e := ctx.Err(); e != nil {
+			return nil, e
+		}
+		var script []byte
+		var e error
+		change, script, e = changeScript()
+		return script, e
+	}}
+
+	authored, e := txauthor.NewUnsignedTransaction([]*wire.TxOut{wire.NewTxOut(request.AmountAtoms, recipient)}, 1000, makeInputSource(coins), source)
+	if e != nil {
+		if ctx.Err() != nil {
+			return CandidateWithdrawalDraft{}, ctx.Err()
+		}
+		if errors.Is(e, ErrWithdrawalCapacity) || errors.Is(e, ErrWithdrawalCorrupt) {
+			return CandidateWithdrawalDraft{}, e
+		}
+		return CandidateWithdrawalDraft{}, ErrWithdrawalUnavailable
+	}
+	txsort.InPlaceSort(authored.Tx)
+	d := CandidateWithdrawalDraft{Version: 1, BindingID: s.binding, OperationID: request.OperationID, Recipient: request.Recipient, RecipientScript: hex.EncodeToString(recipient), AmountAtoms: request.AmountAtoms, FeeRateAtomsPerKB: 1000, FeeCeilingAtoms: 100000, MinConfirmations: 1, TipHash: tip.Hash.String(), TipHeight: tip.Height, TxVersion: 1, InputSequence: wire.MaxTxInSequenceNum, LockTime: 0, SighashType: 1, Change: change}
+	d.Inputs = make([]CandidateWithdrawalInput, len(authored.Tx.TxIn))
+	for i, in := range authored.Tx.TxIn {
+		x, ok := lookup[in.PreviousOutPoint]
+		if !ok {
+			return CandidateWithdrawalDraft{}, ErrWithdrawalCorrupt
+		}
+		d.Inputs[i] = x
+		d.TotalInputAtoms += x.Atoms
+	}
+	role := -1
+	var sum int64
+	for i, out := range authored.Tx.TxOut {
+		sum += out.Value
+		if role < 0 && out.Value == request.AmountAtoms && bytes.Equal(out.PkScript, recipient) {
+			role = i
+		}
+	}
+	if role < 0 {
+		return CandidateWithdrawalDraft{}, ErrWithdrawalCorrupt
+	}
+	d.RecipientOutputIndex = uint32(role)
+	if len(authored.Tx.TxOut) == 2 {
+		other := 1 - role
+		d.Change.OutputIndex = int32(other)
+		d.Change.Atoms = authored.Tx.TxOut[other].Value
+	}
+	d.FeeAtoms = d.TotalInputAtoms - sum
+	if d.FeeAtoms > 100000 {
+		return CandidateWithdrawalDraft{}, ErrWithdrawalUnavailable
+	}
+	var raw bytes.Buffer
+	if authored.Tx.SerializeNoWitness(&raw) != nil {
+		return CandidateWithdrawalDraft{}, ErrWithdrawalCorrupt
+	}
+	d.UnsignedTxHex = hex.EncodeToString(raw.Bytes())
+	_, e = CandidateWithdrawalDraftDigest(d)
+	if e != nil {
+		return CandidateWithdrawalDraft{}, ErrWithdrawalCorrupt
+	}
+	if !s.wallet.ChainSynced() || s.wallet.Manager.SyncedTo() != tip {
+		return CandidateWithdrawalDraft{}, ErrWithdrawalUnavailable
+	}
+	return d, nil
 }
 
 // Sign returns scratch only, after the trusted caller has performed its native

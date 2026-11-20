@@ -257,7 +257,9 @@ out:
 				batch.bs.Height, numAddrs, numOps)
 
 			var err error
-			if w.Manager.ResumableRecovery() {
+			if w.Manager.HostedAllocation() {
+				err = w.rescanHostedAllocation(chainClient, batch)
+			} else if w.Manager.ResumableRecovery() {
 				err = w.rescanCandidate(chainClient, batch)
 			} else {
 				err = chainClient.Rescan(&batch.bs.Hash, batch.addrs, batch.outpoints)

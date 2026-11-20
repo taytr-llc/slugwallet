@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "catalog": "catalog.json",
+  "catalog_sha256": "8abc64ba5076cdac65b0afaec9e23b8918dbfab5d7d1de309312ee5f7d03352d",
+  "input_count": 33,
+  "input_bytes": 3670596,
+  "recipe": "recipe.json",
+  "recipe_sha256": "b10e4852e6e5ce209438f98d9d4894796eb77a856f802798f0c4b37aac4f3360",
+  "contract_status": "proposal only; final adopted contract binding required in approved execution lock",
+  "execution_authorized": false
+}

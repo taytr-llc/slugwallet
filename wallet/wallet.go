@@ -145,7 +145,9 @@ type Wallet struct {
 
 	// One explicit candidate-withdrawal handle borrows this wallet. It is
 	// closed and joined before the owning runtime unloads wallet storage.
-	candidateWithdrawalMu sync.Mutex
+	candidateWithdrawalMu   sync.Mutex
+	hostedAllocationMu      sync.Mutex
+	hostedAllocationTainted atomic.Bool
 
 	lockedOutpoints    map[wire.OutPoint]struct{}
 	lockedOutpointsMtx sync.Mutex
@@ -368,10 +370,15 @@ func (w *Wallet) activeData(
 	addrmgrNs := dbtx.ReadBucket(waddrmgrNamespaceKey)
 	txmgrNs := dbtx.ReadWriteBucket(wtxmgrNamespaceKey)
 
+	if w.Manager.HostedAllocation() {
+		if _, e := w.Manager.AuditHostedAllocation(context.Background(), addrmgrNs, dbtx.ReadBucket(hostedAllocationNamespace)); e != nil {
+			return nil, nil, e
+		}
+	}
 	var addrs []address.Address
 	err := w.Manager.ForEachRelevantActiveAddress(
 		addrmgrNs, func(addr address.Address) error {
-			if w.Manager.ResumableRecovery() && len(addrs) >= int(w.Manager.RecoveryInventoryLimit()) {
+			if (w.Manager.ResumableRecovery() && len(addrs) >= int(w.Manager.RecoveryInventoryLimit())) || (w.Manager.HostedAllocation() && len(addrs) >= 32768) {
 				return ErrRecoveryCapacity
 			}
 			addrs = append(addrs, addr)
@@ -392,7 +399,7 @@ func (w *Wallet) activeData(
 	}
 
 	var unspent []wtxmgr.Credit
-	if w.Manager.ResumableRecovery() {
+	if w.Manager.ResumableRecovery() || w.Manager.HostedAllocation() {
 		unspent, err = w.TxStore.OutputsToWatchBounded(txmgrNs, MaxRecoveryOwnedOutputs)
 	} else {
 		unspent, err = w.TxStore.OutputsToWatch(txmgrNs)
@@ -405,7 +412,7 @@ func (w *Wallet) activeData(
 // finished. The birthday block can be passed in, if set, to ensure we can
 // properly detect if it gets rolled back.
 func (w *Wallet) syncWithChain(birthdayStamp *waddrmgr.BlockStamp) error {
-	if w.Manager.ResumableRecovery() {
+	if w.Manager.ResumableRecovery() || w.Manager.HostedAllocation() {
 		w.SetChainSynced(false)
 	}
 	chainClient, err := w.requireChainClient()
@@ -1428,6 +1435,9 @@ func (w *Wallet) CreateSimpleTx(coinSelectKeyScope *waddrmgr.KeyScope,
 	account uint32, outputs []*wire.TxOut, minconf int32,
 	satPerKb btcutil.Amount, coinSelectionStrategy CoinSelectionStrategy,
 	dryRun bool, optFuncs ...TxCreateOption) (*txauthor.AuthoredTx, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	opts := defaultTxCreateOptions()
 	for _, optFunc := range optFuncs {
@@ -1707,6 +1717,10 @@ func (w *Wallet) ChangePassphrases(publicOld, publicNew, privateOld,
 // AccountAddresses returns the addresses for every created address for an
 // account.
 func (w *Wallet) AccountAddresses(account uint32) ([]address.Address, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
+
 	var addrs []address.Address
 
 	err := walletdb.View(w.db, func(tx walletdb.ReadTx) error {
@@ -1730,6 +1744,9 @@ func (w *Wallet) AccountAddresses(account uint32) ([]address.Address, error) {
 // address for an account.
 func (w *Wallet) AccountManagedAddresses(scope waddrmgr.KeyScope,
 	accountNum uint32) ([]waddrmgr.ManagedAddress, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	scopedMgr, err := w.Manager.FetchScopedKeyManager(scope)
 	if err != nil {
@@ -1846,6 +1863,9 @@ func (w *Wallet) CalculateAccountBalances(account uint32,
 // blockchain or btcd mempool), the next chained address is returned.
 func (w *Wallet) CurrentAddress(account uint32,
 	scope waddrmgr.KeyScope) (address.Address, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	chainClient, err := w.requireChainClient()
 	if err != nil {
@@ -1989,6 +2009,9 @@ func (w *Wallet) LabelTransaction(hash chainhash.Hash, label string,
 // address.
 func (w *Wallet) PrivKeyForAddress(
 	a address.Address) (*btcec.PrivateKey, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	var privKey *btcec.PrivateKey
 	err := walletdb.View(w.db, func(tx walletdb.ReadTx) error {
@@ -3165,6 +3188,10 @@ func (w *Wallet) ListLeasedOutputs() ([]*ListLeasedOutputResult, error) {
 // DumpPrivKeys returns the WIF-encoded private keys for all addresses with
 // private keys in a wallet.
 func (w *Wallet) DumpPrivKeys() ([]string, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
+
 	var privkeys []string
 	err := walletdb.View(w.db, func(tx walletdb.ReadTx) error {
 		addrmgrNs := tx.ReadBucket(waddrmgrNamespaceKey)
@@ -3203,6 +3230,10 @@ func (w *Wallet) DumpPrivKeys() ([]string, error) {
 // DumpWIFPrivateKey returns the WIF encoded private key for a
 // single wallet address.
 func (w *Wallet) DumpWIFPrivateKey(addr address.Address) (string, error) {
+	if w.Manager.HostedAllocation() {
+		return "", waddrmgr.ErrHostedAllocationProfile
+	}
+
 	var maddr waddrmgr.ManagedAddress
 	err := walletdb.View(w.db, func(tx walletdb.ReadTx) error {
 		waddrmgrNs := tx.ReadBucket(waddrmgrNamespaceKey)
@@ -3368,6 +3399,10 @@ func (w *Wallet) resendUnminedTxs() {
 // SortedActivePaymentAddresses returns a slice of all active payment
 // addresses in a wallet.
 func (w *Wallet) SortedActivePaymentAddresses() ([]string, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
+
 	var addrStrs []string
 	err := walletdb.View(w.db, func(tx walletdb.ReadTx) error {
 		addrmgrNs := tx.ReadBucket(waddrmgrNamespaceKey)
@@ -3390,6 +3425,9 @@ func (w *Wallet) SortedActivePaymentAddresses() ([]string, error) {
 // NewAddress returns the next external chained address for a wallet.
 func (w *Wallet) NewAddress(account uint32,
 	scope waddrmgr.KeyScope) (address.Address, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	chainClient, err := w.requireChainClient()
 	if err != nil {
@@ -3458,6 +3496,9 @@ func (w *Wallet) newAddress(addrmgrNs walletdb.ReadWriteBucket, account uint32,
 // NewChangeAddress returns a new change address for a wallet.
 func (w *Wallet) NewChangeAddress(account uint32,
 	scope waddrmgr.KeyScope) (address.Address, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	chainClient, err := w.requireChainClient()
 	if err != nil {
@@ -3786,6 +3827,9 @@ func (w *Wallet) SignTransaction(tx *wire.MsgTx, hashType txscript.SigHashType,
 	additionalPrevScripts map[wire.OutPoint][]byte,
 	additionalKeysByAddress map[string]*btcutil.WIF,
 	p2shRedeemScriptsByAddress map[string][]byte) ([]SignatureError, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	var signErrors []SignatureError
 	err := walletdb.View(w.db, func(dbtx walletdb.ReadTx) error {
@@ -4292,6 +4336,9 @@ func (w *Wallet) InitAccounts(scope *waddrmgr.ScopedKeyManager,
 // DeriveFromKeyPath derives a private key using the given derivation path.
 func (w *Wallet) DeriveFromKeyPath(scope waddrmgr.KeyScope,
 	path waddrmgr.DerivationPath) (*btcec.PrivateKey, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	scopedMgr, err := w.Manager.FetchScopedKeyManager(scope)
 	if err != nil {
@@ -4337,6 +4384,9 @@ func (w *Wallet) DeriveFromKeyPath(scope waddrmgr.KeyScope,
 // path. The account will be created if it doesn't exist.
 func (w *Wallet) DeriveFromKeyPathAddAccount(scope waddrmgr.KeyScope,
 	path waddrmgr.DerivationPath) (*btcec.PrivateKey, error) {
+	if w.Manager.HostedAllocation() {
+		return nil, waddrmgr.ErrHostedAllocationProfile
+	}
 
 	scopedMgr, err := w.Manager.FetchScopedKeyManager(scope)
 	if err != nil {
@@ -4638,7 +4688,10 @@ func OpenWithRetry(db walletdb.DB, pubPass []byte, cbs *waddrmgr.OpenCallbacks,
 		return nil, err
 	}
 
-	log.Infof("Opened wallet") // TODO: log balance? last sync height?
+	return walletFromManagers(db, pubPass, params, recoveryWindow, syncRetryInterval, addrMgr, txMgr), nil
+}
+
+func walletFromManagers(db walletdb.DB, pubPass []byte, params *chaincfg.Params, recoveryWindow uint32, syncRetryInterval time.Duration, addrMgr *waddrmgr.Manager, txMgr *wtxmgr.Store) *Wallet {
 
 	w := &Wallet{
 		publicPassphrase:    pubPass,
@@ -4669,5 +4722,5 @@ func OpenWithRetry(db walletdb.DB, pubPass []byte, cbs *waddrmgr.OpenCallbacks,
 		w.NtfnServer.notifyUnspentOutput(0, hash, index)
 	}
 
-	return w, nil
+	return w
 }

@@ -27,6 +27,13 @@ wallet recovery, fighter ownership/transfer and restoration of the same gym and
 fighters are complete. Preserve D82 for later; continue core functional work
 using existing fixtures. Key recovery alone does not close fighter recovery.
 
+Mike approved D83's chain-ordered fighter transfers on November 19: first valid
+competing send wins; later competing sends are void; ownership changes only at
+signed checkpoint plus sixty descendants. Pending transfers retain the effective
+owner for noon locks. See paired `FIGHTER_TRANSFER_POLICY.md`; actual transfer
+and independently restored-gym ownership still require implementation. D72's
+hosted-transfer hold and the report-only checkpoint doctrine stay intact.
+
 ## Source and branches
 
 - Origin: `taytr-llc/slugwallet`; upstream: `btcsuite/btcwallet`.
@@ -208,3 +215,23 @@ using existing fixtures. Key recovery alone does not close fighter recovery.
   payment-journal authority. Missing established stores fail closed. Preserve
   the independent references, paired frozen `HOSTED_CURRENT_RECOVERY.md` and
   actual-file recovery evidence. D73 real issuance and D74 remain separate gates.
+
+## Durable hosted allocation recovery (set72)
+
+- Fresh explicit schema13 uses the frozen paired `HOSTED_ALLOCATION_RECOVERY.md`.
+  Old schemas, generic APIs and version1 recovery bytes retain their meanings.
+  Bind the exact locked guard once; established inventory reopens through the
+  full pairing audit. Never rebind a populated inventory or bypass its owner.
+- Reserve recovery ceilings before wallet consumption and disclosure. Commit
+  address/cursor/local links and reviewed change/input reservations atomically;
+  retain burned, unused, abandoned and uncertain ranges. A lost private plan
+  requires exact recovery or burn/abandon, never caller-supplied reconstruction.
+- Keep generic allocation/import/sign/export bypasses closed, normal watches
+  bounded to the audited frontier and the installed concrete RPC owner intact.
+  Original account fences cover final bounded commits/disclosure; wallet, DB,
+  crypto/network work and joins stay outside. Poisoning/cleanup ownership is sticky.
+- Missing-wallet export uses surviving inventory; schema12 Verify remains
+  inspection-only and cannot recreate payment journals or install a wallet.
+  See `CHANGESET_72_NOTES.md` for independent references, funded recovery and the
+  exact desktop/package qualification composite. D83 transfers/restored-gym use
+  follow; real login and the final joint D74 review remain deferred.

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "approved_by": "root",
+  "execution_authorized": true,
+  "purpose": "set72-sizing",
+  "sources": {
+    "sizing.py": "7e9235823d4bafa5c68d3b13b7c1ca737129626ba31771bb9ff7865d633ebb36"
+  },
+  "input_lock_sha256": "d12ed9f3541d856ec44c0244669593384f7fc2a2a3fafe7c1fb0e138d321468b"
+}
