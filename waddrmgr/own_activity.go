@@ -53,50 +53,16 @@ func (m *Manager) ReadOwnActivityState(ctx context.Context, ns walletdb.ReadBuck
 	if m.closed {
 		return none, ErrOwnActivityUnavailable
 	}
-	if m.derivationMode != DerivationStandard || !m.recoveryEnabled || m.recoveryVersion != 1 || m.resumableRecovery || m.WatchOnly() || m.chainParams == nil || m.chainParams.GenesisHash == nil || uint32(m.chainParams.Net) != recovery.Network || m.chainParams.GenesisHash.String() != recovery.Genesis {
+	if !m.publicRecoveryProfileLocked() {
 		return none, ErrOwnActivityProfile
 	}
 	main, sync := ns.NestedReadBucket(mainBucketName), ns.NestedReadBucket(syncBucketName)
 	if main == nil || sync == nil {
 		return none, ErrOwnActivityCorrupt
 	}
-	v := main.Get(mgrVersionName)
-	if len(v) != 4 {
-		return none, ErrOwnActivityCorrupt
-	}
-	if binary.LittleEndian.Uint32(v) != RecoveryManagerVersion {
-		return none, ErrOwnActivityProfile
-	}
-	mode, version, watch := main.Get(derivationModeName), main.Get(recoveryVersionName), main.Get(watchingOnlyName)
-	if len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) || len(version) != 4 || binary.LittleEndian.Uint32(version) != 1 || len(watch) != 1 || watch[0] != 0 {
-		return none, ErrOwnActivityCorrupt
-	}
-	public, root := main.Get(recoveryPublicName), main.Get(masterHDPubName)
-	if len(public) <= 40 || len(public) > 65576 || len(root) <= 40 || len(root) > 168 {
-		return none, ErrOwnActivityCorrupt
-	}
-	if e := ctx.Err(); e != nil {
+	manifest, e := m.publicRecoveryManifestLocked(ctx, main, 65536)
+	if e != nil {
 		return none, e
-	}
-	plain, e := m.cryptoKeyPub.Decrypt(public)
-	if e != nil {
-		return none, ErrOwnActivityCorrupt
-	}
-	defer zero.Bytes(plain)
-	if len(plain) == 0 || len(plain) > 65536 {
-		return none, ErrOwnActivityCorrupt
-	}
-	manifest, e := recovery.ParseManifest(plain)
-	if e != nil {
-		return none, ErrOwnActivityCorrupt
-	}
-	rootPlain, e := m.cryptoKeyPub.Decrypt(root)
-	if e != nil {
-		return none, ErrOwnActivityCorrupt
-	}
-	defer zero.Bytes(rootPlain)
-	if len(rootPlain) == 0 || len(rootPlain) > 128 || string(rootPlain) != manifest.RootPublicKey {
-		return none, ErrOwnActivityCorrupt
 	}
 	stamp := sync.Get(syncedToName)
 	if len(stamp) != 36 && len(stamp) != 40 {
@@ -112,4 +78,55 @@ func (m *Manager) ReadOwnActivityState(ctx context.Context, ns walletdb.ReadBuck
 		return none, e
 	}
 	return OwnActivityState{RootPublicKey: manifest.RootPublicKey, GymPublicKey: manifest.GymPublicKey, GymID: manifest.GymID, SyncedHeight: height, SyncedHash: hash}, nil
+}
+
+// publicRecoveryProfileLocked checks only retained public manager identity.
+// The caller holds m.mtx and separately validates the persisted schema bytes.
+func (m *Manager) publicRecoveryProfileLocked() bool {
+	return m.derivationMode == DerivationStandard && m.recoveryEnabled && m.recoveryVersion == 1 && !m.resumableRecovery && !m.WatchOnly() && m.chainParams != nil && m.chainParams.GenesisHash != nil && uint32(m.chainParams.Net) == recovery.Network && m.chainParams.GenesisHash.String() == recovery.Genesis
+}
+
+// publicRecoveryManifestLocked intentionally never calls fetchRecoveryState:
+// that older helper also Gets private-retention metadata. The bound is selected
+// by the fixed caller, never by untrusted input. No sync stamp is needed here.
+func (m *Manager) publicRecoveryManifestLocked(ctx context.Context, main walletdb.ReadBucket, maxManifestBytes int) (recovery.Manifest, error) {
+	v := main.Get(mgrVersionName)
+	if len(v) != 4 {
+		return recovery.Manifest{}, ErrOwnActivityCorrupt
+	}
+	if binary.LittleEndian.Uint32(v) != RecoveryManagerVersion {
+		return recovery.Manifest{}, ErrOwnActivityProfile
+	}
+	mode, version, watch := main.Get(derivationModeName), main.Get(recoveryVersionName), main.Get(watchingOnlyName)
+	if len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) || len(version) != 4 || binary.LittleEndian.Uint32(version) != 1 || len(watch) != 1 || watch[0] != 0 {
+		return recovery.Manifest{}, ErrOwnActivityCorrupt
+	}
+	public, root := main.Get(recoveryPublicName), main.Get(masterHDPubName)
+	if len(public) <= 40 || len(public) > maxManifestBytes+40 || len(root) <= 40 || len(root) > 168 {
+		return recovery.Manifest{}, ErrOwnActivityCorrupt
+	}
+	if e := ctx.Err(); e != nil {
+		return recovery.Manifest{}, e
+	}
+	plain, e := m.cryptoKeyPub.Decrypt(public)
+	if e != nil {
+		return recovery.Manifest{}, ErrOwnActivityCorrupt
+	}
+	defer zero.Bytes(plain)
+	if len(plain) == 0 || len(plain) > maxManifestBytes {
+		return recovery.Manifest{}, ErrOwnActivityCorrupt
+	}
+	manifest, e := recovery.ParseManifest(plain)
+	if e != nil {
+		return recovery.Manifest{}, ErrOwnActivityCorrupt
+	}
+	rootPlain, e := m.cryptoKeyPub.Decrypt(root)
+	if e != nil {
+		return recovery.Manifest{}, ErrOwnActivityCorrupt
+	}
+	defer zero.Bytes(rootPlain)
+	if len(rootPlain) == 0 || len(rootPlain) > 128 || string(rootPlain) != manifest.RootPublicKey {
+		return recovery.Manifest{}, ErrOwnActivityCorrupt
+	}
+	return manifest, nil
 }

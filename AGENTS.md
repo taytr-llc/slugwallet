@@ -172,3 +172,26 @@ the paired LAUNCH_READINESS.md tracks that gate. Engineering work continues.
   or detail work before unloading. Existing RPC/history APIs remain unchanged.
   See paired `WALLET_ACTIVITY.md`, portable `wallet/testdata/own-activity`, and
   `CHANGESET_70_NOTES.md`; this does not enable production issuance or custody.
+
+## Current hosted-fixture recovery (set 71)
+
+- `CaptureCurrentRecovery` is a bounded public schema-9 snapshot from a retained
+  concrete wallet. Never fetch private retention, decrypt/copy account private
+  ciphertext or infer completeness from an unbounded scan. Keep the wallet open
+  until the operation joins; its opaque capture is not a database lifetime lease.
+- HostedVault and the current-checkpoint store have separate markers and APIs;
+  preserve the old immutable vault and export contracts. Bind the exact account,
+  retention, vault, wallet owner and source. Original committed capture replay
+  may acknowledge its own action after later captures; a fresh export requires
+  a fresh current capture, never a historical one presented as current.
+- Acquire bounded vault/current permits before original account/epoch fences.
+  Keep cryptography/provider calls and capture outside account leases; publish
+  only the prepared bounded recovery file inside the final original export
+  fence. Retain uncertain publication and failed-cleanup ownership. A held
+  session may use typed gym signing, with no recovery-envelope unwrap or local
+  signing fallback; full export remains blocked.
+- This is public-fixture hosted composition and dated current export, not
+  continuous allocation recovery, an external identity/KMS provider or restored
+  payment-journal authority. Missing established stores fail closed. Preserve
+  the independent references, paired frozen `HOSTED_CURRENT_RECOVERY.md` and
+  actual-file recovery evidence. D73 real issuance and D74 remain separate gates.
