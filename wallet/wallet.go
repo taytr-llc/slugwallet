@@ -146,6 +146,7 @@ type Wallet struct {
 	// One explicit candidate-withdrawal handle borrows this wallet. It is
 	// closed and joined before the owning runtime unloads wallet storage.
 	candidateWithdrawalMu   sync.Mutex
+	fighterCarrierMu        sync.Mutex
 	hostedAllocationMu      sync.Mutex
 	hostedAllocationTainted atomic.Bool
 
@@ -371,7 +372,16 @@ func (w *Wallet) activeData(
 	txmgrNs := dbtx.ReadWriteBucket(wtxmgrNamespaceKey)
 
 	if w.Manager.HostedAllocation() {
-		if _, e := w.Manager.AuditHostedAllocation(context.Background(), addrmgrNs, dbtx.ReadBucket(hostedAllocationNamespace)); e != nil {
+		var e error
+		switch w.Manager.CarrierSchema() {
+		case 14:
+			_, e = w.Manager.AuditHostedAllocation2(context.Background(), addrmgrNs, dbtx.ReadBucket(hostedAllocationNamespace2))
+		case 15:
+			_, e = w.Manager.AuditRestoredCarrier(context.Background(), addrmgrNs)
+		default:
+			_, e = w.Manager.AuditHostedAllocation(context.Background(), addrmgrNs, dbtx.ReadBucket(hostedAllocationNamespace))
+		}
+		if e != nil {
 			return nil, nil, e
 		}
 	}

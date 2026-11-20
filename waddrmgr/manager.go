@@ -355,6 +355,7 @@ type Manager struct {
 	recoveryVersion   uint32
 	resumableRecovery bool
 	hostedAllocation  bool
+	carrierSchema     uint32
 	recoveryPending   atomic.Bool
 	defaultScopes     map[KeyScope]ScopeAddrSchema
 	chainParams       *chaincfg.Params
@@ -1568,6 +1569,18 @@ func loadManagerInternal(ns walletdb.ReadBucket, pubPassphrase []byte,
 }
 
 func loadManagerProfile(ns walletdb.ReadBucket, pubPassphrase []byte, chainParams *chaincfg.Params, candidateCreation, hosted bool) (*Manager, error) {
+	allowed := uint32(0)
+	if hosted {
+		allowed = HostedAllocationManagerVersion
+	}
+	return loadManagerAllowedProfile(ns, pubPassphrase, chainParams, candidateCreation, allowed)
+}
+
+// Only dedicated constructors select an exact guarded manager schema.
+func loadManagerAllowedProfile(ns walletdb.ReadBucket, pubPassphrase []byte, chainParams *chaincfg.Params, candidateCreation bool, allowed uint32) (*Manager, error) {
+	if ns == nil {
+		return nil, ErrRecoveryState
+	}
 
 	// Verify the version is neither too old or too new.
 	version, err := fetchManagerVersion(ns)
@@ -1578,7 +1591,7 @@ func loadManagerProfile(ns walletdb.ReadBucket, pubPassphrase []byte, chainParam
 	if version < latestMgrVersion {
 		str := "database upgrade required"
 		return nil, managerError(ErrUpgrade, str, nil)
-	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion && version != ResumableManagerVersion && version != PhaseAManagerVersion && !(hosted && version == HostedAllocationManagerVersion) {
+	} else if version > latestMgrVersion && version != RecoveryManagerVersion && version != CandidateManagerVersion && version != ResumableManagerVersion && version != PhaseAManagerVersion && !(allowed != 0 && version == allowed) {
 		str := "database version is greater than latest understood version"
 		return nil, managerError(ErrUpgrade, str, nil)
 	}
@@ -1640,7 +1653,7 @@ func loadManagerProfile(ns walletdb.ReadBucket, pubPassphrase []byte, chainParam
 	var phaseACrypto *cryptoKey
 	phaseAOpened := false
 	defer func() {
-		if (version == PhaseAManagerVersion || version == HostedAllocationManagerVersion) && !phaseAOpened {
+		if (version == PhaseAManagerVersion || version == HostedAllocationManagerVersion || version == HostedTransferManagerVersion || version == RestoredCarrierManagerVersion) && !phaseAOpened {
 			masterKeyPriv.Zero()
 			masterKeyPub.Zero()
 			if phaseACrypto != nil {
@@ -1668,7 +1681,7 @@ func loadManagerProfile(ns walletdb.ReadBucket, pubPassphrase []byte, chainParam
 	cryptoKeyPub.CopyBytes(cryptoKeyPubCT)
 	zero.Bytes(cryptoKeyPubCT)
 	defaults := legacyDefaultScopes()
-	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
+	if version == ResumableManagerVersion || version == PhaseAManagerVersion || version == RestoredCarrierManagerVersion {
 		state, e := fetchRecoveryProgress(ns)
 		if e != nil {
 			return nil, e
@@ -1682,12 +1695,12 @@ func loadManagerProfile(ns walletdb.ReadBucket, pubPassphrase []byte, chainParam
 			return nil, err
 		}
 		defaults = candidateDefaultScopes()
-	} else if version == PhaseAManagerVersion {
+	} else if version == PhaseAManagerVersion || version == RestoredCarrierManagerVersion {
 		if err := validateStoredPhaseA(ns, cryptoKeyPub, chainParams); err != nil {
 			return nil, err
 		}
 	}
-	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
+	if version == ResumableManagerVersion || version == PhaseAManagerVersion || version == RestoredCarrierManagerVersion {
 		if err := validateResumableInvalidChildren(ns, cryptoKeyPub); err != nil {
 			return nil, err
 		}
@@ -1738,9 +1751,12 @@ func loadManagerProfile(ns walletdb.ReadBucket, pubPassphrase []byte, chainParam
 	)
 
 	mgr.derivationMode, mgr.recoveryEnabled = mode, hasRecovery
-	mgr.hostedAllocation = version == HostedAllocationManagerVersion
+	mgr.hostedAllocation = version == HostedAllocationManagerVersion || version == HostedTransferManagerVersion || version == RestoredCarrierManagerVersion
+	if version == HostedTransferManagerVersion || version == RestoredCarrierManagerVersion {
+		mgr.carrierSchema = version
+	}
 	mgr.defaultScopes = defaults
-	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
+	if version == ResumableManagerVersion || version == PhaseAManagerVersion || version == RestoredCarrierManagerVersion {
 		state, _ := fetchRecoveryProgress(ns)
 		mgr.resumableRecovery = true
 		mgr.recoveryPending.Store(!state.Ready)

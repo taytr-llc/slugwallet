@@ -14,7 +14,11 @@ func (s *ScopedKeyManager) hostedPath(ns walletdb.ReadBucket, account, branch, i
 	if !s.rootManager.HostedAllocation() {
 		return nil
 	}
-	if ns == nil || account != 0 || s.scope.Purpose != 84 || s.scope.Coin != 0 || branch > 1 || index >= 4096 {
+	supported := s.scope.Purpose == 84
+	if s.rootManager.carrierSchema == RestoredCarrierManagerVersion {
+		supported = s.scope.Purpose == 44 || s.scope.Purpose == 49 || s.scope.Purpose == 84 || s.scope.Purpose == 86
+	}
+	if ns == nil || account != 0 || !supported || s.scope.Coin != 0 || branch > 1 || index >= 4096 {
 		return ErrHostedAllocationFrontier
 	}
 	scoped, e := fetchReadScopeBucket(ns, &s.scope)

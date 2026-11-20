@@ -72,7 +72,10 @@ func hostedSchema(db walletdb.DB) bool {
 			return nil
 		}
 		v := main.Get([]byte("mgrver"))
-		found = len(v) == 4 && binary.LittleEndian.Uint32(v) == 13
+		if len(v) == 4 {
+			schema := binary.LittleEndian.Uint32(v)
+			found = schema == 13 || schema == 14 || schema == 15
+		}
 		return nil
 	})
 	return found

@@ -133,12 +133,18 @@ func (h *HostedVault) PrepareInventoryExport(ctx context.Context, originalToken 
 	if h.inventoryExports == nil {
 		h.inventoryExports = make(map[*PreparedInventoryExport]bool)
 	}
-	if len(h.inventoryExports) >= 2 {
+	if len(h.inventoryExports)+len(h.inventoryExports2) >= 2 {
 		clear(encoded)
 		return nil, ErrCapacity
 	}
 	// Exactly one retained prepared export per concrete inventory/account.
 	for old := range h.inventoryExports {
+		if old.binding.InventoryID == b.InventoryID || old.binding.AccountID == b.AccountID {
+			clear(encoded)
+			return nil, ErrBusy
+		}
+	}
+	for old := range h.inventoryExports2 {
 		if old.binding.InventoryID == b.InventoryID || old.binding.AccountID == b.AccountID {
 			clear(encoded)
 			return nil, ErrBusy

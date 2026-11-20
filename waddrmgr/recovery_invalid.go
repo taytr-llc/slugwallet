@@ -18,7 +18,7 @@ func validateResumableInvalidChildren(ns walletdb.ReadBucket, cryptoKeyPub Encry
 		return ErrRecoveryState
 	}
 	version, err := fetchManagerVersion(ns)
-	if err != nil || version != ResumableManagerVersion && version != PhaseAManagerVersion {
+	if err != nil || version != ResumableManagerVersion && version != PhaseAManagerVersion && version != RestoredCarrierManagerVersion {
 		return ErrRecoveryState
 	}
 	state, err := fetchRecoveryProgress(ns)

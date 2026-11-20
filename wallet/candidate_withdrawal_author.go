@@ -208,7 +208,18 @@ func (s *CandidateWithdrawals) candidateWithdrawalDraft(ctx context.Context, dbt
 		return CandidateWithdrawalDraft{}, withdrawalCreditError(e)
 	}
 	best := make([]withdrawalSelection, 0, 16)
+	var shared map[string]purposeExclusion
+	if s.allocated2 != nil {
+		b := s.allocated2.inventory.binding
+		_, shared, e = readPurposeExclusions(ctx, dbtx, 14, b.CarrierJournalID, b.WithdrawalJournalID)
+		if e != nil {
+			return CandidateWithdrawalDraft{}, e
+		}
+	}
 	e = reader.Visit(ctx, func(c wtxmgr.Credit) error {
+		if _, exists := shared[string(withdrawalKey(c.OutPoint))]; exists {
+			return nil
+		}
 		if c.Height > tip.Height || !hasMinConfs(1, c.Height, tip.Height) || c.FromCoinBase && !hasMinConfs(int32(s.wallet.chainParams.CoinbaseMaturity), c.Height, tip.Height) || s.wallet.LockedOutpoint(c.OutPoint) {
 			return nil
 		}
@@ -354,6 +365,11 @@ func (s *CandidateWithdrawals) Sign(ctx context.Context, operationID, draftDiges
 		}
 		if r.State != "prepared" || r.DraftDigest != draftDigest {
 			return ErrWithdrawalConflict
+		}
+		if s.allocated2 != nil {
+			if e = s.checkWithdrawalExclusions2(ctx, dbtx, r); e != nil {
+				return e
+			}
 		}
 		if !s.wallet.ChainSynced() {
 			return ErrWithdrawalUnavailable

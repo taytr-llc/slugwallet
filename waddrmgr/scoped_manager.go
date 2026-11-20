@@ -557,6 +557,16 @@ func (s *ScopedKeyManager) loadAccountInfo(ns walletdb.ReadBucket,
 		return nil, managerError(ErrDatabase, str, nil)
 	}
 
+	// Guarded carrier owners never use the generic LastAddress cache. In
+	// particular an empty branch must not synthesize index0 and enqueue its
+	// unissued private key for the next unlock. Exact recorded paths are
+	// derived on demand by the purpose-specific owner. Earlier modes retain
+	// their inherited cache behavior.
+	if s.rootManager.carrierSchema != 0 {
+		s.acctInfo[account] = acctInfo
+		return acctInfo, nil
+	}
+
 	// Derive and cache the managed address for the last external address.
 	branch, index := ExternalBranch, acctInfo.nextExternalIndex
 	if index > 0 {
@@ -2685,6 +2695,15 @@ func (s *ScopedKeyManager) ForEachActiveAddress(ns walletdb.ReadBucket,
 	defer s.mtx.Unlock()
 
 	addrFn := func(rowInterface interface{}) error {
+		if s.rootManager.carrierSchema == RestoredCarrierManagerVersion {
+			issued, err := s.restoredCarrierIssuedRow(ns, rowInterface)
+			if err != nil {
+				return err
+			}
+			if !issued {
+				return nil
+			}
+		}
 		if s.rootManager.resumableRecovery {
 			addr, err := s.recoveryPublicAddress(ns, rowInterface)
 			if err != nil {

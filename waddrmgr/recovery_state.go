@@ -81,12 +81,12 @@ func fetchRecoveryState(ns walletdb.ReadBucket) (DerivationMode, bool, error) {
 	} else if b.Get(candidateFixtureName) != nil {
 		return 0, false, ErrRecoveryState
 	}
-	if (managerVersion != RecoveryManagerVersion && managerVersion != CandidateManagerVersion && managerVersion != ResumableManagerVersion && managerVersion != PhaseAManagerVersion && managerVersion != HostedAllocationManagerVersion) || len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) ||
+	if (managerVersion != RecoveryManagerVersion && managerVersion != CandidateManagerVersion && managerVersion != ResumableManagerVersion && managerVersion != PhaseAManagerVersion && managerVersion != HostedAllocationManagerVersion && managerVersion != HostedTransferManagerVersion && managerVersion != RestoredCarrierManagerVersion) || len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) ||
 		len(version) != 4 || binary.LittleEndian.Uint32(version) != wantVersion ||
 		len(pub) <= 40 || len(pub) > maxRecoveryData+40 || len(priv) <= 40 || len(priv) > maxRecoveryData+40 {
 		return 0, false, ErrRecoveryState
 	}
-	if managerVersion == ResumableManagerVersion || managerVersion == PhaseAManagerVersion {
+	if managerVersion == ResumableManagerVersion || managerVersion == PhaseAManagerVersion || managerVersion == RestoredCarrierManagerVersion {
 		if err := validateRecoveryKeyFields(ns); err != nil {
 			return 0, false, err
 		}
@@ -103,7 +103,7 @@ func fetchRecoveryState(ns walletdb.ReadBucket) (DerivationMode, bool, error) {
 	} else if b.Get(recoveryProgressName) != nil || b.NestedReadBucket(recoveryInvalidName) != nil || b.Get(phaseAProgressName) != nil || b.NestedReadBucket(phaseAInvalidName) != nil {
 		return 0, false, ErrRecoveryState
 	}
-	if managerVersion == PhaseAManagerVersion {
+	if managerVersion == PhaseAManagerVersion || managerVersion == RestoredCarrierManagerVersion {
 		if recoveryNamePresent(b, recoveryProgressName) || recoveryNamePresent(b, recoveryInvalidName) {
 			return 0, false, ErrRecoveryState
 		}
@@ -237,11 +237,15 @@ type RecoveryAccount struct {
 // RecoveryAccounts rejects extra scopes/accounts/imported keys/scripts and
 // bounds restoration work. Call within a single read or creation transaction.
 func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
+	return recoveryAccounts(ns, false)
+}
+
+func recoveryAccounts(ns walletdb.ReadBucket, carrier bool) ([]RecoveryAccount, error) {
 	// Preserve the inherited missing-namespace refusal before reading a version.
 	if ns == nil {
 		return nil, ErrRecoveryState
 	}
-	if v, e := fetchManagerVersion(ns); e == nil && v == HostedAllocationManagerVersion {
+	if v, e := fetchManagerVersion(ns); e == nil && (v == HostedAllocationManagerVersion || v == HostedTransferManagerVersion || v == RestoredCarrierManagerVersion && !carrier) {
 		return nil, ErrHostedAllocationProfile
 	}
 	_, enabled, err := fetchRecoveryState(ns)
@@ -265,7 +269,7 @@ func RecoveryAccounts(ns walletdb.ReadBucket) ([]RecoveryAccount, error) {
 		expectedScopes = candidateDefaultScopes()
 		candidate = true
 	}
-	if version == ResumableManagerVersion || version == PhaseAManagerVersion {
+	if version == ResumableManagerVersion || version == PhaseAManagerVersion || version == RestoredCarrierManagerVersion {
 		state, e := fetchRecoveryProgress(ns)
 		if e != nil {
 			return nil, e

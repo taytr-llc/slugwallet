@@ -50,16 +50,17 @@ type withdrawalState struct {
 // before unloading that wallet. The account/app journal boundary is deliberately
 // not an argument to this internal wallet library; the concrete adapter owns it.
 type CandidateWithdrawals struct {
-	allocated *HostedAllocator // nonnil only for the private schema13 adapter
-	wallet    *Wallet
-	binding   string
-	identity  withdrawalIdentity
-	gate      sync.Mutex
-	closed    atomic.Bool
-	poisoned  atomic.Bool
-	life      context.Context
-	cancel    context.CancelFunc
-	closeOnce sync.Once
+	allocated  *HostedAllocator  // nonnil only for the private schema13 adapter
+	allocated2 *HostedAllocator2 // nonnil only for the private schema14 adapter
+	wallet     *Wallet
+	binding    string
+	identity   withdrawalIdentity
+	gate       sync.Mutex
+	closed     atomic.Bool
+	poisoned   atomic.Bool
+	life       context.Context
+	cancel     context.CancelFunc
+	closeOnce  sync.Once
 	// Fault seam owns no expectation data and is nil in production.
 	checkpoint func(string) error
 }
@@ -74,6 +75,12 @@ func (w *Wallet) openCandidateWithdrawals(ctx context.Context, bindingID string,
 	return w.openCandidateWithdrawalsOwned(ctx, bindingID, create, nil)
 }
 func (w *Wallet) openCandidateWithdrawalsOwned(ctx context.Context, bindingID string, create bool, allocated *HostedAllocator) (result *CandidateWithdrawals, err error) {
+	return w.openCandidateWithdrawalsOwners(ctx, bindingID, create, allocated, nil)
+}
+func (w *Wallet) openCandidateWithdrawalsOwned2(ctx context.Context, bindingID string, create bool, allocated *HostedAllocator2) (*CandidateWithdrawals, error) {
+	return w.openCandidateWithdrawalsOwners(ctx, bindingID, create, nil, allocated)
+}
+func (w *Wallet) openCandidateWithdrawalsOwners(ctx context.Context, bindingID string, create bool, allocated *HostedAllocator, allocated2 *HostedAllocator2) (result *CandidateWithdrawals, err error) {
 	if ctx == nil {
 		return nil, ErrWithdrawalInvalid
 	}
@@ -95,7 +102,7 @@ func (w *Wallet) openCandidateWithdrawalsOwned(ctx context.Context, bindingID st
 		}
 	}()
 	life, cancel := context.WithCancel(context.Background())
-	s := &CandidateWithdrawals{wallet: w, binding: bindingID, life: life, cancel: cancel, allocated: allocated}
+	s := &CandidateWithdrawals{wallet: w, binding: bindingID, life: life, cancel: cancel, allocated: allocated, allocated2: allocated2}
 	defer func() {
 		if err != nil {
 			cancel()
@@ -434,6 +441,16 @@ func (s *CandidateWithdrawals) audit(ctx context.Context, tx walletdb.ReadTx) (w
 			return withdrawalState{}, ErrWithdrawalCorrupt
 		}
 	}
+	if s.allocated2 != nil {
+		b := s.allocated2.inventory.binding
+		pin, err := allocationCarrierPin2(b)
+		if err != nil {
+			return withdrawalState{}, err
+		}
+		if err = auditPurposeExclusions(ctx, tx, pin, b.CarrierJournalID, b.WithdrawalJournalID); err != nil {
+			return withdrawalState{}, err
+		}
+	}
 	return state, nil
 }
 func (s *CandidateWithdrawals) Lookup(ctx context.Context, operationID string) (CandidateWithdrawalRecord, error) {
@@ -547,6 +564,11 @@ func (s *CandidateWithdrawals) reconcile(ctx context.Context, operationID, draft
 		raw, _ = json.Marshal(state.meta)
 		if e := ns.Put(withdrawalMetaKey, raw); e != nil {
 			return ErrWithdrawalStorage
+		}
+		if s.allocated2 != nil {
+			if e := s.reconcilePurposeExclusions2(ctx, tx, r, abandon); e != nil {
+				return e
+			}
 		}
 		return nil
 	})

@@ -107,7 +107,11 @@ func (m *Manager) readCurrentRecoveryManifestSchema(ctx context.Context, ns wall
 	if m.closed {
 		return none, ErrCurrentRecoveryUnavailable
 	}
-	if !m.publicRecoveryProfileLocked() || (schema == HostedAllocationManagerVersion) != m.hostedAllocation {
+	profile := m.publicRecoveryProfileLocked()
+	if schema == RestoredCarrierManagerVersion && m.carrierSchema == schema {
+		profile = m.derivationMode == DerivationStandard && m.recoveryEnabled && m.recoveryVersion == 1 && m.resumableRecovery && !m.WatchOnly() && candidateChain(m.chainParams)
+	}
+	if !profile || (schema == HostedAllocationManagerVersion || schema == HostedTransferManagerVersion || schema == RestoredCarrierManagerVersion) != m.hostedAllocation {
 		return none, ErrCurrentRecoveryProfile
 	}
 	main := ns.NestedReadBucket(mainBucketName)

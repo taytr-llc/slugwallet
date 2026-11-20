@@ -40,7 +40,7 @@ func recoveryPolicyFor(ns walletdb.ReadBucket) (recoveryPolicy, error) {
 	switch v {
 	case ResumableManagerVersion:
 		return candidateRecoveryPolicy(), nil
-	case PhaseAManagerVersion:
+	case PhaseAManagerVersion, RestoredCarrierManagerVersion:
 		return phaseARecoveryPolicy(), nil
 	}
 	return recoveryPolicy{}, ErrRecoveryState
@@ -213,7 +213,7 @@ func validateStoredPhaseA(ns walletdb.ReadBucket, pubKey EncryptorDecryptor, par
 	if string(retained) != m.RootPublicKey {
 		return ErrRecoveryState
 	}
-	if _, e = RecoveryAccounts(ns); e != nil {
+	if _, e = recoveryAccounts(ns, true); e != nil {
 		return e
 	}
 	s, e := fetchRecoveryProgress(ns)

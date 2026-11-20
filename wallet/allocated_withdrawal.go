@@ -21,6 +21,12 @@ type AllocatedWithdrawals struct {
 }
 
 func (s *CandidateWithdrawals) profile(ctx context.Context, tx walletdb.ReadTx) (withdrawalIdentity, error) {
+	if s.allocated2 != nil {
+		if s.allocated != nil {
+			return withdrawalIdentity{}, ErrWithdrawalProfile
+		}
+		return s.profileAllocation2(ctx, tx)
+	}
 	if s.allocated == nil {
 		return withdrawalProfile(tx, s.wallet)
 	}
