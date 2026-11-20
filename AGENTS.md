@@ -235,3 +235,19 @@ hosted-transfer hold and the report-only checkpoint doctrine stay intact.
   See `CHANGESET_72_NOTES.md` for independent references, funded recovery and the
   exact desktop/package qualification composite. D83 transfers/restored-gym use
   follow; real login and the final joint D74 review remain deferred.
+
+## Dedicated operator settlement (set74)
+
+- Schema16 is a separately guarded fixed native84/index0 operator wallet, not a
+  hosted allocation wallet or recovery-v1 export. Preserve old schemas and keep
+  generic allocation/import/export/spending closed for this purpose.
+- Retain the concrete custody owner and original one-time settlement backend
+  binding. Sign requires the immediate exact-request capability from the original
+  settlement call; copied configuration or coin claims cannot authorize it.
+  Passphrase loading and explicit bounded unlock happen outside Sign.
+- Join runtime work before closing borrowed wallet/authority custody. Failed
+  database/directory cleanup retains original handles and remains sticky. Never
+  open a replacement wallet over an uncertain owner.
+- Focused normal/race/legacy/refusal checks and independent signatures pass as
+  recorded in CHANGESET_74_NOTES.md. Full normal-PoW funded runtime and remote
+  deployment acceptance remain paired work; no real private material is used.

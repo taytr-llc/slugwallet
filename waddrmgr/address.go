@@ -386,6 +386,9 @@ func (a *managedAddress) ExportPubKey() string {
 //
 // This is part of the ManagedPubKeyAddress interface implementation.
 func (a *managedAddress) PrivKey() (*btcec.PrivateKey, error) {
+	if a.manager.rootManager.PoolSettlement() {
+		return nil, ErrPoolSettlementProfile
+	}
 	// No private keys are available for a watching-only address manager.
 	if a.manager.rootManager.WatchOnly() {
 		return nil, managerError(ErrWatchingOnly, errWatchingOnly, nil)

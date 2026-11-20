@@ -220,6 +220,9 @@ func (w *Wallet) Start() {
 // This method is unstable and will be removed when all syncing logic is moved
 // outside of the wallet package.
 func (w *Wallet) SynchronizeRPC(chainClient chain.Interface) {
+	if w.Manager.PoolSettlement() {
+		return
+	}
 	w.quitMu.Lock()
 	select {
 	case <-w.quit:
@@ -1445,8 +1448,8 @@ func (w *Wallet) CreateSimpleTx(coinSelectKeyScope *waddrmgr.KeyScope,
 	account uint32, outputs []*wire.TxOut, minconf int32,
 	satPerKb btcutil.Amount, coinSelectionStrategy CoinSelectionStrategy,
 	dryRun bool, optFuncs ...TxCreateOption) (*txauthor.AuthoredTx, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	opts := defaultTxCreateOptions()
@@ -1727,8 +1730,8 @@ func (w *Wallet) ChangePassphrases(publicOld, publicNew, privateOld,
 // AccountAddresses returns the addresses for every created address for an
 // account.
 func (w *Wallet) AccountAddresses(account uint32) ([]address.Address, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	var addrs []address.Address
@@ -1754,8 +1757,8 @@ func (w *Wallet) AccountAddresses(account uint32) ([]address.Address, error) {
 // address for an account.
 func (w *Wallet) AccountManagedAddresses(scope waddrmgr.KeyScope,
 	accountNum uint32) ([]waddrmgr.ManagedAddress, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	scopedMgr, err := w.Manager.FetchScopedKeyManager(scope)
@@ -1873,8 +1876,8 @@ func (w *Wallet) CalculateAccountBalances(account uint32,
 // blockchain or btcd mempool), the next chained address is returned.
 func (w *Wallet) CurrentAddress(account uint32,
 	scope waddrmgr.KeyScope) (address.Address, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	chainClient, err := w.requireChainClient()
@@ -2019,8 +2022,8 @@ func (w *Wallet) LabelTransaction(hash chainhash.Hash, label string,
 // address.
 func (w *Wallet) PrivKeyForAddress(
 	a address.Address) (*btcec.PrivateKey, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	var privKey *btcec.PrivateKey
@@ -3198,8 +3201,8 @@ func (w *Wallet) ListLeasedOutputs() ([]*ListLeasedOutputResult, error) {
 // DumpPrivKeys returns the WIF-encoded private keys for all addresses with
 // private keys in a wallet.
 func (w *Wallet) DumpPrivKeys() ([]string, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	var privkeys []string
@@ -3240,8 +3243,8 @@ func (w *Wallet) DumpPrivKeys() ([]string, error) {
 // DumpWIFPrivateKey returns the WIF encoded private key for a
 // single wallet address.
 func (w *Wallet) DumpWIFPrivateKey(addr address.Address) (string, error) {
-	if w.Manager.HostedAllocation() {
-		return "", waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return "", guarded
 	}
 
 	var maddr waddrmgr.ManagedAddress
@@ -3409,8 +3412,8 @@ func (w *Wallet) resendUnminedTxs() {
 // SortedActivePaymentAddresses returns a slice of all active payment
 // addresses in a wallet.
 func (w *Wallet) SortedActivePaymentAddresses() ([]string, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	var addrStrs []string
@@ -3435,8 +3438,8 @@ func (w *Wallet) SortedActivePaymentAddresses() ([]string, error) {
 // NewAddress returns the next external chained address for a wallet.
 func (w *Wallet) NewAddress(account uint32,
 	scope waddrmgr.KeyScope) (address.Address, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	chainClient, err := w.requireChainClient()
@@ -3506,8 +3509,8 @@ func (w *Wallet) newAddress(addrmgrNs walletdb.ReadWriteBucket, account uint32,
 // NewChangeAddress returns a new change address for a wallet.
 func (w *Wallet) NewChangeAddress(account uint32,
 	scope waddrmgr.KeyScope) (address.Address, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	chainClient, err := w.requireChainClient()
@@ -3837,8 +3840,8 @@ func (w *Wallet) SignTransaction(tx *wire.MsgTx, hashType txscript.SigHashType,
 	additionalPrevScripts map[wire.OutPoint][]byte,
 	additionalKeysByAddress map[string]*btcutil.WIF,
 	p2shRedeemScriptsByAddress map[string][]byte) ([]SignatureError, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	var signErrors []SignatureError
@@ -4052,6 +4055,9 @@ func (e *ErrInMempool) Unwrap() error {
 // This function is unstable and will be removed once syncing code is moved out
 // of the wallet.
 func (w *Wallet) PublishTransaction(tx *wire.MsgTx, label string) error {
+	if w.Manager.PoolSettlement() {
+		return waddrmgr.ErrPoolSettlementProfile
+	}
 	_, err := w.reliablyPublishTransaction(tx, label)
 	return err
 }
@@ -4346,8 +4352,8 @@ func (w *Wallet) InitAccounts(scope *waddrmgr.ScopedKeyManager,
 // DeriveFromKeyPath derives a private key using the given derivation path.
 func (w *Wallet) DeriveFromKeyPath(scope waddrmgr.KeyScope,
 	path waddrmgr.DerivationPath) (*btcec.PrivateKey, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	scopedMgr, err := w.Manager.FetchScopedKeyManager(scope)
@@ -4394,8 +4400,8 @@ func (w *Wallet) DeriveFromKeyPath(scope waddrmgr.KeyScope,
 // path. The account will be created if it doesn't exist.
 func (w *Wallet) DeriveFromKeyPathAddAccount(scope waddrmgr.KeyScope,
 	path waddrmgr.DerivationPath) (*btcec.PrivateKey, error) {
-	if w.Manager.HostedAllocation() {
-		return nil, waddrmgr.ErrHostedAllocationProfile
+	if guarded := w.Manager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	scopedMgr, err := w.Manager.FetchScopedKeyManager(scope)

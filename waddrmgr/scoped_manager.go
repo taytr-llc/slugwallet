@@ -562,7 +562,7 @@ func (s *ScopedKeyManager) loadAccountInfo(ns walletdb.ReadBucket,
 	// unissued private key for the next unlock. Exact recorded paths are
 	// derived on demand by the purpose-specific owner. Earlier modes retain
 	// their inherited cache behavior.
-	if s.rootManager.carrierSchema != 0 {
+	if s.rootManager.carrierSchema != 0 || s.rootManager.PoolSettlement() {
 		s.acctInfo[account] = acctInfo
 		return acctInfo, nil
 	}
@@ -714,8 +714,8 @@ func (c *cachedKey) Size() (uint64, error) {
 // looked up via any other means.
 func (s *ScopedKeyManager) DeriveFromKeyPathCache(
 	kp DerivationPath) (*btcec.PrivateKey, error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	s.mtx.Lock()
@@ -793,6 +793,9 @@ func (s *ScopedKeyManager) DeriveFromKeyPathCache(
 // the InternalAccount number.
 func (s *ScopedKeyManager) DeriveFromKeyPath(ns walletdb.ReadBucket,
 	kp DerivationPath) (ManagedAddress, error) {
+	if s.rootManager.PoolSettlement() {
+		return nil, ErrPoolSettlementProfile
+	}
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
@@ -1022,6 +1025,9 @@ func (s *ScopedKeyManager) existsAddress(ns walletdb.ReadBucket, addressID []byt
 // pay-to-script-hash addresses.
 func (s *ScopedKeyManager) Address(ns walletdb.ReadBucket,
 	addr address.Address) (ManagedAddress, error) {
+	if s.rootManager.PoolSettlement() {
+		return nil, ErrPoolSettlementProfile
+	}
 
 	// ScriptAddress will only return a script hash if we're accessing an
 	// address that is either PKH or SH. In the event we're passed a PK
@@ -1090,8 +1096,8 @@ func (s *ScopedKeyManager) accountAddrType(acctInfo *accountInfo,
 func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 	account uint32, numAddresses uint32, internal bool) ([]ManagedAddress,
 	error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	// The next address can only be generated for accounts that have
@@ -1377,8 +1383,8 @@ func (s *ScopedKeyManager) nextAddresses(ns walletdb.ReadWriteBucket,
 // This function MUST be called with the manager lock held for writes.
 func (s *ScopedKeyManager) extendAddresses(ns walletdb.ReadWriteBucket,
 	account uint32, lastIndex uint32, internal bool) error {
-	if s.rootManager.HostedAllocation() {
-		return ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return guarded
 	}
 
 	if s.rootManager.resumableRecovery {
@@ -1656,8 +1662,8 @@ func (s *ScopedKeyManager) ExtendInternalAddresses(ns walletdb.ReadWriteBucket,
 // passed account.  Any other errors returned are generally unexpected.
 func (s *ScopedKeyManager) LastExternalAddress(ns walletdb.ReadBucket,
 	account uint32) (ManagedAddress, error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	// Enforce maximum account number.
@@ -1693,8 +1699,8 @@ func (s *ScopedKeyManager) LastExternalAddress(ns walletdb.ReadBucket,
 // passed account.  Any other errors returned are generally unexpected.
 func (s *ScopedKeyManager) LastInternalAddress(ns walletdb.ReadBucket,
 	account uint32) (ManagedAddress, error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	// Enforce maximum account number.
@@ -1725,8 +1731,8 @@ func (s *ScopedKeyManager) LastInternalAddress(ns walletdb.ReadBucket,
 // number *directly*, rather than taking a string name for the account, then
 // mapping that to the next highest account number.
 func (s *ScopedKeyManager) NewRawAccount(ns walletdb.ReadWriteBucket, number uint32) error {
-	if s.rootManager.HostedAllocation() {
-		return ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return guarded
 	}
 
 	if s.rootManager.WatchOnly() {
@@ -1764,8 +1770,8 @@ func (s *ScopedKeyManager) NewRawAccountWatchingOnly(
 	ns walletdb.ReadWriteBucket, number uint32,
 	pubKey *hdkeychain.ExtendedKey, masterKeyFingerprint uint32,
 	addrSchema *ScopeAddrSchema) error {
-	if s.rootManager.HostedAllocation() {
-		return ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return guarded
 	}
 
 	s.mtx.Lock()
@@ -1786,8 +1792,8 @@ func (s *ScopedKeyManager) NewRawAccountWatchingOnly(
 // access to the cointype keys (from which extended account keys are derived),
 // it requires the manager to be unlocked.
 func (s *ScopedKeyManager) NewAccount(ns walletdb.ReadWriteBucket, name string) (uint32, error) {
-	if s.rootManager.HostedAllocation() {
-		return 0, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return 0, guarded
 	}
 
 	if s.rootManager.WatchOnly() {
@@ -1917,8 +1923,8 @@ func (s *ScopedKeyManager) newAccount(ns walletdb.ReadWriteBucket,
 func (s *ScopedKeyManager) NewAccountWatchingOnly(ns walletdb.ReadWriteBucket,
 	name string, pubKey *hdkeychain.ExtendedKey, masterKeyFingerprint uint32,
 	addrSchema *ScopeAddrSchema) (uint32, error) {
-	if s.rootManager.HostedAllocation() {
-		return 0, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return 0, guarded
 	}
 
 	s.mtx.Lock()
@@ -2004,8 +2010,8 @@ func (s *ScopedKeyManager) newAccountWatchingOnly(ns walletdb.ReadWriteBucket,
 // already exists, ErrDuplicateAccount will be returned.
 func (s *ScopedKeyManager) RenameAccount(ns walletdb.ReadWriteBucket,
 	account uint32, name string) error {
-	if s.rootManager.HostedAllocation() {
-		return ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return guarded
 	}
 
 	if s.rootManager.recoveryVersion == 2 {
@@ -2109,8 +2115,8 @@ func (s *ScopedKeyManager) RenameAccount(ns walletdb.ReadWriteBucket,
 // errors returned are generally unexpected.
 func (s *ScopedKeyManager) ImportPrivateKey(ns walletdb.ReadWriteBucket,
 	wif *btcutil.WIF, bs *BlockStamp) (ManagedPubKeyAddress, error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	if s.rootManager.recoveryVersion == 2 {
@@ -2170,8 +2176,8 @@ func (s *ScopedKeyManager) ImportPrivateKey(ns walletdb.ReadWriteBucket,
 // ImportedAddrAccount constant.
 func (s *ScopedKeyManager) ImportPublicKey(ns walletdb.ReadWriteBucket,
 	pubKey *btcec.PublicKey, bs *BlockStamp) (ManagedAddress, error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	if s.rootManager.recoveryVersion == 2 {
@@ -2351,8 +2357,8 @@ func (s *ScopedKeyManager) toImportedPublicManagedAddress(
 // generally unexpected.
 func (s *ScopedKeyManager) ImportScript(ns walletdb.ReadWriteBucket,
 	script []byte, bs *BlockStamp) (ManagedScriptAddress, error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	return s.importScriptAddress(
@@ -2375,8 +2381,8 @@ func (s *ScopedKeyManager) ImportScript(ns walletdb.ReadWriteBucket,
 func (s *ScopedKeyManager) ImportWitnessScript(ns walletdb.ReadWriteBucket,
 	script []byte, bs *BlockStamp, witnessVersion byte,
 	isSecretScript bool) (ManagedScriptAddress, error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	return s.importScriptAddress(
@@ -2390,8 +2396,8 @@ func (s *ScopedKeyManager) ImportWitnessScript(ns walletdb.ReadWriteBucket,
 func (s *ScopedKeyManager) ImportTaprootScript(ns walletdb.ReadWriteBucket,
 	tapscript *Tapscript, bs *BlockStamp, witnessVersion byte,
 	isSecretScript bool) (ManagedTaprootScriptAddress, error) {
-	if s.rootManager.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := s.rootManager.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	if s.rootManager.recoveryVersion == 2 {
@@ -2598,6 +2604,9 @@ func (s *ScopedKeyManager) fetchUsed(ns walletdb.ReadBucket,
 // MarkUsed updates the used flag for the provided address.
 func (s *ScopedKeyManager) MarkUsed(ns walletdb.ReadWriteBucket,
 	address address.Address) error {
+	if s.rootManager.PoolSettlement() {
+		return ErrPoolSettlementProfile
+	}
 	if s.rootManager.HostedAllocation() {
 		row, e := fetchAddress(ns, &s.scope, address.ScriptAddress())
 		if e != nil {
@@ -2657,6 +2666,9 @@ func (s *ScopedKeyManager) LastAccount(ns walletdb.ReadBucket) (uint32, error) {
 // given account stored in the manager, breaking early on error.
 func (s *ScopedKeyManager) ForEachAccountAddress(ns walletdb.ReadBucket,
 	account uint32, fn func(maddr ManagedAddress) error) error {
+	if s.rootManager.PoolSettlement() {
+		return ErrPoolSettlementProfile
+	}
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
@@ -2682,6 +2694,9 @@ func (s *ScopedKeyManager) ForEachAccountAddress(ns walletdb.ReadBucket,
 // TODO(tuxcanfly): actually return only active addresses
 func (s *ScopedKeyManager) ForEachActiveAccountAddress(ns walletdb.ReadBucket, account uint32,
 	fn func(maddr ManagedAddress) error) error {
+	if s.rootManager.PoolSettlement() {
+		return ErrPoolSettlementProfile
+	}
 
 	return s.ForEachAccountAddress(ns, account, fn)
 }
@@ -2690,6 +2705,9 @@ func (s *ScopedKeyManager) ForEachActiveAccountAddress(ns walletdb.ReadBucket, a
 // stored in the manager, breaking early on error.
 func (s *ScopedKeyManager) ForEachActiveAddress(ns walletdb.ReadBucket,
 	fn func(addr address.Address) error) error {
+	if s.rootManager.PoolSettlement() {
+		return ErrPoolSettlementProfile
+	}
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
@@ -2730,6 +2748,9 @@ func (s *ScopedKeyManager) ForEachActiveAddress(ns walletdb.ReadBucket,
 // active address belonging to the scoped key manager, breaking early on error.
 func (s *ScopedKeyManager) ForEachInternalActiveAddress(ns walletdb.ReadBucket,
 	fn func(addr address.Address) error) error {
+	if s.rootManager.PoolSettlement() {
+		return ErrPoolSettlementProfile
+	}
 
 	s.mtx.Lock()
 	defer s.mtx.Unlock()

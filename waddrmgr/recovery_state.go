@@ -69,6 +69,15 @@ func fetchRecoveryState(ns walletdb.ReadBucket) (DerivationMode, bool, error) {
 	if managerVersion == latestMgrVersion && mode == nil && version == nil && pub == nil && priv == nil && b.Get(candidateFixtureName) == nil && b.Get(recoveryProgressName) == nil && b.NestedReadBucket(recoveryInvalidName) == nil && b.Get(phaseAProgressName) == nil && b.NestedReadBucket(phaseAInvalidName) == nil {
 		return DerivationLegacy, false, nil
 	}
+	if managerVersion == PoolSettlementManagerVersion {
+		if len(mode) != 4 || binary.LittleEndian.Uint32(mode) != uint32(DerivationStandard) || version != nil || pub != nil || priv != nil || b.Get(candidateFixtureName) != nil || b.Get(recoveryProgressName) != nil || b.NestedReadBucket(recoveryInvalidName) != nil || b.Get(phaseAProgressName) != nil || b.NestedReadBucket(phaseAInvalidName) != nil {
+			return 0, false, ErrRecoveryState
+		}
+		if _, e := ParsePoolSettlementGuard(b.Get(poolSettlementGuardKey)); e != nil {
+			return 0, false, e
+		}
+		return DerivationStandard, false, nil
+	}
 	wantVersion := uint32(1)
 	if managerVersion == CandidateManagerVersion || managerVersion == ResumableManagerVersion {
 		wantVersion = 2

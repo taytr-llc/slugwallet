@@ -5,6 +5,7 @@
 package waddrmgr
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha512"
 	"errors"
@@ -355,6 +356,8 @@ type Manager struct {
 	recoveryVersion   uint32
 	resumableRecovery bool
 	hostedAllocation  bool
+	poolSettlement    bool
+	poolGuard         PoolSettlementGuard
 	carrierSchema     uint32
 	recoveryPending   atomic.Bool
 	defaultScopes     map[KeyScope]ScopeAddrSchema
@@ -519,8 +522,8 @@ func (m *Manager) Close() {
 // mark as gucci?
 func (m *Manager) NewScopedKeyManager(ns walletdb.ReadWriteBucket,
 	scope KeyScope, addrSchema ScopeAddrSchema) (*ScopedKeyManager, error) {
-	if m.HostedAllocation() {
-		return nil, ErrHostedAllocationProfile
+	if guarded := m.GenericSpendError(); guarded != nil {
+		return nil, guarded
 	}
 
 	if m.recoveryVersion == 2 {
@@ -695,6 +698,9 @@ func (m *Manager) ScopesForInternalAddrTypes(addrType AddressType) []KeyScope {
 // *certain* that no further scoped managers are to be created. This method
 // will *delete* the encrypted master HD root private key from the database.
 func (m *Manager) NeuterRootKey(ns walletdb.ReadWriteBucket) error {
+	if m.PoolSettlement() {
+		return ErrPoolSettlementProfile
+	}
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 	if m.recoveryEnabled {
@@ -725,6 +731,9 @@ func (m *Manager) NeuterRootKey(ns walletdb.ReadWriteBucket) error {
 // pay-to-script-hash addresses.
 func (m *Manager) Address(ns walletdb.ReadBucket,
 	address address.Address) (ManagedAddress, error) {
+	if m.PoolSettlement() {
+		return nil, ErrPoolSettlementProfile
+	}
 
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
@@ -1086,6 +1095,9 @@ func (m *Manager) ChangePassphrase(ns walletdb.ReadWriteBucket, oldPassphrase,
 // Executing this function on a manager that is already watching-only will have
 // no effect.
 func (m *Manager) ConvertToWatchingOnly(ns walletdb.ReadWriteBucket) error {
+	if m.PoolSettlement() {
+		return ErrPoolSettlementProfile
+	}
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 	if m.recoveryEnabled {
@@ -1212,6 +1224,11 @@ func (m *Manager) Unlock(ns walletdb.ReadBucket, passphrase []byte) error {
 
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
+	if m.PoolSettlement() {
+		if e := m.auditPool(context.Background(), ns, m.poolGuard); e != nil {
+			return e
+		}
+	}
 
 	// Avoid actually unlocking if the manager is already unlocked
 	// and the passphrases match.
@@ -1399,6 +1416,9 @@ func (m *Manager) selectCryptoKey(keyType CryptoKeyType) (EncryptorDecryptor, er
 
 // Encrypt in using the crypto key type specified by keyType.
 func (m *Manager) Encrypt(keyType CryptoKeyType, in []byte) ([]byte, error) {
+	if m.PoolSettlement() {
+		return nil, ErrPoolSettlementProfile
+	}
 	// Encryption must be performed under the manager mutex since the
 	// keys are cleared when the manager is locked.
 	m.mtx.Lock()
@@ -1418,6 +1438,9 @@ func (m *Manager) Encrypt(keyType CryptoKeyType, in []byte) ([]byte, error) {
 
 // Decrypt in using the crypto key type specified by keyType.
 func (m *Manager) Decrypt(keyType CryptoKeyType, in []byte) ([]byte, error) {
+	if m.PoolSettlement() {
+		return nil, ErrPoolSettlementProfile
+	}
 	// Decryption must be performed under the manager mutex since the keys
 	// are cleared when the manager is locked.
 	m.mtx.Lock()
@@ -1668,7 +1691,7 @@ func loadManagerAllowedProfile(ns walletdb.ReadBucket, pubPassphrase []byte, cha
 	var phaseACrypto *cryptoKey
 	phaseAOpened := false
 	defer func() {
-		if (version == PhaseAManagerVersion || version == HostedAllocationManagerVersion || version == HostedTransferManagerVersion || version == RestoredCarrierManagerVersion) && !phaseAOpened {
+		if (version == PhaseAManagerVersion || version == HostedAllocationManagerVersion || version == HostedTransferManagerVersion || version == RestoredCarrierManagerVersion || version == PoolSettlementManagerVersion) && !phaseAOpened {
 			masterKeyPriv.Zero()
 			masterKeyPub.Zero()
 			if phaseACrypto != nil {
@@ -1696,6 +1719,9 @@ func loadManagerAllowedProfile(ns walletdb.ReadBucket, pubPassphrase []byte, cha
 	cryptoKeyPub.CopyBytes(cryptoKeyPubCT)
 	zero.Bytes(cryptoKeyPubCT)
 	defaults := legacyDefaultScopes()
+	if version == PoolSettlementManagerVersion {
+		defaults = poolDefaultScopes()
+	}
 	if version == ResumableManagerVersion || version == PhaseAManagerVersion || version == RestoredCarrierManagerVersion {
 		state, e := fetchRecoveryProgress(ns)
 		if e != nil {
@@ -1766,6 +1792,7 @@ func loadManagerAllowedProfile(ns walletdb.ReadBucket, pubPassphrase []byte, cha
 	)
 
 	mgr.derivationMode, mgr.recoveryEnabled = mode, hasRecovery
+	mgr.poolSettlement = version == PoolSettlementManagerVersion
 	mgr.hostedAllocation = version == HostedAllocationManagerVersion || version == HostedTransferManagerVersion || version == RestoredCarrierManagerVersion
 	if version == HostedTransferManagerVersion || version == RestoredCarrierManagerVersion {
 		mgr.carrierSchema = version
@@ -1952,6 +1979,14 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 	pubPassphrase, privPassphrase []byte, chainParams *chaincfg.Params,
 	config *ScryptOptions, birthday time.Time, mode DerivationMode,
 	recoveryPublic, recoveryPrivate []byte, candidate ...string) error {
+
+	return createManagerPurpose(ns, rootKey, pubPassphrase, privPassphrase, chainParams, config, birthday, mode, recoveryPublic, recoveryPrivate, candidate, false)
+}
+
+func createManagerPurpose(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
+	pubPassphrase, privPassphrase []byte, chainParams *chaincfg.Params,
+	config *ScryptOptions, birthday time.Time, mode DerivationMode,
+	recoveryPublic, recoveryPrivate []byte, candidate []string, pool bool) error {
 	// If the seed argument is nil we create in watchingOnly mode.
 	isWatchingOnly := rootKey == nil
 
@@ -1975,6 +2010,9 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 		if len(candidate) != 0 {
 			defaultScopes = candidateDefaultScopes()
 		}
+		if pool {
+			defaultScopes = poolDefaultScopes()
+		}
 	}
 	if err := createManagerNS(ns, defaultScopes); err != nil {
 		return maybeConvertDbError(err)
@@ -1992,6 +2030,10 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 		return managerError(ErrCrypto, str, err)
 	}
 
+	if pool {
+		defer masterKeyPub.Zero()
+	}
+
 	// Generate new crypto public, private, and script keys.  These keys are
 	// used to protect the actual public and private data such as addresses,
 	// extended keys, and scripts.
@@ -1999,6 +2041,10 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 	if err != nil {
 		str := "failed to generate crypto public key"
 		return managerError(ErrCrypto, str, err)
+	}
+
+	if pool {
+		defer cryptoKeyPub.Zero()
 	}
 
 	// Encrypt the crypto keys with the associated master keys.
@@ -2081,7 +2127,11 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 		// Next, for each registers default manager scope, we'll
 		// create the hardened cointype key for it, as well as the
 		// first default account.
-		for _, defaultScope := range creationDefaultScopes(candidate...) {
+		scopes := creationDefaultScopes(candidate...)
+		if pool {
+			scopes = []KeyScope{KeyScopeBIP0084}
+		}
+		for _, defaultScope := range scopes {
 			err := createManagerKeyScope(
 				ns, defaultScope, rootKey, cryptoKeyPub, cryptoKeyPriv, mode,
 			)
@@ -2109,7 +2159,7 @@ func createManager(ns walletdb.ReadWriteBucket, rootKey *hdkeychain.ExtendedKey,
 			return maybeConvertDbError(err)
 		}
 
-		if mode == DerivationStandard {
+		if mode == DerivationStandard && !pool {
 			if err := putRecoveryData(ns, recoveryPublic, recoveryPrivate, cryptoKeyPub, cryptoKeyPriv, candidate...); err != nil {
 				return err
 			}
