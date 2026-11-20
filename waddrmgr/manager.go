@@ -1253,6 +1253,20 @@ func (m *Manager) Unlock(ns walletdb.ReadBucket, passphrase []byte) error {
 	// Use the crypto private key to decrypt all of the account private
 	// extended keys.
 	for _, manager := range m.scopedManagers {
+		// A committed guarded allocation invalidates its account cache. Public
+		// reads can already have queued issued addresses for private derivation,
+		// so reload those exact accounts before decrypting cached private keys.
+		// IsLocked remains true until every queued derivation succeeds; loading
+		// an uncached account later in that pass would otherwise return only
+		// its public key. Earlier manager modes retain their cache behavior.
+		if m.carrierSchema != 0 {
+			for _, info := range manager.deriveOnUnlock {
+				if _, err := manager.loadAccountInfo(ns, info.managedAddr.InternalAccount()); err != nil {
+					m.lock()
+					return err
+				}
+			}
+		}
 		for account, acctInfo := range manager.acctInfo {
 			decrypted, err := m.cryptoKeyPriv.Decrypt(acctInfo.acctKeyEncrypted)
 			if err != nil {
@@ -1285,11 +1299,12 @@ func (m *Manager) Unlock(ns walletdb.ReadBucket, passphrase []byte) error {
 				return err
 			}
 
-			// It's ok to ignore the error here since it can only
-			// fail if the extended key is not private, however it
-			// was just derived as a private key.
-			privKey, _ := addressKey.ECPrivKey()
+			privKey, err := addressKey.ECPrivKey()
 			addressKey.Zero()
+			if err != nil || privKey == nil {
+				m.lock()
+				return managerError(ErrKeyChain, "failed to derive queued private key", err)
+			}
 
 			privKeyBytes := privKey.Serialize()
 			privKeyEncrypted, err := m.cryptoKeyPriv.Encrypt(privKeyBytes)

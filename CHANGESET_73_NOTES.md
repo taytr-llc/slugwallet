@@ -84,3 +84,33 @@ reveal/refund recovery, app wiring, full suites and packaging remain.
 Production genesis and the final joint design
 review are separate gates. After transfers/recovery, Mike's order is the public
 pool and scheduled payouts, followed by sign-in and onboarding.
+
+## Later wallet and executable recovery qualification
+
+The standalone commit-recovery scenario exposed a locked account-cache gap
+after a guarded return allocation. Unlock now preloads only the accounts
+referenced by the existing private-derivation queue before decrypting them.
+The manager stays locked until completion and checks private derivation errors.
+The regression follows the actual read/invalidate/unlock ordering, verifies
+wrong-password refusal, signs with the original key and repeats lock/unlock.
+`carrier-unlock-cache-attempt1` passed normal 3.574s, race 10.011s, profile
+checks 2.298s and vet 0.451s with 3,182 inputs unchanged and clean process joins.
+
+`wallet-full-attempt1` passed all six normal wallet modules and targeted
+cheap-profile refusal checks in 525.041s. All 1,346 source inputs and the exact
+compiler/profile remained unchanged; all seven process groups joined cleanly.
+
+`restored-cli-commit-actual-attempt4` also passed its separate-process recovery
+scenario in 776.383s with 5,172 inputs/profile/binaries unchanged and all 33 CLI
+processes plus two nodes joined. File-only schema 12 restoration and explicit
+15 activation retained the same gym and fighters. Public commit discovery,
+reviewed reveal/refund, signing restart, separately approved delivery, exact
+retry and checkpoint +59/+60 checks passed. The original exported bounds and
+original private authority/journal trees remained controls, not replacement
+recovery authority. Earlier failed attempts remain preserved in the paired
+chain notes and artifacts.
+
+This closes the wallet correction and executable recovery evidence above.
+The paired set still needs its desktop noon scenarios, final package and
+engineering rollout. Visible native interaction and the joint D74 review
+remain product acceptance items; none is claimed by this wallet checkpoint.
