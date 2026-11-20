@@ -61,6 +61,23 @@ fixture missing the existing recovery challenge; their successor evidence is
 separate. The new activation seam has focused lifecycle evidence after actual5;
 actual5 itself used the preserved original activation API.
 
+The intent-free recovery matcher now separates bounded public original-export
+path lookup from journal admission. Discovery retains the exact restored owner
+and concrete public recovery capability without creating a request or consuming
+the128-operation journal budget. An explicitly selected match still requires an
+exact durable intent, fresh public checks and the original preparation/signing
+path. The previous selected-recovery API remains unchanged.
+
+restored-match-attempt1 passed compile3.567/normal14.040/race115.795/
+profile3.560/vet0.509s with1,250 unchanged inputs, the exact candidate compiler
+and all processes joined. It proves the public lookup leaf can exceed128
+candidate probes while the empty journal remains held/unchanged, the wallet
+stays locked and its database bytes remain unchanged; prior restored signature
+and bounded-inventory checks also pass. These tests do not manufacture a public
+capability or establish the later automatic-discovery/commit-only composition.
+The paired root observation checkpoint06740477 is separate evidence; the set
+remains open.
+
 This is a qualified component checkpoint, not Set73 completion. The separate
 restored-gym command, automatic commit discovery, original-file commit-only
 reveal/refund recovery, app wiring, full suites and packaging remain.

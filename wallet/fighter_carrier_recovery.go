@@ -91,12 +91,7 @@ func (s *CarrierRecoveryScan) Step(ctx context.Context) (CarrierRecoveryProgress
 		return none, e
 	}
 	i := s.public.Inspection()
-	var next waddrmgr.RestoredCarrierMatch
-	e = walletdb.View(s.owner.wallet.db, func(tx walletdb.ReadTx) error {
-		var e error
-		next, e = s.owner.manager.MatchRestoredCarrierKeys(work, tx.ReadBucket(waddrmgrNamespaceKey), s.match.Next, i.FundingKey, i.ReturnScript)
-		return e
-	})
+	next, e := s.owner.matchRecoveryStep(work, s.match, i)
 	if e != nil {
 		return none, e
 	}
@@ -105,12 +100,6 @@ func (s *CarrierRecoveryScan) Step(ctx context.Context) (CarrierRecoveryProgress
 	}
 	if e = s.owner.authorize(work); e != nil {
 		return none, e
-	}
-	if s.match.FundingFound {
-		next.FundingFound, next.FundingBranch, next.FundingIndex = true, s.match.FundingBranch, s.match.FundingIndex
-	}
-	if s.match.ReturnFound {
-		next.ReturnFound, next.ReturnBranch, next.ReturnIndex = true, s.match.ReturnBranch, s.match.ReturnIndex
 	}
 	s.match = next
 	done := next.Next == next.Total
