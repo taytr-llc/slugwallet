@@ -22,6 +22,10 @@ bypass. Mike requires a backup factor/code with no support bypass. The exact
 account recovery-code proof is still proposed; the 24-word wallet phrase is not
 automatically a hosted-login reset code and must never be requested by support.
 This requirement does not change wallet derivation or authorize real credentials.
+Mike subsequently deferred login/provider/MFA and account-recovery UX work until
+wallet recovery, fighter ownership/transfer and restoration of the same gym and
+fighters are complete. Preserve D82 for later; continue core functional work
+using existing fixtures. Key recovery alone does not close fighter recovery.
 
 ## Source and branches
 
