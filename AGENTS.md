@@ -14,6 +14,13 @@ See the paired chain PRODUCTION_WALLET_PROFILE.md. He also requires a thorough
 joint design review before friends/tester or public product release (D74);
 the paired LAUNCH_READINESS.md tracks that gate. Engineering work continues.
 
+Mike requires strict mandatory MFA for hosted email/password login and passkey
+support (D82, November 19). See the paired `HOSTED_AUTHENTICATION.md`. Existing
+fixture assertions do not attest MFA; do not infer it from authentication time
+or alter frozen codecs silently. Preserve D72's reset/hold without a second-factor
+bypass. The all-factor-loss support-recovery policy is awaiting Mike's answer.
+This requirement does not change wallet derivation or authorize real credentials.
+
 ## Source and branches
 
 - Origin: `taytr-llc/slugwallet`; upstream: `btcsuite/btcwallet`.
