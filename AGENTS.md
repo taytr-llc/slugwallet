@@ -18,7 +18,9 @@ Mike requires strict mandatory MFA for hosted email/password login and passkey
 support (D82, November 19). See the paired `HOSTED_AUTHENTICATION.md`. Existing
 fixture assertions do not attest MFA; do not infer it from authentication time
 or alter frozen codecs silently. Preserve D72's reset/hold without a second-factor
-bypass. The all-factor-loss support-recovery policy is awaiting Mike's answer.
+bypass. Mike requires a backup factor/code with no support bypass. The exact
+account recovery-code proof is still proposed; the 24-word wallet phrase is not
+automatically a hosted-login reset code and must never be requested by support.
 This requirement does not change wallet derivation or authorize real credentials.
 
 ## Source and branches
