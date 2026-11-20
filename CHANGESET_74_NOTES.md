@@ -23,3 +23,13 @@ The failures remain separate evidence:
 ## Limits
 
 This is paired operator custody engineering, not a hosted-gym wallet, recovery-v1 export, production issuance decision or D73 genesis/profile finalization. Published synthetic fixtures alone were used. The focused node model checks constructor identity; it does not establish mined funding, scheduled payout execution, TLS ingress, a long-running operator process or remote worker acceptance. Those paired runtime and actual-node gates remain separate. No real operator or official checkpoint private key was accessed.
+
+The paired runtime subsequently passed `public-pool-actual-attempt3` using this
+wallet at `40959793` and chain `4a3f20da`: two separate TLS miners, actual normal
+PoW, maturity deferral, one scheduled payout, accepted lost-response recovery
+after exact wallet/runtime reopen, and no duplicate payment. Both miners received
+9.9 SLUG; the 240-atom fee came from the pool's cut. Standalone CLI reopen and
+all owned process joins passed. The source-bound record is in the chain repo's
+`docs/evidence/set74/operator-actual.json`. All six wallet modules also built
+successfully. These isolated public fixtures do not establish real custody or
+remote deployment, which remain separate work.
