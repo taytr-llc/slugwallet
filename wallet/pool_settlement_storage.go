@@ -15,11 +15,11 @@ import (
 	"github.com/taytr-llc/slugwallet/wtxmgr"
 )
 
-func openPoolSettlementWallet(life context.Context, rootPath string, expected PoolWalletBinding, pubPass, privPass []byte, root *hdkeychain.ExtendedKey, birthday time.Time, create bool) (*PoolWalletOwner, error) {
+func openPoolSettlementWallet(life context.Context, rootPath string, expected PoolWalletBinding, pubPass, privPass []byte, root *hdkeychain.ExtendedKey, birthday time.Time, create, daily bool) (*PoolWalletOwner, error) {
 	if wire.TestPoW {
 		return nil, waddrmgr.ErrPoolSettlementProfile
 	}
-	if life == nil || ValidatePoolWalletBinding(expected) != nil || len(pubPass) > 1024 || !filepath.IsAbs(rootPath) || filepath.Clean(rootPath) != rootPath {
+	if life == nil || validatePoolWalletBinding(expected, daily) != nil || len(pubPass) > 1024 || !filepath.IsAbs(rootPath) || filepath.Clean(rootPath) != rootPath {
 		return nil, ErrPoolWalletInvalid
 	}
 	if e := life.Err(); e != nil {
@@ -58,7 +58,7 @@ func openPoolSettlementWallet(life context.Context, rootPath string, expected Po
 	}
 	loader := NewLoader(&chaincfg.MainNetParams, rootPath, false, 5*time.Second, 0)
 	ctx, cancel := context.WithCancel(life)
-	o := &PoolWalletOwner{life: ctx, cancel: cancel, closed: make(chan struct{}), gate: make(chan struct{}, 1), binding: ownedPoolBinding(expected), loader: loader, rootPath: rootPath, dir: dir, file: file}
+	o := &PoolWalletOwner{daily: daily, life: ctx, cancel: cancel, closed: make(chan struct{}), gate: make(chan struct{}, 1), binding: ownedPoolBinding(expected), loader: loader, rootPath: rootPath, dir: dir, file: file}
 	if create {
 		loader.db, e = walletdb.Create("bdb", dbPath, false, 5*time.Second, false)
 	} else {

@@ -12,6 +12,7 @@ import (
 	"github.com/taytr-llc/slug/poolservice"
 	"github.com/taytr-llc/slug/poolsettle"
 	"github.com/taytr-llc/slug/poolshare"
+	"github.com/taytr-llc/slug/pooltxshape"
 	"github.com/taytr-llc/slug/txscript/v2"
 	"github.com/taytr-llc/slug/wire/v2"
 	"github.com/taytr-llc/slugwallet/walletdb"
@@ -42,10 +43,21 @@ func (m *Manager) SignPoolSettlement(ctx context.Context, ns walletdb.ReadBucket
 	return m.signPoolSettlement(ctx, ns, expected, config, coins, unsigned, check)
 }
 
-// Private codec leaf: only SignPoolSettlement admits a production caller.
+// Private legacy codec leaf: SignPoolSettlement admits its production caller.
 func (m *Manager) signPoolSettlement(ctx context.Context, ns walletdb.ReadBucket, expected PoolSettlementGuard, config poolsettle.Config, coins []poolsettle.Coin, unsigned []byte, check func() error) ([]byte, error) {
+	return m.signPoolSettlementProfile(ctx, ns, expected, config, coins, unsigned, check, false)
+}
+
+// Profile is selected only by the two concrete public wrappers after capability
+// and guard admission. This private leaf is not a caller-selected signing API.
+func (m *Manager) signPoolSettlementProfile(ctx context.Context, ns walletdb.ReadBucket, expected PoolSettlementGuard, config poolsettle.Config, coins []poolsettle.Coin, unsigned []byte, check func() error, daily bool) ([]byte, error) {
 	var e error
-	if len(unsigned) == 0 || len(unsigned) > 100000 || len(coins) == 0 || len(coins) > 256 {
+	inputCap, rawCap := 256, 100000
+	if daily {
+		inputCap = pooltxshape.MaxNativeInputs
+		rawCap = pooltxshape.MaxStandardWeight
+	}
+	if len(unsigned) == 0 || len(unsigned) > rawCap || len(coins) == 0 || len(coins) > inputCap {
 		return nil, ErrPoolSettlementInvalid
 	}
 	var tx wire.MsgTx
@@ -69,8 +81,13 @@ func (m *Manager) signPoolSettlement(ctx context.Context, ns walletdb.ReadBucket
 		seen[in.PreviousOutPoint] = true
 		prevouts.AddPrevOut(in.PreviousOutPoint, &wire.TxOut{Value: coin.Atoms, PkScript: script})
 	}
-	if _, e = poolUnsignedOutputs(&tx, config, coins); e != nil {
+	if _, e = poolUnsignedOutputsProfile(&tx, config, coins, daily); e != nil {
 		return nil, e
+	}
+	if daily {
+		if e = poolDailySigningShape(&tx, config, len(unsigned), false); e != nil {
+			return nil, e
+		}
 	}
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
@@ -132,8 +149,13 @@ func (m *Manager) signPoolSettlement(ctx context.Context, ns walletdb.ReadBucket
 		return nil, ErrPoolSettlementCorrupt
 	}
 	var result bytes.Buffer
-	if e = tx.Serialize(&result); e != nil || result.Len() > 100000 {
+	if e = tx.Serialize(&result); e != nil || result.Len() > rawCap {
 		return nil, ErrPoolSettlementInvalid
+	}
+	if daily {
+		if e = poolDailySigningShape(&tx, config, result.Len(), true); e != nil {
+			return nil, e
+		}
 	}
 	if e = check(); e != nil {
 		return nil, e
@@ -144,7 +166,16 @@ func (m *Manager) signPoolSettlement(ctx context.Context, ns walletdb.ReadBucket
 // This shape check is defense in depth; only the private active Store request
 // establishes exact fee/payment authority. No fee supplied as a DTO is trusted.
 func poolUnsignedOutputs(tx *wire.MsgTx, config poolsettle.Config, coins []poolsettle.Coin) (int64, error) {
-	if _, e := poolsettle.ConfigBindingID(config); e != nil {
+	return poolUnsignedOutputsProfile(tx, config, coins, false)
+}
+func poolUnsignedOutputsProfile(tx *wire.MsgTx, config poolsettle.Config, coins []poolsettle.Coin, daily bool) (int64, error) {
+	var e error
+	if daily {
+		_, e = poolsettle.DailyConfigBindingID(config)
+	} else {
+		_, e = poolsettle.ConfigBindingID(config)
+	}
+	if e != nil {
 		return 0, ErrPoolSettlementInvalid
 	}
 	const max = int64(21000000 * 100000000)

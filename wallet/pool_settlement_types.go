@@ -38,15 +38,38 @@ func ownedPoolBinding(b PoolWalletBinding) PoolWalletBinding {
 	b.Settlement.Destinations = append([]poolsettle.Destination(nil), b.Settlement.Destinations...)
 	return b
 }
-func ValidatePoolWalletBinding(b PoolWalletBinding) error {
-	if b.Version != 1 || b.WalletOwnerID != b.Guard.WalletOwnerID || b.OperatorProfileID != b.Guard.OperatorProfileID || waddrmgr.ValidatePoolSettlementGuard(b.Guard) != nil {
+func ValidatePoolWalletBinding(b PoolWalletBinding) error { return validatePoolWalletBinding(b, false) }
+
+// ValidateDailyPoolWalletBinding selects only the fresh Config2/source2 profile.
+// The unchanged schema16 guard commits its new exact independently selected IDs.
+func ValidateDailyPoolWalletBinding(b PoolWalletBinding) error {
+	return validatePoolWalletBinding(b, true)
+}
+
+func validatePoolWalletBinding(b PoolWalletBinding, daily bool) error {
+	version := uint32(1)
+	if daily {
+		version = 2
+	}
+	if b.Version != version || b.WalletOwnerID != b.Guard.WalletOwnerID || b.OperatorProfileID != b.Guard.OperatorProfileID || waddrmgr.ValidatePoolSettlementGuard(b.Guard) != nil {
 		return ErrPoolWalletInvalid
 	}
-	source, e := poolservice.BindingID(b.Source)
+	var source string
+	var e error
+	if daily {
+		source, e = poolshare.DailyConfigID(b.Source)
+	} else {
+		source, e = poolservice.BindingID(b.Source)
+	}
 	if e != nil || source != b.Guard.SourceBindingID {
 		return ErrPoolWalletBinding
 	}
-	config, e := poolsettle.ConfigBindingID(b.Settlement)
+	var config string
+	if daily {
+		config, e = poolsettle.DailyConfigBindingID(b.Settlement)
+	} else {
+		config, e = poolsettle.ConfigBindingID(b.Settlement)
+	}
 	if e != nil || config != b.Guard.SettlementConfigID || b.Settlement.ChangeScript != b.Guard.FundingScript {
 		return ErrPoolWalletBinding
 	}

@@ -14,6 +14,7 @@ import (
 )
 
 type PoolSettlementBackend struct {
+	daily     bool // immutable constructor selection, never request-supplied
 	mu        sync.Mutex
 	closeOnce sync.Once
 	life      context.Context
@@ -30,14 +31,30 @@ type PoolSettlementBackend struct {
 var _ poolsettle.Backend = (*PoolSettlementBackend)(nil)
 
 func NewPoolSettlementBackend(life context.Context, wallet *PoolWalletOwner, node *poolsettlenode.Client, expected PoolWalletBinding) (*PoolSettlementBackend, error) {
+	return newPoolSettlementBackend(life, wallet, node, expected, false)
+}
+
+// NewDailyPoolSettlementBackend accepts only the same original daily wallet/node.
+func NewDailyPoolSettlementBackend(life context.Context, wallet *PoolWalletOwner, node *poolsettlenode.Client, expected PoolWalletBinding) (*PoolSettlementBackend, error) {
+	return newPoolSettlementBackend(life, wallet, node, expected, true)
+}
+func newPoolSettlementBackend(life context.Context, wallet *PoolWalletOwner, node *poolsettlenode.Client, expected PoolWalletBinding, daily bool) (*PoolSettlementBackend, error) {
 	if wire.TestPoW {
 		return nil, waddrmgr.ErrPoolSettlementProfile
 	}
-	if life == nil || wallet == nil || node == nil || ValidatePoolWalletBinding(expected) != nil {
+	if life == nil || wallet == nil || node == nil || validatePoolWalletBinding(expected, daily) != nil {
 		return nil, ErrPoolWalletInvalid
 	}
 	if e := life.Err(); e != nil {
 		return nil, e
+	}
+	if wallet.daily != daily {
+		return nil, ErrPoolWalletBinding
+	}
+	if daily {
+		if e := node.CheckDailyProfile(); e != nil {
+			return nil, e
+		}
 	}
 	op, e := wallet.begin(life)
 	if e != nil {
@@ -66,7 +83,7 @@ func NewPoolSettlementBackend(life context.Context, wallet *PoolWalletOwner, nod
 		return nil, e
 	}
 	ctx, cancel := context.WithCancel(life)
-	b := &PoolSettlementBackend{life: ctx, cancel: cancel, wallet: wallet, node: node, expected: ownedPoolBinding(expected)}
+	b := &PoolSettlementBackend{daily: daily, life: ctx, cancel: cancel, wallet: wallet, node: node, expected: ownedPoolBinding(expected)}
 	wallet.backend = b
 	return b, nil
 }
@@ -104,6 +121,18 @@ func (b *PoolSettlementBackend) begin(ctx context.Context) (*poolWalletOperation
 // BindSettlement is constructor-phase only, after the original store opens and
 // before READY. Even an equal later rebind cannot revive or retarget this owner.
 func (b *PoolSettlementBackend) BindSettlement(ctx context.Context, original *poolsettle.Store) error {
+	if b != nil && b.daily {
+		return ErrPoolWalletBinding
+	}
+	return b.bindSettlement(ctx, original)
+}
+func (b *PoolSettlementBackend) BindDailySettlement(ctx context.Context, original *poolsettle.Store) error {
+	if b == nil || !b.daily {
+		return ErrPoolWalletBinding
+	}
+	return b.bindSettlement(ctx, original)
+}
+func (b *PoolSettlementBackend) bindSettlement(ctx context.Context, original *poolsettle.Store) error {
 	op, done, e := b.begin(ctx)
 	if e != nil {
 		return e
@@ -118,7 +147,12 @@ func (b *PoolSettlementBackend) BindSettlement(ctx context.Context, original *po
 		return ErrPoolWalletBinding
 	}
 	b.mu.Unlock()
-	if e = original.CheckBackendBinding(op.ctx, b, b.expected.Settlement, b.expected.Source); e != nil {
+	if b.daily {
+		e = original.CheckDailyBackendBinding(op.ctx, b, b.expected.Settlement, b.expected.Source)
+	} else {
+		e = original.CheckBackendBinding(op.ctx, b, b.expected.Settlement, b.expected.Source)
+	}
+	if e != nil {
 		return e
 	}
 	if e = op.ctx.Err(); e != nil {
@@ -226,6 +260,13 @@ func (b *PoolSettlementBackend) Sign(ctx context.Context, coins []poolsettle.Coi
 	check := func() error {
 		return poolsettle.CheckSigningRequest(op.ctx, original, b, b.expected.Settlement, b.expected.Source, coins, unsigned)
 	}
+	if b.daily {
+		captured, err := poolsettle.CaptureDailySigningCheck(op.ctx, original, b, b.expected.Settlement, b.expected.Source, coins, unsigned)
+		if err != nil {
+			return nil, err
+		}
+		check = func() error { return captured.Recheck(op.ctx, coins, unsigned) }
+	}
 	if e = check(); e != nil {
 		return nil, e
 	}
@@ -260,7 +301,11 @@ func (b *PoolSettlementBackend) Sign(ctx context.Context, coins []poolsettle.Coi
 			return e
 		}
 		var e error
-		signed, e = b.wallet.wallet.Manager.SignPoolSettlement(op.ctx, tx.ReadBucket(waddrmgrNamespaceKey), b.expected.Guard, original, b, b.expected.Settlement, b.expected.Source, coins, unsigned)
+		if b.daily {
+			signed, e = b.wallet.wallet.Manager.SignDailyPoolSettlement(op.ctx, tx.ReadBucket(waddrmgrNamespaceKey), b.expected.Guard, original, b, b.expected.Settlement, b.expected.Source, coins, unsigned)
+		} else {
+			signed, e = b.wallet.wallet.Manager.SignPoolSettlement(op.ctx, tx.ReadBucket(waddrmgrNamespaceKey), b.expected.Guard, original, b, b.expected.Settlement, b.expected.Source, coins, unsigned)
+		}
 		return e
 	})
 	if e != nil {

@@ -14,6 +14,7 @@ import (
 )
 
 type PoolWalletOwner struct {
+	daily             bool // immutable constructor-selected binding profile
 	mu                sync.Mutex
 	closeOnce         sync.Once
 	closed            chan struct{}
@@ -177,10 +178,10 @@ func (o *PoolWalletOwner) Close() error {
 }
 
 func CreatePoolSettlementWallet(life context.Context, rootPath string, expected PoolWalletBinding, pubPass, privPass []byte, root *hdkeychain.ExtendedKey, birthday time.Time) (*PoolWalletOwner, error) {
-	return openPoolSettlementWallet(life, rootPath, expected, pubPass, privPass, root, birthday, true)
+	return openPoolSettlementWallet(life, rootPath, expected, pubPass, privPass, root, birthday, true, false)
 }
 func OpenPoolSettlementWallet(life context.Context, rootPath string, expected PoolWalletBinding, pubPass []byte) (*PoolWalletOwner, error) {
-	return openPoolSettlementWallet(life, rootPath, expected, pubPass, nil, nil, time.Time{}, false)
+	return openPoolSettlementWallet(life, rootPath, expected, pubPass, nil, nil, time.Time{}, false, false)
 }
 
 // A failed construction returns a retained owner only if its cleanup failed.
@@ -205,4 +206,13 @@ func poolOwnerInventory(tx walletdb.ReadTx) error {
 		return ErrPoolWalletStorage
 	}
 	return nil
+}
+
+// Daily constructors require a fresh Binding2 or its exact same established root.
+// They do not migrate a legacy guard or expose the factory-owned Loader/Wallet.
+func CreateDailyPoolSettlementWallet(life context.Context, rootPath string, expected PoolWalletBinding, pubPass, privPass []byte, root *hdkeychain.ExtendedKey, birthday time.Time) (*PoolWalletOwner, error) {
+	return openPoolSettlementWallet(life, rootPath, expected, pubPass, privPass, root, birthday, true, true)
+}
+func OpenDailyPoolSettlementWallet(life context.Context, rootPath string, expected PoolWalletBinding, pubPass []byte) (*PoolWalletOwner, error) {
+	return openPoolSettlementWallet(life, rootPath, expected, pubPass, nil, nil, time.Time{}, false, true)
 }
